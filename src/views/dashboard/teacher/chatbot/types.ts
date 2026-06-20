@@ -10,5 +10,6 @@ export interface ChatMessage {
     subjectId: string;
     dismissed?: boolean;
     confirmed?: boolean;
+    savedExamId?: string;
   };
 }

@@ -1,5 +1,5 @@
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import {
   Bell, LogOut, User, BookOpen, Users,
   ChevronRight, RefreshCw, MapPin, Clock,
@@ -1167,6 +1167,8 @@ const SubjectExamsDrawer: FC<{ subject: { ma_mon: string; ten_mon: string }; onC
 // ── Main component ────────────────────────────────────
 const TeacherAspx: FC = () => {
   const navigate     = useNavigate();
+  const { panel }    = useParams<{ panel?: string }>();
+  const [searchParams] = useSearchParams();
   const notifRef     = useRef<HTMLDivElement>(null);
   const user         = useAuthStore(s => s.user);
   const logout       = useAuthStore(s => s.logout);
@@ -1181,6 +1183,25 @@ const TeacherAspx: FC = () => {
   const [drawerSubject,   setDrawerSubject]   = useState<{ ma_mon: string; ten_mon: string } | null>(null);
   const [aiDrawerSubject, setAiDrawerSubject] = useState<{ ma_mon: string; ten_mon: string } | null>(null);
   const [examDrawerSubject, setExamDrawerSubject] = useState<{ ma_mon: string; ten_mon: string } | null>(null);
+
+  // Helpers — mở/đóng drawer qua URL
+  const openDrawer = useCallback((type: 'document' | 'train-ai' | 'exam', s: { ma_mon: string; ten_mon: string }) => {
+    navigate(`/teacher/dashboard/${type}?mon=${encodeURIComponent(s.ma_mon)}&ten=${encodeURIComponent(s.ten_mon)}`);
+  }, [navigate]);
+
+  const closeDrawer = useCallback(() => {
+    navigate('/teacher/dashboard');
+  }, [navigate]);
+
+  // Sync URL → drawer state
+  useEffect(() => {
+    const mon = searchParams.get('mon') ?? '';
+    const ten = searchParams.get('ten') ?? '';
+    const subject = mon ? { ma_mon: mon, ten_mon: ten } : null;
+    setDrawerSubject(panel === 'document'  ? subject : null);
+    setAiDrawerSubject(panel === 'train-ai' ? subject : null);
+    setExamDrawerSubject(panel === 'exam'   ? subject : null);
+  }, [panel, searchParams]);
 
   // Load semesters
   useEffect(() => {
@@ -1467,8 +1488,8 @@ const TeacherAspx: FC = () => {
               </div>
 
               {courseView === 'list'
-                ? <CourseListView courses={courses} onNavigate={url => navigate(url)} onDocuments={setDrawerSubject} onAiDocuments={setAiDrawerSubject} onExams={setExamDrawerSubject} />
-                : <CourseBookshelfView courses={courses} onNavigate={url => navigate(url)} onDocuments={setDrawerSubject} onAiDocuments={setAiDrawerSubject} onExams={setExamDrawerSubject} />
+                ? <CourseListView courses={courses} onNavigate={url => navigate(url)} onDocuments={s => openDrawer('document', s)} onAiDocuments={s => openDrawer('train-ai', s)} onExams={s => openDrawer('exam', s)} />
+                : <CourseBookshelfView courses={courses} onNavigate={url => navigate(url)} onDocuments={s => openDrawer('document', s)} onAiDocuments={s => openDrawer('train-ai', s)} onExams={s => openDrawer('exam', s)} />
               }
             </>
           )}
@@ -1477,17 +1498,17 @@ const TeacherAspx: FC = () => {
 
       {/* ══ DRAWER: TÀI LIỆU ══ */}
       {drawerSubject && (
-        <SubjectFilesDrawer subject={drawerSubject} onClose={() => setDrawerSubject(null)} />
+        <SubjectFilesDrawer subject={drawerSubject} onClose={closeDrawer} />
       )}
 
       {/* ══ DRAWER: TÀI LIỆU MODEL TRAIN AI ══ */}
       {aiDrawerSubject && (
-        <SubjectAiFilesDrawer subject={aiDrawerSubject} onClose={() => setAiDrawerSubject(null)} />
+        <SubjectAiFilesDrawer subject={aiDrawerSubject} onClose={closeDrawer} />
       )}
 
       {/* ══ DRAWER: BÀI KIỂM TRA ══ */}
       {examDrawerSubject && (
-        <SubjectExamsDrawer subject={examDrawerSubject} onClose={() => setExamDrawerSubject(null)} />
+        <SubjectExamsDrawer subject={examDrawerSubject} onClose={closeDrawer} />
       )}
 
       {/* ══ FOOTER ══ */}

@@ -1,5 +1,5 @@
 import { type FC, useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import {  ArrowLeft, BookOpen, X, RotateCcw, CheckCircle, Loader2,  ClipboardList } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -300,7 +300,8 @@ const SubjectPicker: FC<SubjectPickerProps> = ({ courses, loading, onSelect, onC
 
 // ── Main component ────────────────────────────────────
 const TeacherAITutors: FC = () => {
-  const navigate    = useNavigate();
+  const navigate             = useNavigate();
+  const { sessionId: urlSessionId } = useParams<{ sessionId?: string }>();
 
   // Sessions
   const [sessions,         setSessions]         = useState<IChatSession[]>([]);
@@ -328,18 +329,34 @@ const TeacherAITutors: FC = () => {
   const [loadingPreview,  setLoadingPreview]  = useState(false);
 
 
-  // ── Load sessions ────────────────────────────────────
+  // ── Load sessions + auto-restore từ URL ─────────────
   const loadSessions = useCallback(async () => {
     setLoadingSessions(true);
     try {
       const r = await ChatApi.getSessions();
-      setSessions(r.sessions ?? []);
+      const list = r.sessions ?? [];
+      setSessions(list);
+      // Restore session từ URL (reload trang / back từ exam)
+      if (urlSessionId) {
+        const found = list.find(s => s.id === urlSessionId);
+        if (found) {
+          setCurrentSession(found);
+          const hist = await ChatApi.getSessionHistory(found.id);
+          const msgs: ChatMessage[] = (hist.messages ?? []).map((m, i) => ({
+            id: `hist-${i}-${m.role}`,
+            role: m.role,
+            content: m.content,
+            timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
+          }));
+          setMessages(msgs);
+        }
+      }
     } catch {
       // silently fail
     } finally {
       setLoadingSessions(false);
     }
-  }, []);
+  }, [urlSessionId]);
 
   useEffect(() => { loadSessions(); }, [loadSessions]);
 
@@ -378,6 +395,7 @@ const TeacherAITutors: FC = () => {
       } else {
         // Fallback: create a fake session object
         const fake: IChatSession = { id: r.session_id, name: maMon, subject_id: maMon };
+        navigate(`/teacher/chat/${r.session_id}`, { replace: true });
         setCurrentSession(fake);
         setMessages([]);
       }
@@ -391,6 +409,7 @@ const TeacherAITutors: FC = () => {
   // ── Select session ───────────────────────────────────
   const handleSelectSession = async (sess: IChatSession) => {
     if (sess.id === currentSession?.id) return;
+    navigate(`/teacher/chat/${sess.id}`, { replace: true });
     setCurrentSession(sess);
     setSidebarOpen(false);
     setStreaming(false);
@@ -419,6 +438,7 @@ const TeacherAITutors: FC = () => {
     if (currentSession?.id === id) {
       setCurrentSession(null);
       setMessages([]);
+      navigate('/teacher/chat', { replace: true });
     }
   };
 
@@ -516,8 +536,9 @@ const TeacherAITutors: FC = () => {
       });
       if (r.success) {
         toast.success('Đã lưu đề kiểm tra!');
+        const savedId = r.data?.id;
         setMessages(prev => prev.map(m =>
-          m.id === msgId && m.examMeta ? { ...m, isStreaming: false, examMeta: { ...m.examMeta, confirmed: true } } : m
+          m.id === msgId && m.examMeta ? { ...m, isStreaming: false, examMeta: { ...m.examMeta, confirmed: true, savedExamId: savedId } } : m
         ));
         // Gửi "xác nhận" vào chat để bot phản hồi
         handleSend('xác nhận');

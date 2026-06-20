@@ -30,6 +30,7 @@ const ClassStudentsPage   = lazy(() => import("@views/dashboard/teacher/class"))
 const TeacherChatPage          = lazy(() => import("@views/dashboard/teacher/chatbot/TeacherAITutors"));
 const TeacherAssignmentsPage   = lazy(() => import("@views/dashboard/teacher/assignments/TeacherAssignments"));
 const TeacherAssignmentDetail  = lazy(() => import("@views/dashboard/teacher/assignments/TeacherAssignmentDetail"));
+const TeacherExamView          = lazy(() => import("@views/dashboard/teacher/exams/TeacherExamView"));
 const StudentAssignmentsPage   = lazy(() => import("@views/dashboard/student/assignments/StudentAssignments"));
 const StudentAssignmentExam    = lazy(() => import("@views/dashboard/student/assignments/StudentAssignmentExam"));
 const StudentSubjectsPage      = lazy(() => import("@views/dashboard/student/subjects/StudentSubjects"));
@@ -131,6 +132,16 @@ export const appRoutes: RouteObject[] = [
     ),
   },
   {
+    path: "/teacher/dashboard/:panel",
+    element: (
+      <ProtectedRoute>
+        <BlankLayout>
+          <TeacherAspx />
+        </BlankLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "/teacher/profile",
     element: (
       <ProtectedRoute>
@@ -144,6 +155,16 @@ export const appRoutes: RouteObject[] = [
   // Teacher — AI chatbot
   {
     path: "/teacher/chat",
+    element: (
+      <ProtectedRoute>
+        <BlankLayout>
+          <TeacherChatPage />
+        </BlankLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/teacher/chat/:sessionId",
     element: (
       <ProtectedRoute>
         <BlankLayout>
@@ -166,6 +187,17 @@ export const appRoutes: RouteObject[] = [
   },
 
   // Teacher — assignment management
+  {
+    path: "/teacher/exams/:id",
+    element: (
+      <ProtectedRoute>
+        <BlankLayout>
+          <TeacherExamView />
+        </BlankLayout>
+      </ProtectedRoute>
+    ),
+  },
+
   {
     path: "/teacher/assignments",
     element: (

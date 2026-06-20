@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import { Bot, User, ArrowDown, Copy, Check, Trash2, CheckCircle, Eye, ChevronDown } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { Bot, User, ArrowDown, Copy, Check, Trash2, CheckCircle, Eye, ChevronDown, ExternalLink } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
@@ -16,7 +17,42 @@ interface Props {
 
 const fmtTime = (d: Date) => d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
+const EXAM_API_RE = /^GET \/api\/exam\/([a-zA-Z0-9_-]+)$/;
+
+const cleanContent = (s: string) =>
+  s.replace(/ API:/g, ':').replace(/ API\b/g, '');
+
 const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfirm, onExamPreview }: Props) => {
+  const navigate = useNavigate();
+
+  // Custom ReactMarkdown renderer: `GET /api/exam/{id}` → clickable button
+  const mdComponents = useMemo(() => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    code: ({ children, ...props }: any) => {
+      const text = String(children ?? '').trim();
+      const match = text.match(EXAM_API_RE);
+      if (match) {
+        const examId = match[1];
+        return (
+          <button
+            onClick={() => navigate(`/teacher/exams/${examId}`)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              padding: '8px 12px', borderRadius: 8,
+              margin: '4px ',
+              background: 'linear-gradient(135deg,#1e3a8a,#2563eb)',
+              border: 'none', color: 'white',
+              fontSize: '0.72rem', fontWeight: 500, cursor: 'pointer',
+              verticalAlign: 'middle',
+            }}
+          >
+            <ExternalLink size={11} /> Xem đề kiểm tra
+          </button>
+        );
+      }
+      return <code {...props}>{children}</code>;
+    },
+  }), [navigate]);
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef    = useRef<HTMLDivElement>(null);
   const [showScroll,   setShowScroll]   = useState(false);
@@ -112,8 +148,8 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
                           {expanded && msg.content && (
                             <div style={{ padding: '10px 14px', borderRadius: '4px 16px 16px 16px', background: 'white', border: '1px solid rgba(37,99,235,0.08)', boxShadow: '0 1px 6px rgba(0,0,0,0.05)', fontSize: '0.875rem', lineHeight: 1.6, color: '#1e293b' }}>
                               <div className="prose prose-sm max-w-none" style={{ fontSize: '0.875rem' }}>
-                                <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                                  {msg.content}
+                                <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={mdComponents}>
+                                  {cleanContent(msg.content)}
                                 </ReactMarkdown>
                               </div>
                               <span style={{ display: 'inline-block', width: 6, height: 14, background: '#2563eb', borderRadius: 2, marginLeft: 2, animation: 'blink 0.7s step-start infinite', verticalAlign: 'middle' }} />
@@ -147,8 +183,8 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
                         }}>
                           {msg.role === 'assistant' ? (
                             <div className="prose prose-sm max-w-none" style={{ fontSize: '0.875rem' }}>
-                              <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                                {msg.content}
+                              <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={mdComponents}>
+                                {cleanContent(msg.content)}
                               </ReactMarkdown>
                             </div>
                           ) : (
@@ -193,8 +229,18 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
                           </div>
                         )}
                         {msg.role === 'assistant' && msg.examMeta?.confirmed && (
-                          <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: '#059669', fontWeight: 600 }}>
-                            <CheckCircle size={12} /> Đã lưu đề kiểm tra
+                          <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: '#059669', fontWeight: 600 }}>
+                              <CheckCircle size={12} /> Đã lưu đề kiểm tra
+                            </span>
+                            {msg.examMeta.savedExamId && (
+                              <button
+                                onClick={() => navigate(`/teacher/exams/${msg.examMeta!.savedExamId}`)}
+                                style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 7, background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', border: 'none', color: 'white', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer' }}
+                              >
+                                <ExternalLink size={10} /> Xem đề kiểm tra
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
