@@ -1300,7 +1300,7 @@ const TeacherAspx: FC = () => {
             <span style={{ fontSize: '0.75rem', color: '#93c5fd', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Cổng giảng viên TNUT</span>
           </div>
           <h1 style={{ margin: '0 0 4px', fontSize: '1.4rem', fontWeight: 800, color: 'white' }}>
-            Xin chào, {user?.name?.split(' ').pop() ?? 'Giảng viên'}! 👨‍🏫
+            Xin chào, {user?.name ?? 'Giảng viên'}! 👨‍🏫
           </h1>
           <p style={{ margin: 0, fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)' }}>
             {user?.username} &nbsp;·&nbsp; {new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}
