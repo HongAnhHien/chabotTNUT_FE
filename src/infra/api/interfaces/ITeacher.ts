@@ -73,20 +73,26 @@ export interface IStudentsResponse {
 
 // ── Subject files ──────────────────────────────────────
 export type IFileType = 'de_cuong' | 'ly_thuyet' | 'ma_tran_cau_hoi' | 'ngan_hang_cau_hoi' | 'khac';
+export type IFileExternalStatus =
+  | 'pending' | 'parsed' | 'send_queued' | 'sending' | 'success' | 'failed' | null;
 
 export interface ISubjectFile {
   id: string;
-  subject_id: string | null;
-  ma_mon: string | null;
-  uploaded_by: string | null;
-  is_private: boolean | null;
+  subject_id?: string | null;
+  ma_mon?: string | null;
+  uploaded_by?: string | null;
+  is_private?: boolean | null;
   type: IFileType;
   type_label: string;
-  original_name: string | null;
-  file_size: number | null;
-  mime_type: string | null;
+  original_name?: string | null;
+  file_size?: number | null;
+  mime_type?: string | null;
+  external_status?: IFileExternalStatus;
+  external_response?: { error?: string; step?: 'parse' | 'send'; [k: string]: unknown } | string | null;
+  parsed_path?: string | null;
   download_url: string;
-  created_at: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface ISubjectFilesResponse {
@@ -96,9 +102,7 @@ export interface ISubjectFilesResponse {
 
 export interface ISubjectFileResponse {
   success: boolean;
-  data: ISubjectFile & {
-    updated_at?: string;
-  };
+  data: ISubjectFile;
 }
 
 export interface ISubjectFileDeleteResponse {
@@ -106,57 +110,66 @@ export interface ISubjectFileDeleteResponse {
   message: string;
 }
 
-// ── AI training files ──────────────────────────────────
-export type IAiFileType = 'de_cuong' | 'ly_thuyet' | 'ma_tran_cau_hoi' | 'ngan_hang_cau_hoi' | 'khac';
-
-export interface IAiFile {
-  id: string;
-  uploaded_by: string | null;
-  is_private: boolean | null;
-  type: string;
-  type_label: string;
-  original_name: string | null;
-  file_size: number | null;
-  mime_type: string | null;
-  external_status: string | null;
-  external_response: string | Record<string, unknown> | null;
-  download_url: string;
-  created_at: string | null;
-  updated_at: string | null;
-}
-
-export interface IAiFilesResponse {
+// Sent files (poll endpoint)
+export interface ISentFilesResponse {
   success: boolean;
-  data: IAiFile[];
+  data: ISubjectFile[];
 }
 
-export interface IAiFileSendResult {
-  id: string;
-  original_name: string;
-  external_status: string;
-  external_response: string;
-}
-
-export interface IAiFileSendResponse {
+// Markdown review
+export interface IFileMarkdownResponse {
   success: boolean;
-  data?: IAiFileSendResult[];
-  message?: string;
+  data: { id: string; original_name: string; markdown: string };
 }
 
-export interface IAiFileDeleteResponse {
+// Submit single file
+export interface ISubmitFileResponse {
   success: boolean;
   message: string;
+  data: { id: string; original_name: string; external_status: string };
 }
 
-export interface IAiFileResendResult {
+// Submit batch
+export interface ISubmitBatchItem { id: string; markdown: string }
+export interface ISubmitBatchResponse {
+  success: boolean;
+  message: string;
+  data: Array<{ id: string; original_name: string; external_status: string }>;
+}
+
+// Cancel send
+export interface ICancelSendResponse {
+  success: boolean;
+  message: string;
+  data: { id: string; original_name: string; external_status: string };
+}
+
+// Resend failed files
+export interface IResendFilesResponse {
+  success: boolean;
+  message: string;
+  data: Array<{ id: string; original_name: string; external_status: string }>;
+}
+
+// send-to-api (upload + queue for parsing)
+export interface ISendToApiResult {
   id: string;
   original_name: string;
   external_status: string;
-  external_response: string;
 }
 
-export interface IAiFileResendResponse {
+export interface ISendToApiResponse {
   success: boolean;
-  data?: IAiFileResendResult;
   message?: string;
+  data?: ISendToApiResult[];
 }
+
+// ── AI training files (legacy — kept for backward compat) ─
+export type IAiFileType = 'de_cuong' | 'ly_thuyet' | 'ma_tran_cau_hoi' | 'ngan_hang_cau_hoi' | 'khac';
+export type IAiFile = ISubjectFile;
+export interface IAiFilesResponse { success: boolean; data: IAiFile[] }
+export interface IAiFileSendResponse { success: boolean; data?: ISendToApiResult[]; message?: string }
+export interface IAiFileDeleteResponse { success: boolean; message: string }
+export interface IAiFileResendResponse { success: boolean; data?: ISendToApiResult; message?: string }
+export interface IAiFileSendResult extends ISendToApiResult { external_response: string }
+export interface IAiFileResendResult extends ISendToApiResult { external_response: string }

@@ -27,12 +27,24 @@ export const API_ENDPOINTS = {
     SEMESTERS:        '/teacher/semesters',
     SEMESTER_COURSES: (hocKy: number) => `/teacher/semesters/${hocKy}`,
     COURSE_STUDENTS:  (idToHoc: string) => `/teacher/courses/${encodeURIComponent(idToHoc)}/students`,
-    SUBJECT_FILES:        (subjectId: string) => `/teacher/subjects/${subjectId}/files`,
-    SUBJECT_FILE:         (subjectId: string, fileId: string) => `/teacher/subjects/${subjectId}/files/${fileId}`,
-    SUBJECT_AI_FILES:     (subjectId: string) => `/teacher/subjects/${subjectId}/files/sent-to-api`,
-    SUBJECT_AI_SEND:      (subjectId: string) => `/teacher/subjects/${subjectId}/files/send-to-api`,
-    SUBJECT_AI_FILE_DEL:  (subjectId: string, fileId: string) => `/teacher/subjects/${subjectId}/files/${fileId}/sent-to-api`,
-    SUBJECT_AI_RESEND:    (subjectId: string, fileId: string) => `/teacher/subjects/${subjectId}/files/${fileId}/resend`,
+
+    // File management
+    SUBJECT_FILES:        (s: string) => `/teacher/subjects/${s}/files`,
+    SUBJECT_FILE:         (s: string, f: string) => `/teacher/subjects/${s}/files/${f}`,
+    SUBJECT_FILES_SENT:   (s: string) => `/teacher/subjects/${s}/files/sent`,
+    SUBJECT_FILE_MARKDOWN:(s: string, f: string) => `/teacher/subjects/${s}/files/${f}/markdown`,
+    SUBJECT_FILE_SUBMIT:  (s: string, f: string) => `/teacher/subjects/${s}/files/${f}/submit`,
+    SUBJECT_FILES_BATCH:  (s: string) => `/teacher/subjects/${s}/files/submit-batch`,
+    SUBJECT_FILE_SEND:    (s: string) => `/teacher/subjects/${s}/files/send-to-api`,
+    SUBJECT_FILE_DEL_SENT:(s: string, f: string) => `/teacher/subjects/${s}/files/${f}/sent`,
+    FILE_CANCEL_SEND:     (f: string) => `/teacher/files/${f}/cancel-send`,
+    FILES_RESEND:         '/teacher/files/resend',
+
+    // Legacy aliases (kept for backward compat with existing drawers)
+    SUBJECT_AI_FILES:     (s: string) => `/teacher/subjects/${s}/files/sent`,
+    SUBJECT_AI_SEND:      (s: string) => `/teacher/subjects/${s}/files/send-to-api`,
+    SUBJECT_AI_FILE_DEL:  (s: string, f: string) => `/teacher/subjects/${s}/files/${f}/sent`,
+    SUBJECT_AI_RESEND:    (s: string, f: string) => `/teacher/subjects/${s}/files/${f}/resend`,
   },
 
   CHAT: {

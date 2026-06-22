@@ -1488,8 +1488,8 @@ const TeacherAspx: FC = () => {
               </div>
 
               {courseView === 'list'
-                ? <CourseListView courses={courses} onNavigate={url => navigate(url)} onDocuments={s => openDrawer('document', s)} onAiDocuments={s => openDrawer('train-ai', s)} onExams={s => openDrawer('exam', s)} />
-                : <CourseBookshelfView courses={courses} onNavigate={url => navigate(url)} onDocuments={s => openDrawer('document', s)} onAiDocuments={s => openDrawer('train-ai', s)} onExams={s => openDrawer('exam', s)} />
+                ? <CourseListView courses={courses} onNavigate={url => navigate(url)} onDocuments={s => navigate(`/teacher/subjects/${s.ma_mon}/files`)} onAiDocuments={s => navigate(`/teacher/subjects/${s.ma_mon}/files?tab=sent`)} onExams={s => navigate(`/teacher/subjects/${s.ma_mon}/exams`)} />
+                : <CourseBookshelfView courses={courses} onNavigate={url => navigate(url)} onDocuments={s => navigate(`/teacher/subjects/${s.ma_mon}/files`)} onAiDocuments={s => navigate(`/teacher/subjects/${s.ma_mon}/files?tab=sent`)} onExams={s => navigate(`/teacher/subjects/${s.ma_mon}/exams`)} />
               }
             </>
           )}

@@ -13,6 +13,14 @@ import type {
   IAiFileDeleteResponse,
   IAiFileResendResponse,
   IAiFileType,
+  ISentFilesResponse,
+  IFileMarkdownResponse,
+  ISubmitFileResponse,
+  ISubmitBatchItem,
+  ISubmitBatchResponse,
+  ICancelSendResponse,
+  IResendFilesResponse,
+  ISendToApiResponse,
 } from '@/infra/api/interfaces/ITeacher';
 import type {
   IAssignExamBody,
@@ -126,6 +134,76 @@ class TeacherApi {
   async resendFileToAi(subjectId: string, fileId: string): Promise<IAiFileResendResponse> {
     const res = await axiosInstance.post<IAiFileResendResponse>(
       API_ENDPOINTS.TEACHER.SUBJECT_AI_RESEND(subjectId, fileId)
+    );
+    return res.data;
+  }
+
+  // ── New file management APIs ───────────────────────────
+
+  async getSentFiles(subjectId: string): Promise<ISentFilesResponse> {
+    const res = await axiosInstance.get<ISentFilesResponse>(
+      API_ENDPOINTS.TEACHER.SUBJECT_FILES_SENT(subjectId)
+    );
+    return res.data;
+  }
+
+  async getFileMarkdown(subjectId: string, fileId: string): Promise<IFileMarkdownResponse> {
+    const res = await axiosInstance.get<IFileMarkdownResponse>(
+      API_ENDPOINTS.TEACHER.SUBJECT_FILE_MARKDOWN(subjectId, fileId)
+    );
+    return res.data;
+  }
+
+  async submitFile(subjectId: string, fileId: string, markdown: string): Promise<ISubmitFileResponse> {
+    const res = await axiosInstance.post<ISubmitFileResponse>(
+      API_ENDPOINTS.TEACHER.SUBJECT_FILE_SUBMIT(subjectId, fileId),
+      { markdown },
+      { headers: { Accept: 'application/json' } }
+    );
+    return res.data;
+  }
+
+  async submitBatch(subjectId: string, files: ISubmitBatchItem[]): Promise<ISubmitBatchResponse> {
+    const res = await axiosInstance.post<ISubmitBatchResponse>(
+      API_ENDPOINTS.TEACHER.SUBJECT_FILES_BATCH(subjectId),
+      { files },
+      { headers: { Accept: 'application/json' } }
+    );
+    return res.data;
+  }
+
+  async sendToApi(subjectId: string, payload: { file?: File; fileIds?: string[]; type?: string }): Promise<ISendToApiResponse> {
+    const form = new FormData();
+    if (payload.file)    form.append('file', payload.file);
+    if (payload.type)    form.append('type', payload.type);
+    payload.fileIds?.forEach(id => form.append('file_ids[]', id));
+    const res = await axiosInstance.post<ISendToApiResponse>(
+      API_ENDPOINTS.TEACHER.SUBJECT_FILE_SEND(subjectId),
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return res.data;
+  }
+
+  async cancelSend(fileId: string): Promise<ICancelSendResponse> {
+    const res = await axiosInstance.delete<ICancelSendResponse>(
+      API_ENDPOINTS.TEACHER.FILE_CANCEL_SEND(fileId)
+    );
+    return res.data;
+  }
+
+  async resendFiles(fileIds: string[]): Promise<IResendFilesResponse> {
+    const res = await axiosInstance.post<IResendFilesResponse>(
+      API_ENDPOINTS.TEACHER.FILES_RESEND,
+      { file_ids: fileIds },
+      { headers: { Accept: 'application/json' } }
+    );
+    return res.data;
+  }
+
+  async deleteFileSentLink(subjectId: string, fileId: string): Promise<{ success: boolean; message: string }> {
+    const res = await axiosInstance.delete(
+      API_ENDPOINTS.TEACHER.SUBJECT_FILE_DEL_SENT(subjectId, fileId)
     );
     return res.data;
   }

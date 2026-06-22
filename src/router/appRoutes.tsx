@@ -31,6 +31,8 @@ const TeacherChatPage          = lazy(() => import("@views/dashboard/teacher/cha
 const TeacherAssignmentsPage   = lazy(() => import("@views/dashboard/teacher/assignments/TeacherAssignments"));
 const TeacherAssignmentDetail  = lazy(() => import("@views/dashboard/teacher/assignments/TeacherAssignmentDetail"));
 const TeacherExamView          = lazy(() => import("@views/dashboard/teacher/exams/TeacherExamView"));
+const TeacherSubjectFiles      = lazy(() => import("@views/dashboard/teacher/subjects/TeacherSubjectFiles"));
+const TeacherSubjectExams      = lazy(() => import("@views/dashboard/teacher/subjects/TeacherSubjectExams"));
 const StudentAssignmentsPage   = lazy(() => import("@views/dashboard/student/assignments/StudentAssignments"));
 const StudentAssignmentExam    = lazy(() => import("@views/dashboard/student/assignments/StudentAssignmentExam"));
 const StudentSubjectsPage      = lazy(() => import("@views/dashboard/student/subjects/StudentSubjects"));
@@ -186,7 +188,28 @@ export const appRoutes: RouteObject[] = [
     ),
   },
 
-  // Teacher — assignment management
+  // Teacher — subject sub-pages
+  {
+    path: "/teacher/subjects/:maMon/files",
+    element: (
+      <ProtectedRoute>
+        <BlankLayout>
+          <TeacherSubjectFiles />
+        </BlankLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/teacher/subjects/:maMon/exams",
+    element: (
+      <ProtectedRoute>
+        <BlankLayout>
+          <TeacherSubjectExams />
+        </BlankLayout>
+      </ProtectedRoute>
+    ),
+  },
+
   {
     path: "/teacher/exams/:id",
     element: (
