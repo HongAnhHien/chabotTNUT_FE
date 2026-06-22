@@ -148,7 +148,7 @@ export function DataTable<TData extends ITeacherStudent, TValue>({
 
       {/* Toolbar */}
       <ClassStudentsToolbar
-        table={table as TTable}
+        table={table as unknown as TTable}
         search={search}
         onSearchChange={onSearchChange}
         classFilter={classFilter}

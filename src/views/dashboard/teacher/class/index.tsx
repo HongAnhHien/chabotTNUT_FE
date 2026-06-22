@@ -1,8 +1,8 @@
 import { type FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
-  ArrowLeft, Users, GraduationCap, RefreshCw,
-  AlertTriangle, Layers, BookOpen,
+  ArrowLeft, RefreshCw,
+  AlertTriangle, BookOpen,
 } from 'lucide-react';
 import TeacherApi from '@/infra/teacher/teacher_api';
 import logoTNUT from '@/assets/logo_tnut/logoTNUT.png';
@@ -15,19 +15,6 @@ const CSS = `
   @keyframes cl-spin  { to{transform:rotate(360deg)} }
 `;
 
-// ── Stat card ─────────────────────────────────────────
-const StatCard: FC<{ icon: React.ReactNode; label: string; value: string | number; color: string; delay?: number }> = ({ icon, label, value, color, delay = 0 }) => (
-  <div style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.95)', borderRadius: 18, boxShadow: '0 4px 20px rgba(37,99,235,0.07)', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: 14, animation: `cl-fade .4s ease ${delay}s both` }}>
-    <div style={{ width: 44, height: 44, borderRadius: 13, background: `${color}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-      <span style={{ color }}>{icon}</span>
-    </div>
-    <div>
-      <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e3a8a', lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: 3, fontWeight: 500 }}>{label}</div>
-    </div>
-  </div>
-);
-
 // ── Main ─────────────────────────────────────────────
 const ClassStudentsPage: FC = () => {
   const navigate     = useNavigate();
@@ -36,7 +23,6 @@ const ClassStudentsPage: FC = () => {
   const [students,      setStudents]      = useState<ITeacherStudent[]>([]);
   const [loading,       setLoading]       = useState(true);
   const [error,         setError]         = useState<string | null>(null);
-  const [filteredCount, setFilteredCount] = useState(0);
   const [search,        setSearch]        = useState('');
   const [classFilter,   setClassFilter]   = useState('all');
 
@@ -47,7 +33,6 @@ const ClassStudentsPage: FC = () => {
     TeacherApi.getCourseStudents(idToHoc)
       .then(res => {
         setStudents(res.data.students);
-        setFilteredCount(res.data.students.length);
       })
       .catch(() => setError('Không thể tải danh sách sinh viên. Vui lòng thử lại.'))
       .finally(() => setLoading(false));
@@ -138,7 +123,6 @@ const ClassStudentsPage: FC = () => {
           classFilter={classFilter}
           onClassFilter={setClassFilter}
           classOptions={classOptions}
-          onFilteredCount={setFilteredCount}
         />
 
       </div>

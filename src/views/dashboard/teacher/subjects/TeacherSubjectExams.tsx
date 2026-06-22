@@ -222,7 +222,7 @@ const TeacherSubjectExams: FC = () => {
               { label: 'Tổng đề',      value: exams.length, color: '#1e3a8a', bg: 'rgba(30,58,138,0.07)'  },
               { label: 'Đã xác nhận',  value: confirmed,    color: '#059669', bg: 'rgba(5,150,105,0.07)'  },
               { label: 'Nháp',         value: draft,        color: '#d97706', bg: 'rgba(217,119,6,0.07)'  },
-            ].map(({ label, value, color, bg }) => (
+            ].map(({ label, value, color }) => (
               <div key={label} style={{ background: 'white', borderRadius: 12, border: `1px solid ${color}18`, padding: '12px 10px', textAlign: 'center' }}>
                 <div style={{ fontSize: '1.5rem', fontWeight: 900, color, lineHeight: 1 }}>{value}</div>
                 <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 600, marginTop: 3 }}>{label}</div>

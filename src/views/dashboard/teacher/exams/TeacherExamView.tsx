@@ -2,7 +2,7 @@ import { type FC, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
   ArrowLeft, ClipboardList, Clock, BookOpen,
-  CheckCircle, HelpCircle, Loader2, ChevronDown, ChevronUp,
+  CheckCircle, HelpCircle, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ChatApi from '@/infra/chat/chat_api';

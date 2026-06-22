@@ -1184,11 +1184,6 @@ const TeacherAspx: FC = () => {
   const [aiDrawerSubject, setAiDrawerSubject] = useState<{ ma_mon: string; ten_mon: string } | null>(null);
   const [examDrawerSubject, setExamDrawerSubject] = useState<{ ma_mon: string; ten_mon: string } | null>(null);
 
-  // Helpers — mở/đóng drawer qua URL
-  const openDrawer = useCallback((type: 'document' | 'train-ai' | 'exam', s: { ma_mon: string; ten_mon: string }) => {
-    navigate(`/teacher/dashboard/${type}?mon=${encodeURIComponent(s.ma_mon)}&ten=${encodeURIComponent(s.ten_mon)}`);
-  }, [navigate]);
-
   const closeDrawer = useCallback(() => {
     navigate('/teacher/dashboard');
   }, [navigate]);

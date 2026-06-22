@@ -247,7 +247,7 @@ const UploadAIModal: FC<UploadAIModalProps> = ({ maMon, existingFiles, sentFileI
   const [drag,     setDrag]     = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const aiFiles = existingFiles.filter(f => isAiCompatible(f.original_name) && !sentFileIds.has(f.id));
+  const aiFiles = existingFiles.filter(f => isAiCompatible(f.original_name ?? '') && !sentFileIds.has(f.id));
 
   const addFiles = (list: FileList | null) => {
     if (!list) return;
@@ -484,8 +484,8 @@ const FilesTab: FC<{
         {files.map(f => (
           <div key={f.id} className="sf-row">
             {/* Icon */}
-            <div style={{ flexShrink:0, width:36, height:36, borderRadius:10, background:iconBgOf(f.original_name), display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <FileIcon name={f.original_name} />
+            <div style={{ flexShrink:0, width:36, height:36, borderRadius:10, background:iconBgOf(f.original_name ?? ''), display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <FileIcon name={f.original_name ?? ''} />
             </div>
 
             {/* Info */}

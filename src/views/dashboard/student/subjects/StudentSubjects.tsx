@@ -2,7 +2,7 @@ import { type FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft, BookOpen, FileText, Download,
-  GraduationCap, Loader2, ChevronDown, ChevronUp,
+  GraduationCap, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import StudentApi from '@/infra/student/student_api';
@@ -215,7 +215,7 @@ const StudentSubjects: FC = () => {
                 { label: 'Môn học',      value: data.subjects.length, color: '#1e3a8a', bg: 'rgba(30,58,138,0.07)' },
                 { label: 'Tổng tín chỉ', value: totalCredits,         color: '#7c3aed', bg: 'rgba(124,58,237,0.07)' },
                 { label: 'Có tài liệu',  value: withFiles,             color: '#059669', bg: 'rgba(5,150,105,0.07)' },
-              ].map(({ label, value, color, bg }) => (
+              ].map(({ label, value, color }) => (
                 <div key={label} style={{ background: 'white', borderRadius: 12, border: `1px solid ${color}18`, padding: '12px 10px', textAlign: 'center' }}>
                   <div style={{ fontSize: '1.5rem', fontWeight: 900, color, lineHeight: 1 }}>{value}</div>
                   <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 600, marginTop: 4 }}>{label}</div>

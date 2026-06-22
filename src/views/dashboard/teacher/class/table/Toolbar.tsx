@@ -4,7 +4,7 @@ import {
   DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { ITeacherStudent } from '@/infra/api/interfaces/ITeacher';
+
 
 interface Props {
   table:          TTable;
