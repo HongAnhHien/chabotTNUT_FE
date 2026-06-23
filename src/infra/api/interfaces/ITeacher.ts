@@ -80,6 +80,7 @@ export interface ISubjectFile {
   id: string;
   subject_id?: string | null;
   ma_mon?: string | null;
+  teacher_id?: string | null;
   uploaded_by?: string | null;
   is_private?: boolean | null;
   type: IFileType;
@@ -93,6 +94,21 @@ export interface ISubjectFile {
   download_url: string;
   created_at?: string | null;
   updated_at?: string | null;
+}
+
+// ── File tree (GET /files/tree) ────────────────────────
+export interface IFileTreeSlot {
+  label: string;
+  single: boolean;
+  file?: ISubjectFile | null;
+  files?: ISubjectFile[];
+}
+
+export type IFileTree = Partial<Record<IFileType, IFileTreeSlot>>;
+
+export interface IFileTreeResponse {
+  success: boolean;
+  data: IFileTree;
 }
 
 export interface ISubjectFilesResponse {

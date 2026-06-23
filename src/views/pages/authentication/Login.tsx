@@ -218,10 +218,10 @@ const Login: FC = () => {
             {/* Header */}
             <div style={{ textAlign: 'center' }}>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e3a8a', margin: 0 }}>
-                Chào mừng trở lại! 👋
+                Xác thực bằng tài khoản Portal TNUT👋
               </h2>
               <p style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '6px', marginBottom: 0 }}>
-                Đăng nhập để tiếp tục hành trình học tập
+                để tiếp tục hành trình học tập
               </p>
             </div>
 

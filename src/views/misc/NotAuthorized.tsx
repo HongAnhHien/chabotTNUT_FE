@@ -1,92 +1,73 @@
 import { type FC } from 'react';
-import { ShieldAlert, ArrowLeft, Home, Lock } from 'lucide-react';
+import { ArrowLeft, Home, ShieldOff } from 'lucide-react';
+import logoTNUT from '@/assets/logo_tnut/logo_tnut.png';
 
-const NotAuthorized: FC = () => {
-  const handleGoBack = () => {
-    window.history.back();
-  };
+const CSS = `
+  @keyframes na-fade { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes na-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .na-btn {
+    display:inline-flex;align-items:center;gap:8px;padding:10px 22px;
+    border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;
+    border:none;transition:all .18s;
+  }
+  .na-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,99,235,0.2)}
+`;
 
-  const handleGoHome = () => {
-    window.location.href = '/';
-  };
+const NotAuthorized: FC = () => (
+  <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#eef4ff 0%,#e0eaff 50%,#eff6ff 100%)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px', fontFamily:"'Be Vietnam Pro',system-ui,sans-serif", position:'relative', overflow:'hidden' }}>
+    <style>{CSS}</style>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-dark via-primary-light to-secondary flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-amber-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-red-500/20 rounded-full blur-3xl animate-pulse delay-700"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary-dark/20 rounded-full blur-3xl"></div>
+    <div style={{ position:'absolute', top:-80, right:-80, width:320, height:320, borderRadius:'50%', background:'radial-gradient(circle,rgba(37,99,235,0.1) 0%,transparent 70%)', pointerEvents:'none' }} />
+    <div style={{ position:'absolute', bottom:-60, left:-60, width:260, height:260, borderRadius:'50%', background:'radial-gradient(circle,rgba(30,58,138,0.08) 0%,transparent 70%)', pointerEvents:'none' }} />
+
+    {/* Logo */}
+    <div style={{ marginBottom:24, animation:'na-fade .4s ease both' }}>
+      <img src={logoTNUT} alt="TNUT" style={{ height:44, objectFit:'contain' }} />
+    </div>
+
+    {/* Card */}
+    <div style={{ background:'white', borderRadius:24, border:'1px solid rgba(37,99,235,0.1)', boxShadow:'0 12px 48px rgba(30,58,138,0.1)', padding:'40px 36px', maxWidth:480, width:'100%', textAlign:'center', animation:'na-fade .5s ease .1s both' }}>
+
+      {/* Icon */}
+      <div style={{ display:'flex', justifyContent:'center', marginBottom:20 }}>
+        <div style={{ width:80, height:80, borderRadius:'50%', background:'linear-gradient(135deg,rgba(245,158,11,0.1),rgba(217,119,6,0.06))', border:'2px solid rgba(245,158,11,0.18)', display:'flex', alignItems:'center', justifyContent:'center', animation:'na-float 3s ease-in-out infinite' }}>
+          <ShieldOff size={36} color="#d97706" strokeWidth={1.8} />
+        </div>
       </div>
 
-      <div className="max-w-2xl w-full relative z-10">
-        {/* Glass Card */}
-        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8 md:p-12 text-center">
-          {/* Icon with Glass Effect */}
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-amber-500/30 blur-2xl rounded-full animate-pulse"></div>
-              <div className="relative backdrop-blur-md bg-white/20 border border-white/30 p-6 rounded-full shadow-lg">
-                <ShieldAlert className="w-16 h-16 text-white drop-shadow-lg" strokeWidth={1.5} />
-              </div>
-            </div>
-          </div>
+      {/* Code */}
+      <div style={{ fontSize:'5rem', fontWeight:900, lineHeight:1, background:'linear-gradient(135deg,#1e3a8a,#2563eb)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', marginBottom:8 }}>
+        403
+      </div>
 
-          {/* Error Code */}
-          <div className="mb-4">
-            <h2 className="text-8xl md:text-9xl font-bold text-white/80 drop-shadow-lg tracking-wider">
-              403
-            </h2>
-          </div>
+      <h1 style={{ fontSize:'1.4rem', fontWeight:800, color:'#1e293b', margin:'0 0 10px' }}>Không có quyền truy cập</h1>
+      <p style={{ fontSize:'0.9rem', color:'#64748b', lineHeight:1.6, margin:'0 0 20px' }}>
+        Bạn không có quyền truy cập vào trang này. Vui lòng liên hệ quản trị viên nếu bạn cho rằng đây là nhầm lẫn.
+      </p>
 
-          {/* Title */}
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow-lg">
-            Access Denied
-          </h1>
-          
-          {/* Description */}
-          <p className="text-white/90 text-lg mb-8 max-w-md mx-auto drop-shadow">
-            You don't have permission to access this resource. Please contact your administrator if you believe this is a mistake.
-          </p>
+      {/* Badge */}
+      <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(245,158,11,0.08)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:20, padding:'6px 14px', marginBottom:24, fontSize:'0.78rem', fontWeight:700, color:'#d97706' }}>
+        🔒 Khu vực hạn chế
+      </div>
 
-          {/* Status Badge with Glass Effect */}
-          <div className="inline-flex items-center gap-2 backdrop-blur-md bg-amber-500/20 border border-amber-400/30 px-6 py-3 rounded-full mb-8 shadow-lg">
-            <Lock className="w-5 h-5 text-white" />
-            <span className="text-white font-medium">Restricted Area</span>
-          </div>
+      <div style={{ height:1, background:'rgba(37,99,235,0.08)', margin:'0 0 24px' }} />
 
-          {/* Divider */}
-          <div className="border-t border-white/20 my-8"></div>
-
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={handleGoBack}
-              className="group inline-flex items-center justify-center gap-2 px-6 py-3 backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
-            >
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-              Go Back
-            </button>
-            
-            <button
-              onClick={handleGoHome}
-              className="group inline-flex items-center justify-center gap-2 px-6 py-3 backdrop-blur-md bg-white/30 hover:bg-white/40 border border-white/40 text-white font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
-            >
-              <Home className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              Go Home
-            </button>
-          </div>
-        </div>
-
-        {/* Footer with Glass Effect */}
-        <div className="mt-6 text-center backdrop-blur-sm bg-white/5 border border-white/10 rounded-full px-6 py-3 inline-block mx-auto w-fit">
-          <p className="text-white/80 text-sm">
-            Need access? Contact your administrator
-          </p>
-        </div>
+      <div style={{ display:'flex', gap:10, justifyContent:'center', flexWrap:'wrap' }}>
+        <button onClick={() => window.history.back()} className="na-btn"
+          style={{ background:'rgba(37,99,235,0.07)', color:'#1e3a8a', border:'1px solid rgba(37,99,235,0.15)' }}>
+          <ArrowLeft size={15} /> Quay lại
+        </button>
+        <button onClick={() => window.location.href='/'} className="na-btn"
+          style={{ background:'linear-gradient(135deg,#1e3a8a,#2563eb)', color:'white', boxShadow:'0 4px 16px rgba(37,99,235,0.3)' }}>
+          <Home size={15} /> Trang chủ
+        </button>
       </div>
     </div>
-  );
-};
+
+    <p style={{ marginTop:20, fontSize:'0.75rem', color:'#94a3b8', animation:'na-fade .6s ease .2s both' }}>
+      © Trường Đại học Kỹ thuật Công nghiệp Thái Nguyên
+    </p>
+  </div>
+);
 
 export default NotAuthorized;

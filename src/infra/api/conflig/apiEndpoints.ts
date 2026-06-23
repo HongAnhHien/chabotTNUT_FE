@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
 
     // File management
     SUBJECT_FILES:        (s: string) => `/teacher/subjects/${s}/files`,
+    SUBJECT_FILES_TREE:   (s: string) => `/teacher/subjects/${s}/files/tree`,
     SUBJECT_FILE:         (s: string, f: string) => `/teacher/subjects/${s}/files/${f}`,
     SUBJECT_FILES_SENT:   (s: string) => `/teacher/subjects/${s}/files/sent`,
     SUBJECT_FILE_MARKDOWN:(s: string, f: string) => `/teacher/subjects/${s}/files/${f}/markdown`,

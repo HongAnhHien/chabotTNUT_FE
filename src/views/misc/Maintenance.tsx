@@ -1,98 +1,76 @@
 import { type FC } from 'react';
-import { Wrench, ArrowLeft, RefreshCw, Clock } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Wrench, Clock } from 'lucide-react';
+import logoTNUT from '@/assets/logo_tnut/logo_tnut.png';
 
-const Maintenance: FC = () => {
-  const handleGoBack = () => {
-    window.history.back();
-  };
+const CSS = `
+  @keyframes mn-fade { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes mn-wiggle { 0%,100%{transform:rotate(-8deg)} 50%{transform:rotate(8deg)} }
+  @keyframes mn-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .mn-btn {
+    display:inline-flex;align-items:center;gap:8px;padding:10px 22px;
+    border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;
+    border:none;transition:all .18s;
+  }
+  .mn-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,99,235,0.2)}
+`;
 
-  const handleRefresh = () => {
-    window.location.reload();
-  };
+const Maintenance: FC = () => (
+  <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#eef4ff 0%,#e0eaff 50%,#eff6ff 100%)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px', fontFamily:"'Be Vietnam Pro',system-ui,sans-serif", position:'relative', overflow:'hidden' }}>
+    <style>{CSS}</style>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-dark via-primary-light to-secondary flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-700"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary-dark/20 rounded-full blur-3xl"></div>
-      </div>
+    <div style={{ position:'absolute', top:-80, right:-80, width:320, height:320, borderRadius:'50%', background:'radial-gradient(circle,rgba(37,99,235,0.1) 0%,transparent 70%)', pointerEvents:'none' }} />
+    <div style={{ position:'absolute', bottom:-60, left:-60, width:260, height:260, borderRadius:'50%', background:'radial-gradient(circle,rgba(30,58,138,0.08) 0%,transparent 70%)', pointerEvents:'none' }} />
 
-      <div className="max-w-2xl w-full relative z-10">
-        {/* Glass Card */}
-        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8 md:p-12 text-center">
-          {/* Icon with Glass Effect */}
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-blue-500/30 blur-2xl rounded-full animate-pulse"></div>
-              <div className="relative backdrop-blur-md bg-white/20 border border-white/30 p-6 rounded-full shadow-lg">
-                <Wrench className="w-16 h-16 text-white drop-shadow-lg animate-[wiggle_1s_ease-in-out_infinite]" strokeWidth={1.5} />
-              </div>
-            </div>
-          </div>
-
-          {/* Title */}
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">
-            Under Maintenance
-          </h1>
-          
-          {/* Description */}
-          <p className="text-white/90 text-lg mb-6 max-w-md mx-auto drop-shadow">
-            We're currently performing scheduled maintenance to improve your experience. We'll be back shortly!
-          </p>
-
-          {/* Status Message */}
-          <p className="text-white/80 text-base mb-8 max-w-sm mx-auto">
-            Our team is working hard to make things better. Thank you for your patience.
-          </p>
-
-          {/* Status Badge with Glass Effect */}
-          <div className="inline-flex items-center gap-2 backdrop-blur-md bg-blue-500/20 border border-blue-400/30 px-6 py-3 rounded-full mb-8 shadow-lg">
-            <Clock className="w-5 h-5 text-white animate-pulse" />
-            <span className="text-white font-medium">Estimated time: 2-3 hours</span>
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-white/20 my-8"></div>
-
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={handleGoBack}
-              className="group inline-flex items-center justify-center gap-2 px-6 py-3 backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
-            >
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-              Go Back
-            </button>
-            
-            <button
-              onClick={handleRefresh}
-              className="group inline-flex items-center justify-center gap-2 px-6 py-3 backdrop-blur-md bg-white/30 hover:bg-white/40 border border-white/40 text-white font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
-            >
-              <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
-              Try Again
-            </button>
-          </div>
-        </div>
-
-        {/* Footer with Glass Effect */}
-        <div className="mt-6 text-center backdrop-blur-sm bg-white/5 border border-white/10 rounded-full px-6 py-3 inline-block mx-auto w-fit">
-          <p className="text-white/80 text-sm">
-            Follow us on social media for updates
-          </p>
-        </div>
-      </div>
-
-      {/* Custom animation for wrench wiggle */}
-      <style>{`
-        @keyframes wiggle {
-          0%, 100% { transform: rotate(-5deg); }
-          50% { transform: rotate(5deg); }
-        }
-      `}</style>
+    {/* Logo */}
+    <div style={{ marginBottom:24, animation:'mn-fade .4s ease both' }}>
+      <img src={logoTNUT} alt="TNUT" style={{ height:44, objectFit:'contain' }} />
     </div>
-  );
-};
+
+    {/* Card */}
+    <div style={{ background:'white', borderRadius:24, border:'1px solid rgba(37,99,235,0.1)', boxShadow:'0 12px 48px rgba(30,58,138,0.1)', padding:'40px 36px', maxWidth:480, width:'100%', textAlign:'center', animation:'mn-fade .5s ease .1s both' }}>
+
+      {/* Icon */}
+      <div style={{ display:'flex', justifyContent:'center', marginBottom:20 }}>
+        <div style={{ width:80, height:80, borderRadius:'50%', background:'linear-gradient(135deg,rgba(37,99,235,0.1),rgba(30,58,138,0.06))', border:'2px solid rgba(37,99,235,0.15)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <Wrench size={36} color="#2563eb" strokeWidth={1.8} style={{ animation:'mn-wiggle 1.2s ease-in-out infinite' }} />
+        </div>
+      </div>
+
+      {/* Title */}
+      <div style={{ fontSize:'2rem', fontWeight:900, background:'linear-gradient(135deg,#1e3a8a,#2563eb)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', marginBottom:8, lineHeight:1.2 }}>
+        Đang bảo trì
+      </div>
+
+      <p style={{ fontSize:'0.9rem', color:'#64748b', lineHeight:1.6, margin:'0 0 8px' }}>
+        Hệ thống đang được nâng cấp để phục vụ bạn tốt hơn.
+      </p>
+      <p style={{ fontSize:'0.85rem', color:'#94a3b8', lineHeight:1.6, margin:'0 0 20px' }}>
+        Đội ngũ kỹ thuật đang nỗ lực hoàn thành sớm nhất. Cảm ơn sự kiên nhẫn của bạn!
+      </p>
+
+      {/* Badge */}
+      <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(37,99,235,0.07)', border:'1px solid rgba(37,99,235,0.15)', borderRadius:20, padding:'6px 14px', marginBottom:24, fontSize:'0.78rem', fontWeight:700, color:'#2563eb' }}>
+        <Clock size={13} style={{ animation:'mn-pulse 1.5s ease-in-out infinite' }} /> Thời gian dự kiến: 2–3 giờ
+      </div>
+
+      <div style={{ height:1, background:'rgba(37,99,235,0.08)', margin:'0 0 24px' }} />
+
+      <div style={{ display:'flex', gap:10, justifyContent:'center', flexWrap:'wrap' }}>
+        <button onClick={() => window.history.back()} className="mn-btn"
+          style={{ background:'rgba(37,99,235,0.07)', color:'#1e3a8a', border:'1px solid rgba(37,99,235,0.15)' }}>
+          <ArrowLeft size={15} /> Quay lại
+        </button>
+        <button onClick={() => window.location.reload()} className="mn-btn"
+          style={{ background:'linear-gradient(135deg,#1e3a8a,#2563eb)', color:'white', boxShadow:'0 4px 16px rgba(37,99,235,0.3)' }}>
+          <RefreshCw size={15} /> Thử lại
+        </button>
+      </div>
+    </div>
+
+    <p style={{ marginTop:20, fontSize:'0.75rem', color:'#94a3b8', animation:'mn-fade .6s ease .2s both' }}>
+      © Trường Đại học Kỹ thuật Công nghiệp Thái Nguyên
+    </p>
+  </div>
+);
 
 export default Maintenance;

@@ -21,6 +21,7 @@ import type {
   ICancelSendResponse,
   IResendFilesResponse,
   ISendToApiResponse,
+  IFileTreeResponse,
 } from '@/infra/api/interfaces/ITeacher';
 import type {
   IAssignExamBody,
@@ -55,6 +56,13 @@ class TeacherApi {
   async getSubjectFiles(subjectId: string): Promise<ISubjectFilesResponse> {
     const res = await axiosInstance.get<ISubjectFilesResponse>(
       API_ENDPOINTS.TEACHER.SUBJECT_FILES(subjectId)
+    );
+    return res.data;
+  }
+
+  async getSubjectFilesTree(subjectId: string): Promise<IFileTreeResponse> {
+    const res = await axiosInstance.get<IFileTreeResponse>(
+      API_ENDPOINTS.TEACHER.SUBJECT_FILES_TREE(subjectId)
     );
     return res.data;
   }
