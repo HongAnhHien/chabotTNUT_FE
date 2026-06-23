@@ -6,7 +6,11 @@ import type {
   ISubmitBody,
   ISubmitResponse,
 } from '@/infra/api/interfaces/IAssignment';
-import type { IStudentSubjectsResponse } from '@/infra/api/interfaces/IStudent';
+import type {
+  IStudentSubjectsResponse,
+  IStudentSemestersResponse,
+  IStudentSemesterSubjectsResponse,
+} from '@/infra/api/interfaces/IStudent';
 
 class StudentApi {
   async getAssignments(): Promise<IStudentAssignmentsResponse> {
@@ -33,6 +37,18 @@ class StudentApi {
 
   async getSubjects(): Promise<IStudentSubjectsResponse> {
     const res = await axiosInstance.get<IStudentSubjectsResponse>(API_ENDPOINTS.STUDENT.SUBJECTS);
+    return res.data;
+  }
+
+  async getSemesters(): Promise<IStudentSemestersResponse> {
+    const res = await axiosInstance.get<IStudentSemestersResponse>(API_ENDPOINTS.STUDENT.SEMESTERS);
+    return res.data;
+  }
+
+  async getSubjectsBySemester(hocKy: number): Promise<IStudentSemesterSubjectsResponse> {
+    const res = await axiosInstance.get<IStudentSemesterSubjectsResponse>(
+      API_ENDPOINTS.STUDENT.SEMESTER_SUBJECTS(hocKy)
+    );
     return res.data;
   }
 }

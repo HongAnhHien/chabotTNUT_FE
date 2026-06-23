@@ -78,7 +78,9 @@ export const API_ENDPOINTS = {
   },
 
   STUDENT: {
-    SUBJECTS: '/student/subjects',
+    SUBJECTS:          '/student/subjects',
+    SEMESTERS:         '/student/semesters',
+    SEMESTER_SUBJECTS: (hocKy: number) => `/student/semesters/${hocKy}/subjects`,
   },
 
   // GeoRisk legacy — sẽ xóa sau khi refactor

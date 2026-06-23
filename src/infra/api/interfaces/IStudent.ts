@@ -1,3 +1,20 @@
+// ── Student semesters ──────────────────────────────────
+export interface IStudentSemester {
+  hoc_ky: number;
+  ten_hoc_ky: string;
+  ngay_bat_dau_hk: string;
+  ngay_ket_thuc_hk: string;
+  is_current: boolean;
+}
+
+export interface IStudentSemestersResponse {
+  success: boolean;
+  data: {
+    hoc_ky_hien_tai: number;
+    ds_hoc_ky: IStudentSemester[];
+  };
+}
+
 // ── Student subject file ───────────────────────────────
 export interface IStudentSubjectFile {
   id: string;
@@ -15,10 +32,13 @@ export interface IStudentSubject {
   ma_mon: string;
   ten_mon: string;
   so_tc: string;
+  nhom_to?: string | null;
+  gv?: string | null;
+  phong?: string | null;
   files: IStudentSubjectFile[];
 }
 
-// ── Response ───────────────────────────────────────────
+// ── Response (old /student/subjects — wrapped) ─────────
 export interface IStudentSubjectsResponse {
   success: boolean;
   data: {
@@ -26,4 +46,10 @@ export interface IStudentSubjectsResponse {
     ten_hoc_ky: string;
     subjects: IStudentSubject[];
   };
+}
+
+// ── Response (new /student/semesters/{hk}/subjects — flat array) ──
+export interface IStudentSemesterSubjectsResponse {
+  success: boolean;
+  data: IStudentSubject[];
 }
