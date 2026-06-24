@@ -1,11 +1,165 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Bot, User, ArrowDown, Copy, Check, Trash2, CheckCircle, Eye, ChevronDown, ExternalLink } from 'lucide-react';
+import { type FC, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
+import { Bot, User, ArrowDown, Copy, Check, Trash2, CheckCircle, Eye, ChevronDown, ChevronUp, ExternalLink, X, Loader2, Hash, Clock, BookOpen } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import 'katex/dist/katex.min.css';
+import katex from 'katex';
+import ChatApi from '@/infra/chat/chat_api';
+import type { IExamQuestion, IExamChapter } from '@/infra/api/interfaces/IChat';
 import type { ChatMessage } from './types';
+
+// ── LaTeX ─────────────────────────────────────────────────
+const _rk = (src: string, display: boolean) => {
+  try { return katex.renderToString(src, { throwOnError: false, displayMode: display, output: 'html' }); }
+  catch { return src; }
+};
+const _pl = (text: string) => {
+  const chunks: Array<{ t: 'text' | 'inline' | 'display'; c: string }> = [];
+  const re = /(\$\$[\s\S]+?\$\$|\$[^$\n]+?\$)/g;
+  let last = 0, m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) chunks.push({ t: 'text', c: text.slice(last, m.index) });
+    const raw = m[0];
+    if (raw.startsWith('$$')) chunks.push({ t: 'display', c: raw.slice(2, -2) });
+    else                      chunks.push({ t: 'inline',  c: raw.slice(1, -1) });
+    last = m.index + raw.length;
+  }
+  if (last < text.length) chunks.push({ t: 'text', c: text.slice(last) });
+  return chunks;
+};
+const LT: FC<{ text: string }> = ({ text }) => (
+  <span>
+    {_pl(text ?? '').map((c, i) =>
+      c.t === 'text'
+        ? <span key={i}>{c.c}</span>
+        : <span key={i} dangerouslySetInnerHTML={{ __html: _rk(c.c, c.t === 'display') }} />
+    )}
+  </span>
+);
+
+// ── Exam question card ─────────────────────────────────────
+const EQCard: FC<{ q: IExamQuestion; idx: number }> = ({ q, idx }) => {
+  const [open, setOpen] = useState(false);
+  const opts   = (q.options ?? {}) as Record<string, string>;
+  const answer = (q.answer ?? '').toUpperCase();
+  return (
+    <div style={{ background: 'white', borderRadius: 11, border: '1px solid rgba(37,99,235,0.08)', overflow: 'hidden' }}>
+      <div onClick={() => setOpen(v => !v)}
+        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', cursor: 'pointer', userSelect: 'none' }}>
+        <div style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 7, background: 'rgba(37,99,235,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 900, color: '#2563eb' }}>{idx}</div>
+        <div style={{ flex: 1, minWidth: 0, fontSize: '0.82rem', fontWeight: 600, color: '#1e293b', lineHeight: 1.4 }}>
+          <LT text={q.question ?? '—'} />
+        </div>
+        {answer && <span style={{ flexShrink: 0, fontSize: '0.62rem', fontWeight: 800, color: '#059669', background: 'rgba(5,150,105,0.09)', borderRadius: 5, padding: '2px 6px' }}>ĐA: {answer}</span>}
+        <div style={{ flexShrink: 0, color: '#94a3b8' }}>{open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}</div>
+      </div>
+      {open && (
+        <div style={{ padding: '0 14px 10px', borderTop: '1px solid rgba(37,99,235,0.06)', background: 'rgba(248,250,255,0.6)' }}>
+          <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {(['A','B','C','D'] as const).map(k => {
+              const val = opts[k] ?? opts[k.toLowerCase()];
+              if (!val) return null;
+              const ok = k === answer;
+              return (
+                <div key={k} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: '0.78rem' }}>
+                  <div style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 800, background: ok ? 'rgba(5,150,105,0.12)' : 'rgba(37,99,235,0.07)', color: ok ? '#059669' : '#2563eb' }}>{k}</div>
+                  <span style={{ flex: 1, color: ok ? '#059669' : '#334155', fontWeight: ok ? 700 : 400, lineHeight: 1.4 }}><LT text={val} /></span>
+                  {ok && <CheckCircle size={12} color="#059669" style={{ flexShrink: 0, marginTop: 2 }} />}
+                </div>
+              );
+            })}
+          </div>
+          {q.explanation && (
+            <div style={{ marginTop: 8, padding: '7px 9px', borderRadius: 7, background: 'rgba(217,119,6,0.06)', border: '1px solid rgba(217,119,6,0.12)', fontSize: '0.72rem', color: '#92400e', lineHeight: 1.5 }}>
+              <strong>Giải thích:</strong> <LT text={q.explanation} />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Exam detail modal ──────────────────────────────────────
+type ExamData = { ten_mon?: string | null; ma_mon?: string | null; time_limit?: number | null; questions?: IExamQuestion[]; chapters?: IExamChapter[] };
+
+const ExamModal: FC<{ examId: string; onClose: () => void }> = ({ examId, onClose }) => {
+  const [exam,    setExam]    = useState<ExamData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    ChatApi.getExamDetail(examId)
+      .then(r => setExam(r.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [examId]);
+
+  const questions = exam?.questions ?? [];
+  const chapters  = exam?.chapters  ?? [];
+  const grouped = chapters.length > 0
+    ? chapters.map(ch => ({ chapter: ch, qs: questions.filter(q => q.chapter_id === ch.id) }))
+    : [{ chapter: null as IExamChapter | null, qs: questions }];
+  let globalIdx = 1;
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)' }} />
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 720, height: '100dvh', background: '#f0f4ff', display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 40px rgba(15,23,42,0.3)', overflowY: 'auto' }}>
+        {/* Header */}
+        <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e3a8a)', padding: '0 16px', position: 'sticky', top: 0, zIndex: 1, flexShrink: 0 }}>
+          <div style={{ height: 52, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
+              <X size={12} /> Đóng
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 800, fontSize: '0.88rem', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {loading ? 'Đang tải...' : (exam?.ten_mon ?? 'Đề kiểm tra')}
+              </div>
+              {exam?.ma_mon && <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>{exam.ma_mon}</div>}
+            </div>
+            {!loading && exam && (
+              <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+                {exam.time_limit && <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}><Clock size={10} /> {exam.time_limit} phút</div>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}><Hash size={10} /> {questions.length} câu</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Content */}
+        {loading ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: '#64748b', fontSize: '0.82rem' }}>
+            <Loader2 size={20} color="#2563eb" style={{ animation: 'spin 1s linear infinite' }} /> Đang tải đề...
+          </div>
+        ) : (
+          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {grouped.map(({ chapter, qs }) => {
+              const startIdx = globalIdx;
+              globalIdx += qs.length;
+              return (
+                <div key={chapter?.id ?? 'nc'}>
+                  {chapter && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8, padding: '6px 10px', borderRadius: 9, background: 'linear-gradient(135deg,rgba(30,58,138,0.07),rgba(37,99,235,0.04))', border: '1px solid rgba(37,99,235,0.1)' }}>
+                      <BookOpen size={12} color="#1e3a8a" />
+                      <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e3a8a' }}>{chapter.title}</span>
+                      <span style={{ fontSize: '0.62rem', color: '#64748b', marginLeft: 'auto' }}>{qs.length} câu</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {qs.map((q, i) => <EQCard key={q.id ?? i} q={q} idx={startIdx + i} />)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 interface Props {
   messages: ChatMessage[];
@@ -23,9 +177,12 @@ const cleanContent = (s: string) =>
   s.replace(/ API:/g, ':').replace(/ API\b/g, '');
 
 const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfirm, onExamPreview }: Props) => {
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const viewingExamId = searchParams.get('exam');
+  const setViewingExamId = (id: string | null) =>
+    id ? setSearchParams({ exam: id }, { replace: true }) : setSearchParams({}, { replace: true });
 
-  // Custom ReactMarkdown renderer: `GET /api/exam/{id}` → clickable button
+  // Custom ReactMarkdown renderer: `GET /api/exam/{id}` → opens modal
   const mdComponents = useMemo(() => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     code: ({ children, ...props }: any) => {
@@ -35,7 +192,7 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
         const examId = match[1];
         return (
           <button
-            onClick={() => navigate(`/teacher/exams/${examId}`)}
+            onClick={() => setViewingExamId(examId)}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
               padding: '8px 12px', borderRadius: 8,
@@ -52,12 +209,13 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
       }
       return <code {...props}>{children}</code>;
     },
-  }), [navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), []);
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef    = useRef<HTMLDivElement>(null);
-  const [showScroll,   setShowScroll]   = useState(false);
-  const [copiedId,     setCopiedId]     = useState<string | null>(null);
-  const [expandedIds,  setExpandedIds]  = useState<Set<string>>(new Set());
+  const [showScroll,  setShowScroll]  = useState(false);
+  const [copiedId,    setCopiedId]    = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const toggleExpand = (id: string) =>
     setExpandedIds(prev => {
@@ -235,7 +393,7 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
                             </span>
                             {msg.examMeta.savedExamId && (
                               <button
-                                onClick={() => navigate(`/teacher/exams/${msg.examMeta!.savedExamId}`)}
+                                onClick={() => setViewingExamId(msg.examMeta!.savedExamId!)}
                                 style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 7, background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', border: 'none', color: 'white', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer' }}
                               >
                                 <ExternalLink size={10} /> Xem đề kiểm tra
@@ -261,6 +419,11 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
           )}
         </div>
       </div>
+
+      {/* Exam detail modal */}
+      {viewingExamId && (
+        <ExamModal examId={viewingExamId} onClose={() => setViewingExamId(null)} />
+      )}
 
       {/* Scroll to bottom */}
       {showScroll && (

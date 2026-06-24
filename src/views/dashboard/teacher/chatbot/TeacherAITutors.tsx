@@ -1,6 +1,6 @@
 import { type FC, useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import {  ArrowLeft, BookOpen, X, RotateCcw, CheckCircle, Loader2,  ClipboardList } from 'lucide-react';
+import { ArrowLeft, BookOpen, X, RotateCcw, CheckCircle, Loader2, ClipboardList, Menu } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import ChatHistory from './ChatHistory';
@@ -29,6 +29,24 @@ const CSS = `
 .tai-subject-card { padding:10px 12px;border-radius:10px;border:1.5px solid rgba(37,99,235,0.1);background:white;cursor:pointer;transition:border .15s,background .15s; }
 .tai-subject-card:hover { border-color:rgba(37,99,235,0.35);background:rgba(37,99,235,0.03); }
 .tai-subject-card.selected { border-color:#2563eb;background:rgba(37,99,235,0.05); }
+
+/* ── Responsive sidebar ── */
+.tai-sidebar {
+  flex-shrink:0; width:240px; height:100%;
+  position:absolute; left:-240px; z-index:45;
+  transition:left .22s cubic-bezier(.34,1.2,.64,1);
+}
+.tai-sidebar.open { left:0; }
+.tai-hamburger {
+  display:flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:8px; flex-shrink:0;
+  background:rgba(30,58,138,0.06); border:1px solid rgba(30,58,138,0.12);
+  color:#1e3a8a; cursor:pointer;
+}
+@media (min-width:768px) {
+  .tai-sidebar { position:relative !important; left:0 !important; z-index:1 !important; }
+  .tai-hamburger { display:none !important; }
+}
 `;
 
 // ── Exam preview drawer ───────────────────────────────
@@ -596,23 +614,14 @@ const TeacherAITutors: FC = () => {
       {/* ── BODY ── */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
 
-        {/* Mobile overlay */}
+        {/* Mobile backdrop */}
         {sidebarOpen && (
-          <div onClick={() => setSidebarOpen(false)} style={{ position: 'absolute', inset: 0, zIndex: 40, background: 'rgba(15,23,42,0.3)', backdropFilter: 'blur(2px)' }} />
+          <div onClick={() => setSidebarOpen(false)}
+            style={{ position: 'absolute', inset: 0, zIndex: 40, background: 'rgba(15,23,42,0.35)', backdropFilter: 'blur(2px)' }} />
         )}
 
         {/* ── Sidebar ── */}
-        <div style={{
-          flexShrink: 0,
-          width: 240,
-          height: '100%',
-          position: 'absolute',
-          zIndex: 45,
-          left: sidebarOpen ? 0 : -240,
-          transition: 'left .22s cubic-bezier(.34,1.2,.64,1)',
-          // Desktop: always visible
-          ...(typeof window !== 'undefined' && window.innerWidth >= 768 ? { position: 'relative' as const, left: 0, zIndex: 1 } : {}),
-        }}>
+        <div className={`tai-sidebar${sidebarOpen ? ' open' : ''}`}>
           <ChatHistory
             sessions={sessions}
             currentSessionId={currentSession?.id ?? ''}
@@ -627,13 +636,17 @@ const TeacherAITutors: FC = () => {
         </div>
 
         {/* ── Chat area ── */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#f0f4ff' }}>
-          {/* Mobile hamburger */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'white', borderBottom: '1px solid rgba(37,99,235,0.07)' }}>
-           <Button  variant={'default'} onClick={() => navigate('/teacher/dashboard')} title="Về trang chủ">
-          <ArrowLeft size={14} />   Quay lại
-          </Button>
-            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#1e293b' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#f0f4ff', minWidth: 0 }}>
+          {/* Topbar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'white', borderBottom: '1px solid rgba(37,99,235,0.07)', flexShrink: 0 }}>
+            {/* Hamburger — chỉ hiện trên mobile */}
+            <button className="tai-hamburger" onClick={() => setSidebarOpen(v => !v)} title="Danh sách chat">
+              <Menu size={16} />
+            </button>
+            <Button variant="default" onClick={() => navigate('/teacher/dashboard')} title="Về trang chủ">
+              <ArrowLeft size={14} /> Quay lại
+            </Button>
+            <span style={{ flex: 1, minWidth: 0, fontSize: '0.78rem', fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {currentSession ? (currentSession.name || currentSession.subject_id || 'Chat') : 'Chọn hoặc tạo cuộc trò chuyện'}
             </span>
           </div>

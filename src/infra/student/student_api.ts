@@ -51,6 +51,16 @@ class StudentApi {
     );
     return res.data;
   }
+
+  async downloadFile(fileId: string): Promise<{ blob: Blob; filename: string }> {
+    const res = await axiosInstance.get(API_ENDPOINTS.FILES.DOWNLOAD(fileId), {
+      responseType: 'blob',
+    });
+    const cd  = res.headers['content-disposition'] as string | undefined;
+    const match = cd?.match(/filename\*?=(?:UTF-8''|"?)([^";\n]+)/i);
+    const filename = match ? decodeURIComponent(match[1].replace(/"/g, '')) : fileId;
+    return { blob: res.data as Blob, filename };
+  }
 }
 
 export default new StudentApi();

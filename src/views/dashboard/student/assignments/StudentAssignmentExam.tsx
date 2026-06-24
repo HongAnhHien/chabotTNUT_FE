@@ -2,8 +2,46 @@ import { type FC, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ArrowLeft, Loader2, Clock, CheckCircle, XCircle, AlertTriangle, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import StudentApi from '@/infra/student/student_api';
 import type { IStudentAssignmentDetailResponse, IStudentQuestion } from '@/infra/api/interfaces/IAssignment';
+
+// ── LaTeX renderer ─────────────────────────────────────
+const renderKatex = (src: string, display: boolean) => {
+  try {
+    return katex.renderToString(src, { throwOnError: false, displayMode: display, output: 'html' });
+  } catch { return src; }
+};
+
+// Split "text $inline$ more $$display$$ rest" into chunks
+const parseLatex = (text: string): Array<{ type: 'text' | 'inline' | 'display'; content: string }> => {
+  const chunks: Array<{ type: 'text' | 'inline' | 'display'; content: string }> = [];
+  // Match $$...$$ first, then $...$
+  const re = /(\$\$[\s\S]+?\$\$|\$[^$\n]+?\$)/g;
+  let last = 0, m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) chunks.push({ type: 'text', content: text.slice(last, m.index) });
+    const raw = m[0];
+    if (raw.startsWith('$$')) chunks.push({ type: 'display', content: raw.slice(2, -2) });
+    else                      chunks.push({ type: 'inline',  content: raw.slice(1, -1) });
+    last = m.index + raw.length;
+  }
+  if (last < text.length) chunks.push({ type: 'text', content: text.slice(last) });
+  return chunks;
+};
+
+const LatexText: FC<{ text: string; style?: React.CSSProperties }> = ({ text, style }) => {
+  const chunks = parseLatex(text ?? '');
+  return (
+    <span style={style}>
+      {chunks.map((c, i) =>
+        c.type === 'text' ? <span key={i}>{c.content}</span> :
+        <span key={i} dangerouslySetInnerHTML={{ __html: renderKatex(c.content, c.type === 'display') }} />
+      )}
+    </span>
+  );
+};
 
 const CSS = `
   @keyframes sae-fade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
@@ -214,7 +252,7 @@ const StudentAssignmentExam: FC = () => {
 
                   {/* Question text */}
                   <div style={{ padding: '12px 14px', fontSize: '0.875rem', color: '#1e293b', lineHeight: 1.6, borderBottom: '1px solid rgba(37,99,235,0.05)' }}>
-                    {q.question}
+                    <LatexText text={q.question} />
                   </div>
 
                   {/* Options */}
@@ -232,7 +270,7 @@ const StudentAssignmentExam: FC = () => {
                             {key}
                           </span>
                           <span style={{ fontSize: '0.82rem', color: hasSubmitted ? (isAnswer ? '#059669' : isMyWrong ? '#dc2626' : '#64748b') : '#1e293b', fontWeight: (hasSubmitted && isAnswer) ? 700 : 400, flex: 1, lineHeight: 1.45 }}>
-                            {val}
+                            <LatexText text={val as string} />
                           </span>
                           {hasSubmitted && isAnswer && (
                             <span style={{ fontSize: '0.65rem', color: '#059669', fontWeight: 800, whiteSpace: 'nowrap', flexShrink: 0 }}>✓ Đáp án</span>
@@ -245,7 +283,7 @@ const StudentAssignmentExam: FC = () => {
                   {/* Explanation */}
                   {hasSubmitted && q.explanation && (
                     <div style={{ margin: '0 12px 12px', padding: '8px 12px', background: 'rgba(3,105,161,0.05)', borderRadius: 9, fontSize: '0.75rem', color: '#334155', borderLeft: '3px solid #0369a1', lineHeight: 1.5 }}>
-                      <strong>Giải thích:</strong> {q.explanation}
+                      <strong>Giải thích:</strong> <LatexText text={q.explanation ?? ''} />
                     </div>
                   )}
                 </div>

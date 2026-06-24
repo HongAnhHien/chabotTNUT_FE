@@ -1,9 +1,9 @@
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import {
-  Bell, LogOut, User, BookOpen, Users,
+  Bell, LogOut,  BookOpen, Users,
   ChevronRight, RefreshCw, MapPin, Clock,
-  Calendar, GraduationCap, Layers, Sparkles, FileText, MessageSquare, ClipboardList,
+  Calendar, GraduationCap, Layers, Sparkles, FileText,  ClipboardList,
   X, Loader2, Eye, Trash2, Send,
 } from 'lucide-react';
 import { useAuthStore } from '@/views/pages/stores/auth_store';
@@ -11,6 +11,9 @@ import toast from 'react-hot-toast';
 import TeacherApi from '@/infra/teacher/teacher_api';
 import ChatApi from '@/infra/chat/chat_api';
 import logoTNUT from '@/assets/logo_tnut/logo_tnut.png';
+import iconProfile from '@/assets/icon/icon_profile.png';
+import iconAI      from '@/assets/icon/icon_TNUT_AI.png';
+import iconExam    from '@/assets/icon/icon_exam.png';
 import type { ISemester, ITeacherSubjectWithClasses, ISubjectFile, IFileType, IAiFile } from '@/infra/api/interfaces/ITeacher';
 import type { ISavedExam, IExamQuestion, IExamChapter } from '@/infra/api/interfaces/IChat';
 import AssignModal from './assignments/AssignModal';
@@ -1341,8 +1344,8 @@ const TeacherAspx: FC = () => {
             onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
             onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
           >
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg,#1e3a8a,#3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <User size={18} color="white" />
+            <div style={{ width: 80, height: 80,  background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' ,borderRadius: 12, border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 1px 4px rgba(30,58,138,0.15)'}}>
+              <img src={iconProfile} alt="profile" style={{ width: 80, height: 80, objectFit: 'contain' }} />
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#1e3a8a' }}>Hồ sơ giảng viên</div>
@@ -1356,8 +1359,8 @@ const TeacherAspx: FC = () => {
             onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
             onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
           >
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg,#4c1d95,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <MessageSquare size={18} color="white" />
+             <div style={{ width: 80, height: 80,  background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' ,borderRadius: 12, border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 1px 4px rgba(30,58,138,0.15)'}}>
+              <img src={iconAI} alt="TAI" style={{ width: 80, height: 80, objectFit: 'contain' }} />
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#4c1d95' }}>TAI - TNUT</div>
@@ -1371,8 +1374,8 @@ const TeacherAspx: FC = () => {
             onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
             onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
           >
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg,#0f172a,#1e3a8a)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Send size={18} color="white" />
+            <div style={{ width: 80, height: 80,  background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' ,borderRadius: 12, border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 1px 4px rgba(30,58,138,0.15)'}}>
+              <img src={iconExam} alt="exam" style={{ width: 80, height: 80, objectFit: 'contain' }} />
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#1e3a8a' }}>Bài đã giao</div>

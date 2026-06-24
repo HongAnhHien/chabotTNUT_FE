@@ -83,6 +83,10 @@ export const API_ENDPOINTS = {
     SEMESTER_SUBJECTS: (hocKy: number) => `/student/semesters/${hocKy}/subjects`,
   },
 
+  FILES: {
+    DOWNLOAD: (fileId: string) => `/files/${fileId}/download`,
+  },
+
   // GeoRisk legacy — sẽ xóa sau khi refactor
   LOCATIONS: {
     STATISTICS:  '/private/locations/statistics',

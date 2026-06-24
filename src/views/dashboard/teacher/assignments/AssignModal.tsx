@@ -26,13 +26,23 @@ interface Props {
 
 const toApiDate = (dt: string) => dt ? dt.replace('T', ' ') + ':00' : '';
 
+// Format Date → local datetime string for <input type="datetime-local">
+// toISOString() gives UTC which is wrong for Vietnam (UTC+7)
+const toLocalInput = (d: Date) => {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+};
+
 const defaultFrom = () => {
-  const d = new Date(); d.setHours(d.getHours() + 1, 0, 0, 0);
-  return d.toISOString().slice(0, 16);
+  const d = new Date();
+  d.setMinutes(d.getMinutes() + 5, 0, 0); // +5 phút so với hiện tại
+  return toLocalInput(d);
 };
 const defaultDue = () => {
-  const d = new Date(); d.setDate(d.getDate() + 7); d.setHours(23, 59, 0, 0);
-  return d.toISOString().slice(0, 16);
+  const d = new Date();
+  d.setDate(d.getDate() + 7);
+  d.setHours(23, 59, 0, 0);
+  return toLocalInput(d);
 };
 
 const AssignModal: FC<Props> = ({ exam, subject, onClose, onSuccess }) => {
@@ -110,6 +120,7 @@ const AssignModal: FC<Props> = ({ exam, subject, onClose, onSuccess }) => {
     if (mode === 'students' && selected.size === 0) { toast.error('Chưa chọn học sinh nào.'); return; }
     if (!availableFrom) { toast.error('Chưa chọn ngày mở bài.'); return; }
     if (!dueAt) { toast.error('Chưa chọn hạn nộp.'); return; }
+    if (new Date(availableFrom) <= new Date()) { toast.error('Ngày mở bài phải sau thời điểm hiện tại.'); return; }
     if (new Date(dueAt) <= new Date(availableFrom)) { toast.error('Hạn nộp phải sau ngày mở bài.'); return; }
 
     setSubmitting(true);
@@ -129,8 +140,10 @@ const AssignModal: FC<Props> = ({ exam, subject, onClose, onSuccess }) => {
       } else {
         toast.error(r.message ?? 'Giao bài thất bại.');
       }
-    } catch {
-      toast.error('Giao bài thất bại. Vui lòng thử lại.');
+    } catch (e: unknown) {
+      const data = (e as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } })?.response?.data;
+      const detail = data?.errors ? Object.values(data.errors).flat()[0] : data?.message;
+      toast.error(detail ?? 'Giao bài thất bại. Vui lòng thử lại.', { duration: 5000 });
     } finally {
       setSubmitting(false);
     }
