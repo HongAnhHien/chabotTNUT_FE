@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { lazy } from "react";
-import { type RouteObject } from "react-router";
+import { Navigate, type RouteObject } from "react-router";
 import ProtectedRoute from "./protect_router";
 // import { useAuthStore } from '@/views/pages/stores/auth_store';
 import HorizontalLayout from "@/layouts/HorizontalLayout";
@@ -8,7 +8,6 @@ import HorizontalLayout from "@/layouts/HorizontalLayout";
 const BlankLayout = lazy(() => import("@core/layouts/BlankLayout"));
 const VerticalLayout = lazy(() => import("@layouts/VerticalLayout"));
 
-const Home = lazy(() => import('@views/home/Home'));
 const ErrorPage = lazy(() => import("@views/misc/Error"));
 
 // Dashboard
@@ -44,14 +43,10 @@ const StudentSubjectsPage      = lazy(() => import("@views/dashboard/student/sub
 // };
 
 export const appRoutes: RouteObject[] = [
-  // Landing
+  // Landing — redirect thẳng vào login
   {
     path: "/",
-    element: (
-      <BlankLayout>
-        <Home />
-      </BlankLayout>
-    ),
+    element: <Navigate to="/login" replace />,
   },
 
   // Admin only

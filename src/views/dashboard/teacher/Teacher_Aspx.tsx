@@ -92,6 +92,14 @@ const CSS = `
   .t-shelf-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; }
   .t-drawer-panel { width:420px; }
 
+  .t-shortcut-icon { flex-shrink:0; overflow:hidden; }
+  .t-stats-grid    { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; }
+  .t-stats-card    { padding:.875rem 1rem; display:flex; align-items:center; gap:12px; }
+  .t-stats-icon    { width:35px; height:35px; border-radius:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .t-view-section  { display:flex; align-items:center; justify-content:space-between; }
+  .t-course-header { display:flex; align-items:center; gap:12px; margin-bottom:.75rem; }
+  .t-course-btns   { display:flex; gap:6px; flex-shrink:0; }
+
   @media (max-width:1024px) {
     .t-main { grid-template-columns: 1fr; }
   }
@@ -101,6 +109,32 @@ const CSS = `
     .t-nav-title { display: none; }
     .t-nav-name  { display: none; }
     .t-drawer-panel { width: 100vw; }
+    .t-shortcut-icon { width:56px !important; height:56px !important; border-radius:10px !important; }
+    .t-shortcut-icon img { width:56px !important; height:56px !important; }
+    .t-stats-grid { gap:.5rem; }
+    .t-stats-card { padding:.6rem .5rem !important; gap:8px !important; }
+    .t-stats-icon { width:28px !important; height:28px !important; border-radius:8px !important; }
+    .t-stats-icon svg { width:15px !important; height:15px !important; }
+    .t-view-section { flex-direction:column; align-items:flex-start; gap:6px; }
+    .t-course-header { flex-wrap: wrap; }
+    .t-course-btns   { width:100%; flex-wrap:wrap; }
+    .t-course-btns button { flex:1; min-width:0; justify-content:center; font-size:.7rem !important; padding:5px 6px !important; }
+  }
+  .t-cls-row-top  { display:flex; align-items:center; gap:7px; min-width:0; }
+  .t-cls-lop      { font-size:.75rem; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1; }
+  .t-cls-badge    { flex-shrink:0; }
+
+  @media (max-width:640px) {
+    .t-class-row  { padding:8px 10px; gap:8px; }
+  }
+  @media (max-width:400px) {
+    .t-main  { padding: .75rem; }
+    .t-stats-grid { grid-template-columns:1fr; gap:.4rem; }
+    .t-stats-card { padding:.5rem .75rem !important; gap:10px !important; flex-direction:row; }
+    .t-stats-icon { width:32px !important; height:32px !important; }
+    .t-view-section > span { font-size:.72rem; }
+    .t-cls-badge span { font-size:.6rem !important; padding:1px 5px !important; }
+    .t-cls-row-top { flex-wrap:wrap; gap:3px; }
   }
 `;
 
@@ -150,7 +184,7 @@ const CourseListView: FC<{ courses: ITeacherSubjectWithClasses[]; onNavigate: (u
       const color = BOOK_COLORS[idx % BOOK_COLORS.length];
       return (
         <div key={subject.ma_mon} className="t-card" style={{ padding: '1.1rem 1.25rem', animationDelay: `${idx * 0.06}s`, animation: 't-list-in .32s ease both' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '0.75rem' }}>
+          <div className="t-course-header">
             <div style={{ width: 40, height: 40, borderRadius: 11, background: color.grad, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 12px ${color.glow}` }}>
               <BookOpen size={18} color="white" strokeWidth={1.8} />
             </div>
@@ -162,7 +196,7 @@ const CourseListView: FC<{ courses: ITeacherSubjectWithClasses[]; onNavigate: (u
                 <span style={{ background: 'rgba(100,116,139,0.08)', color: '#64748b', borderRadius: 20, padding: '1px 8px', fontSize: '0.67rem', fontWeight: 600 }}>{classes.length} lớp</span>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            <div className="t-course-btns">
               <button
                 onClick={() => onDocuments({ ma_mon: subject.ma_mon, ten_mon: subject.ten_mon })}
                 style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 9, background: 'rgba(37,99,235,0.07)', border: '1px solid rgba(37,99,235,0.15)', color: '#2563eb', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
@@ -190,9 +224,9 @@ const CourseListView: FC<{ courses: ITeacherSubjectWithClasses[]; onNavigate: (u
                   <Users size={13} color="#2563eb" />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.82rem', color: '#1e293b' }}>{cls.nhom_to}</span>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{cls.ten_lop}</span>
+                  <div className="t-cls-row-top">
+                    <span style={{ fontWeight: 700, fontSize: '0.82rem', color: '#1e293b', whiteSpace: 'nowrap' }}>{cls.nhom_to}</span>
+                    <span className="t-cls-lop">{cls.ten_lop}</span>
                   </div>
                   <div style={{ display: 'flex', gap: 10, marginTop: 2, flexWrap: 'wrap' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.68rem', color: '#94a3b8' }}><MapPin size={9} />{cls.phong}</span>
@@ -200,7 +234,7 @@ const CourseListView: FC<{ courses: ITeacherSubjectWithClasses[]; onNavigate: (u
                     <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.68rem', color: '#94a3b8' }}><Users size={9} />{cls.sl_dk} SV</span>
                   </div>
                 </div>
-                <StatusBadge status={cls.status} />
+                <div className="t-cls-badge"><StatusBadge status={cls.status} /></div>
                 <ChevronRight size={13} color="#94a3b8" style={{ flexShrink: 0 }} />
               </div>
             ))}
@@ -1344,7 +1378,7 @@ const TeacherAspx: FC = () => {
             onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
             onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
           >
-            <div style={{ width: 80, height: 80,  background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' ,borderRadius: 12, border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 1px 4px rgba(30,58,138,0.15)'}}>
+            <div className="t-shortcut-icon" style={{ width: 80, height: 80, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 1px 4px rgba(30,58,138,0.15)' }}>
               <img src={iconProfile} alt="profile" style={{ width: 80, height: 80, objectFit: 'contain' }} />
             </div>
             <div style={{ flex: 1 }}>
@@ -1359,7 +1393,7 @@ const TeacherAspx: FC = () => {
             onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
             onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
           >
-             <div style={{ width: 80, height: 80,  background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' ,borderRadius: 12, border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 1px 4px rgba(30,58,138,0.15)'}}>
+            <div className="t-shortcut-icon" style={{ width: 80, height: 80, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 1px 4px rgba(30,58,138,0.15)' }}>
               <img src={iconAI} alt="TAI" style={{ width: 80, height: 80, objectFit: 'contain' }} />
             </div>
             <div style={{ flex: 1 }}>
@@ -1374,7 +1408,7 @@ const TeacherAspx: FC = () => {
             onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
             onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
           >
-            <div style={{ width: 80, height: 80,  background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' ,borderRadius: 12, border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 1px 4px rgba(30,58,138,0.15)'}}>
+            <div className="t-shortcut-icon" style={{ width: 80, height: 80, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 1px 4px rgba(30,58,138,0.15)' }}>
               <img src={iconExam} alt="exam" style={{ width: 80, height: 80, objectFit: 'contain' }} />
             </div>
             <div style={{ flex: 1 }}>
@@ -1436,14 +1470,14 @@ const TeacherAspx: FC = () => {
           </div>
           {/* Stats bar */}
           {!loadingCourses && courses.length > 0 && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.75rem' }}>
+            <div className="t-stats-grid">
               {[
                 { icon: <Layers size={18} color="#2563eb" />, label: 'Môn học', value: courses.length, bg: 'rgba(37,99,235,0.07)' },
                 { icon: <BookOpen size={18} color="#059669" />, label: 'Lớp/Tổ', value: totalClasses, bg: 'rgba(5,150,105,0.07)' },
                 { icon: <Users size={18} color="#7c3aed" />, label: 'Sinh viên', value: totalStudents, bg: 'rgba(124,58,237,0.07)' },
               ].map(({ icon, label, value, bg }) => (
-                <div key={label} className="t-card" style={{ padding: '0.875rem 1rem', display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 35, height: 35, borderRadius: 11, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</div>
+                <div key={label} className="t-card t-stats-card">
+                  <div className="t-stats-icon" style={{ background: bg }}>{icon}</div>
                   <div>
                     <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1e3a8a', lineHeight: 1 }}>{value}</div>
                     <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 3 }}>{label}</div>
@@ -1472,7 +1506,7 @@ const TeacherAspx: FC = () => {
           ) : (
             <>
               {/* View toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className="t-view-section">
                 <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>{courses.length} môn học</span>
                 <div style={{ display: 'flex', gap: 3, background: 'rgba(37,99,235,0.07)', borderRadius: 12, padding: 3 }}>
                   {([['list', '☰ Danh sách'], ['book', '📚 Kệ sách']] as const).map(([mode, label]) => (
