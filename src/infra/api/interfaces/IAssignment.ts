@@ -99,6 +99,8 @@ export interface IDeleteAssignmentResponse {
 }
 
 // ── Student: Assignment list ───────────────────────────
+export type ExamType = 'giua_ky' | 'kiem_tra_chuong' | 'on_luyen_chuong';
+
 export interface IStudentAssignmentListItem {
   id: string;
   ma_mon: string;
@@ -111,6 +113,7 @@ export interface IStudentAssignmentListItem {
   my_score: number | null;
   total: number | null;
   submitted_at: string | null;
+  exam_type: ExamType | null;
 }
 
 export interface IStudentAssignmentsResponse {
@@ -172,14 +175,29 @@ export interface ISubmitBody {
   answers: ISubmitAnswerItem[];
 }
 
+export interface IChapterResult {
+  chapter_id: number;
+  chapter_title: string;
+  correct: number;
+  total: number;
+}
+
 export interface ISubmitResult {
   score: number;
   total: number;
   percent: number;
+  duration_seconds?: number;
+  chapter_results?: IChapterResult[];
 }
 
 export interface ISubmitResponse {
   success: boolean;
   message: string;
   data?: ISubmitResult;
+}
+
+export interface IStartAssignmentResponse {
+  success: boolean;
+  message: string;
+  started_at: string;
 }

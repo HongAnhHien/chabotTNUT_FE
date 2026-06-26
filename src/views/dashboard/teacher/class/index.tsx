@@ -1,11 +1,10 @@
 import { type FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import {
-  ArrowLeft, RefreshCw,
+  RefreshCw,
   AlertTriangle, BookOpen,
 } from 'lucide-react';
 import TeacherApi from '@/infra/teacher/teacher_api';
-import logoTNUT from '@/assets/logo_tnut/logoTNUT.png';
 import type { ITeacherStudent } from '@/infra/api/interfaces/ITeacher';
 import { columns } from './table/Column';
 import { DataTable } from './table/DataTable';
@@ -17,7 +16,6 @@ const CSS = `
 
 // ── Main ─────────────────────────────────────────────
 const ClassStudentsPage: FC = () => {
-  const navigate     = useNavigate();
   const { idToHoc }  = useParams<{ idToHoc: string }>();
 
   const [students,      setStudents]      = useState<ITeacherStudent[]>([]);
@@ -46,35 +44,8 @@ const ClassStudentsPage: FC = () => {
   }, [students]);
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg,#eef4ff,#e0eaff)', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif" }}>
+    <div style={{ minHeight: '100%', background: 'linear-gradient(160deg,#eef4ff,#e0eaff)', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif" }}>
       <style>{CSS}</style>
-
-      {/* ══ NAVBAR ══ */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(37,99,235,0.1)', boxShadow: '0 2px 16px rgba(37,99,235,0.06)' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 58 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <img src={logoTNUT} alt="TNUT" style={{ width: 32, height: 32, objectFit: 'contain' }} />
-            <div style={{ width: 1, height: 22, background: 'rgba(37,99,235,0.15)' }} />
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e3a8a' }}>Danh sách sinh viên</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button
-              onClick={fetchStudents}
-              disabled={loading}
-              style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(37,99,235,0.07)', border: '1px solid rgba(37,99,235,0.15)', borderRadius: 9, padding: '5px 12px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '0.8rem', fontWeight: 600, color: '#2563eb' }}
-            >
-              <RefreshCw size={13} style={{ animation: loading ? 'cl-spin .8s linear infinite' : 'none' }} />
-              Làm mới
-            </button>
-            <button
-              onClick={() => navigate(-1)}
-              style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.9)', border: '1px solid rgba(37,99,235,0.18)', borderRadius: 9, padding: '5px 12px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, color: '#1e3a8a' }}
-            >
-              <ArrowLeft size={13} /> Quay lại
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* ══ HERO ══ */}
       <div style={{ background: 'linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 60%,#3b82f6 100%)', padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>

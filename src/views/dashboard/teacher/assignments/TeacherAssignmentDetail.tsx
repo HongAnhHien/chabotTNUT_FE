@@ -1,7 +1,7 @@
 import { type FC, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
-  ArrowLeft, Loader2, Users, CheckCircle, Clock, AlertCircle,
+  Loader2, Users, CheckCircle, Clock, AlertCircle,
   Trash2, XCircle, BookOpen, User, Pencil, Save, X, Calendar,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -209,71 +209,8 @@ const TeacherAssignmentDetail: FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#f0f4ff 0%,#e8f0fe 50%,#f5f3ff 100%)' }}>
+    <div style={{ minHeight: '100%', background: 'linear-gradient(135deg,#f0f4ff 0%,#e8f0fe 50%,#f5f3ff 100%)' }}>
       <style>{CSS}</style>
-
-      {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e3a8a)', padding: '0 20px', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', height: 56, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button onClick={() => navigate('/teacher/assignments')}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}
-          >
-            <ArrowLeft size={13} /> Quay lại
-          </button>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {detail?.title ?? 'Chi tiết bài giao'}
-            </div>
-            {detail && (
-              <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <BookOpen size={10} /> {detail.ma_mon}
-                <span>·</span>
-                <span style={{ color: detail.status === 'published' ? '#4ade80' : '#94a3b8' }}>
-                  {detail.status === 'published' ? 'Đang mở' : 'Đã đóng'}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {detail && (
-            <>
-              {/* Edit button */}
-              <button onClick={() => setEditing(v => !v)}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: editing ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.12)', border: `1px solid ${editing ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.18)'}`, color: 'white', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}
-              >
-                <Pencil size={12} /> {editing ? 'Hủy sửa' : 'Chỉnh sửa'}
-              </button>
-
-              {/* Close button */}
-              {detail.status === 'published' && !editing && (
-                <button
-                  onClick={async () => {
-                    if (!id || !confirm('Đóng bài giao? Học sinh sẽ không thể nộp thêm.')) return;
-                    try {
-                      const r = await TeacherApi.updateAssignment(id, { status: 'closed' });
-                      if (r.success) {
-                        toast.success('Đã đóng bài giao.');
-                        setDetail(p => p ? { ...p, status: 'closed' } : p);
-                      } else toast.error(r.message ?? 'Thất bại.');
-                    } catch { toast.error('Thất bại. Vui lòng thử lại.'); }
-                  }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(245,158,11,0.2)', border: '1px solid rgba(245,158,11,0.35)', color: '#fbbf24', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}
-                >
-                  <XCircle size={12} /> Đóng bài
-                </button>
-              )}
-
-              {/* Delete button */}
-              <button onClick={handleDelete} disabled={deleting}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(220,38,38,0.18)', border: '1px solid rgba(220,38,38,0.3)', color: '#fca5a5', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}
-              >
-                {deleting ? <Loader2 size={12} style={{ animation: 'tad-spin 1s linear infinite' }} /> : <Trash2 size={12} />}
-                Xóa
-              </button>
-            </>
-          )}
-        </div>
-      </div>
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '5rem' }}>
@@ -284,6 +221,42 @@ const TeacherAssignmentDetail: FC = () => {
         <div style={{ textAlign: 'center', padding: '5rem', color: '#94a3b8' }}>Không tìm thấy bài giao.</div>
       ) : (
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {/* Action bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{detail.title ?? '—'}</div>
+              <div style={{ fontSize: '0.72rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                <BookOpen size={11} /> {detail.ma_mon}
+                <span>·</span>
+                <span style={{ color: detail.status === 'published' ? '#059669' : '#94a3b8' }}>
+                  {detail.status === 'published' ? 'Đang mở' : 'Đã đóng'}
+                </span>
+              </div>
+            </div>
+            <button onClick={() => setEditing(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: editing ? 'rgba(37,99,235,0.12)' : 'rgba(37,99,235,0.07)', border: `1px solid ${editing ? 'rgba(37,99,235,0.3)' : 'rgba(37,99,235,0.15)'}`, color: '#2563eb', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+              <Pencil size={12} /> {editing ? 'Hủy sửa' : 'Chỉnh sửa'}
+            </button>
+            {detail.status === 'published' && !editing && (
+              <button
+                onClick={async () => {
+                  if (!id || !confirm('Đóng bài giao? Học sinh sẽ không thể nộp thêm.')) return;
+                  try {
+                    const r = await TeacherApi.updateAssignment(id, { status: 'closed' });
+                    if (r.success) { toast.success('Đã đóng bài giao.'); setDetail(p => p ? { ...p, status: 'closed' } : p); }
+                    else toast.error(r.message ?? 'Thất bại.');
+                  } catch { toast.error('Thất bại. Vui lòng thử lại.'); }
+                }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', color: '#d97706', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+                <XCircle size={12} /> Đóng bài
+              </button>
+            )}
+            <button onClick={handleDelete} disabled={deleting}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(220,38,38,0.07)', border: '1px solid rgba(220,38,38,0.2)', color: '#dc2626', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+              {deleting ? <Loader2 size={12} style={{ animation: 'tad-spin 1s linear infinite' }} /> : <Trash2 size={12} />} Xóa
+            </button>
+          </div>
 
           {/* Edit panel */}
           {editing && (

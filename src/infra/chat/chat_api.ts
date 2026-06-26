@@ -14,7 +14,7 @@ import type {
   IDeleteExamResponse,
 } from '@/infra/api/interfaces/IChat';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://chatbotbe.girc.edu.vn/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
 class ChatApi {
   async createSession(subjectId: string): Promise<ICreateSessionResponse> {
@@ -50,6 +50,7 @@ class ChatApi {
       onChunk: (content: string) => void;
       onDone: (data: ISSEDoneEvent) => void;
       onError: (err: Error) => void;
+      onAssignmentLink?: (link: string) => void;
     }
   ): Promise<void> {
     const token = storage.get<string>(STORAGE_KEYS.TOKEN, '');
@@ -85,7 +86,9 @@ class ChatApi {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
-              if (data.done) {
+              if (data.assignment_link) {
+                callbacks.onAssignmentLink?.(data.assignment_link as string);
+              } else if (data.done) {
                 callbacks.onDone(data as ISSEDoneEvent);
               } else if (data.content) {
                 callbacks.onChunk(data.content);

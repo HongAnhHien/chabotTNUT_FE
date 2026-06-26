@@ -9,9 +9,7 @@ import type {
 import { storage, STORAGE_KEYS } from "@/helper/storage";
 import toast from "react-hot-toast";
 
-// Base URL from environment or default
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://chatbotbe.girc.edu.vn/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
 // ✅ Create axios instance with credentials
 const axiosInstance: AxiosInstance = axios.create({

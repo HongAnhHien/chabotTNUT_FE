@@ -1,6 +1,6 @@
 import { type FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeft, ClipboardList, Clock, CheckCircle, AlertTriangle, ChevronRight, Loader2, BookOpen } from 'lucide-react';
+import { ClipboardList, Clock, CheckCircle, AlertTriangle, ChevronRight, Loader2, BookOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
 import StudentApi from '@/infra/student/student_api';
 import type { IStudentAssignmentListItem } from '@/infra/api/interfaces/IAssignment';
@@ -41,24 +41,8 @@ const StudentAssignments: FC = () => {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 50%,#f0fdf4 100%)' }}>
+    <div style={{ minHeight: '100%', background: 'linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 50%,#f0fdf4 100%)' }}>
       <style>{CSS}</style>
-
-      {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg,#0f172a,#0369a1)', padding: '0 20px', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 720, margin: '0 auto', height: 56, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={() => navigate('/student/dashboard')}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}
-          >
-            <ArrowLeft size={13} /> Quay lại
-          </button>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 7 }}>
-            <ClipboardList size={16} color="#7dd3fc" />
-            <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'white' }}>Bài kiểm tra của tôi</span>
-          </div>
-          <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{assignments.length} bài</div>
-        </div>
-      </div>
 
       {/* Content */}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '20px 16px' }}>

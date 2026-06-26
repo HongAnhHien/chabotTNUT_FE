@@ -76,6 +76,7 @@ export interface IExamDetail {
   ma_mon?: string;
   ten_mon?: string;
   subject_id?: string;
+  exam_type?: string | null;
   time_limit?: number | null;
   question_count?: number | null;
   chapters?: IExamChapter[];
@@ -93,6 +94,7 @@ export interface IExamResponse {
 export interface IConfirmExamBody {
   exam_id: string;
   session_id: string;
+  exam_type?: string | null;
   time_limit?: number | null;
   question_count?: number | null;
   chapters?: IExamChapter[];
@@ -111,6 +113,7 @@ export interface ISavedExam {
   exam_id?: string | null;
   ma_mon?: string | null;
   ten_mon?: string | null;
+  exam_type?: string | null;
   time_limit?: number | null;
   question_count?: number | null;
   chapters?: IExamChapter[];

@@ -6,9 +6,16 @@ interface Props {
   isLoading?: boolean;
   disabled?: boolean;
   placeholder?: string;
+  suggestions?: string[];
 }
 
-const ChatInput = ({ onSend, isLoading = false, disabled = false, placeholder = 'Nhập câu hỏi hoặc yêu cầu tạo đề kiểm tra...' }: Props) => {
+const ChatInput = ({
+  onSend,
+  isLoading = false,
+  disabled = false,
+  placeholder = 'Nhập câu hỏi cho trợ lý học tập...',
+  suggestions,
+}: Props) => {
   const [text, setText] = useState('');
   const taRef = useRef<HTMLTextAreaElement>(null);
 
@@ -32,7 +39,29 @@ const ChatInput = ({ onSend, isLoading = false, disabled = false, placeholder = 
   const canSend = !!text.trim() && !isLoading && !disabled;
 
   return (
-    <div style={{ borderTop: '1px solid rgba(30,58,138,0.08)', background: 'white', padding: '10px 16px 14px' }}>
+    <div style={{ borderTop: '1px solid #eef0f5', background: 'white', padding: '10px 16px 14px' }}>
+      {/* Suggestion chips */}
+      {suggestions && suggestions.length > 0 && (
+        <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10, maxWidth: 860, margin: '0 auto 10px' }}>
+          {suggestions.map(s => (
+            <button
+              key={s}
+              onClick={() => { setText(s); taRef.current?.focus(); }}
+              style={{
+                padding: '5px 12px', borderRadius: 20, border: '1px solid #e2e8f0',
+                background: '#f8fafc', color: '#475569', fontSize: '0.75rem', fontWeight: 500,
+                cursor: 'pointer', transition: 'all .15s', whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = '#93c5fd'; (e.target as HTMLElement).style.background = '#eff6ff'; (e.target as HTMLElement).style.color = '#2563eb'; }}
+              onMouseLeave={e => { (e.target as HTMLElement).style.borderColor = '#e2e8f0'; (e.target as HTMLElement).style.background = '#f8fafc'; (e.target as HTMLElement).style.color = '#475569'; }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Input row */}
       <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'flex-end', gap: 8 }}>
         <div style={{ flex: 1, position: 'relative' }}>
           <textarea
@@ -45,16 +74,16 @@ const ChatInput = ({ onSend, isLoading = false, disabled = false, placeholder = 
             rows={1}
             style={{
               width: '100%', resize: 'none', outline: 'none',
-              padding: '10px 14px', borderRadius: 12,
-              border: '1.5px solid rgba(30,58,138,0.15)',
+              padding: '11px 16px', borderRadius: 14,
+              border: '1.5px solid #e2e8f0',
               fontSize: '0.875rem', lineHeight: 1.5, color: '#1e293b',
               background: disabled ? '#f8faff' : 'white',
               transition: 'border .15s',
               maxHeight: 180, overflowY: 'auto',
               fontFamily: 'inherit',
             }}
-            onFocus={e => { e.target.style.borderColor = 'rgba(37,99,235,0.4)'; }}
-            onBlur={e => { e.target.style.borderColor = 'rgba(30,58,138,0.15)'; }}
+            onFocus={e => { e.target.style.borderColor = '#93c5fd'; }}
+            onBlur={e => { e.target.style.borderColor = '#e2e8f0'; }}
           />
         </div>
 
@@ -62,11 +91,12 @@ const ChatInput = ({ onSend, isLoading = false, disabled = false, placeholder = 
           onClick={submit}
           disabled={!canSend}
           style={{
-            flexShrink: 0, width: 40, height: 40, borderRadius: 10,
-            background: canSend ? 'linear-gradient(135deg,#1e3a8a,#2563eb)' : 'rgba(37,99,235,0.08)',
+            flexShrink: 0, width: 42, height: 42, borderRadius: '50%',
+            background: canSend ? 'linear-gradient(135deg,#2563eb,#3b82f6)' : '#f1f5f9',
             border: 'none', cursor: canSend ? 'pointer' : 'not-allowed',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'background .15s',
+            boxShadow: canSend ? '0 2px 8px rgba(37,99,235,0.28)' : 'none',
+            transition: 'all .15s',
           }}
           title="Gửi (Enter)"
         >
@@ -76,11 +106,6 @@ const ChatInput = ({ onSend, isLoading = false, disabled = false, placeholder = 
           }
         </button>
       </div>
-
-      <p style={{ maxWidth: 860, margin: '5px auto 0', fontSize: '0.65rem', color: '#94a3b8', textAlign: 'center' }}>
-        <kbd style={{ padding: '1px 5px', background: '#f1f5f9', borderRadius: 4, fontSize: '0.6rem' }}>Enter</kbd> gửi &nbsp;·&nbsp;
-        <kbd style={{ padding: '1px 5px', background: '#f1f5f9', borderRadius: 4, fontSize: '0.6rem' }}>Shift+Enter</kbd> xuống dòng
-      </p>
     </div>
   );
 };

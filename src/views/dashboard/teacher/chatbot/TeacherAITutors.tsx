@@ -99,6 +99,7 @@ const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, sessionId, subjectId, o
       const r = await ChatApi.confirmExam(exam.ma_mon ?? subjectId, {
         exam_id:        exam.exam_id,
         session_id:     exam.session_id ?? sessionId,
+        exam_type:      exam.exam_type,
         time_limit:     timeLimit ? Number(timeLimit) : null,
         question_count: editableQs.length,
         chapters:       exam.chapters,
@@ -547,6 +548,7 @@ const TeacherAITutors: FC = () => {
       const r = await ChatApi.confirmExam(exam.ma_mon ?? msg.examMeta.subjectId, {
         exam_id:        exam.exam_id!,
         session_id:     exam.session_id ?? msg.examMeta.sessionId,
+        exam_type:      exam.exam_type,
         time_limit:     exam.time_limit,
         question_count: exam.question_count,
         chapters:       exam.chapters,
@@ -608,7 +610,7 @@ const TeacherAITutors: FC = () => {
   };
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif", background: '#f0f4ff', overflow: 'hidden' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif", background: '#f0f4ff', overflow: 'hidden' }}>
       <style>{CSS}</style>
 
       {/* ── BODY ── */}
@@ -636,19 +638,38 @@ const TeacherAITutors: FC = () => {
         </div>
 
         {/* ── Chat area ── */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#f0f4ff', minWidth: 0 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#f4f6fb', minWidth: 0 }}>
           {/* Topbar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'white', borderBottom: '1px solid rgba(37,99,235,0.07)', flexShrink: 0 }}>
-            {/* Hamburger — chỉ hiện trên mobile */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'white', borderBottom: '1px solid #eef0f5', flexShrink: 0 }}>
             <button className="tai-hamburger" onClick={() => setSidebarOpen(v => !v)} title="Danh sách chat">
               <Menu size={16} />
             </button>
-            <Button variant="default" onClick={() => navigate('/teacher/dashboard')} title="Về trang chủ">
-              <ArrowLeft size={14} /> Quay lại
+            {currentSession ? (
+              <>
+                <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#6d28d9,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(109,40,217,0.25)' }}>
+                  <BookOpen size={18} color="white" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    Chatbot hỗ trợ giảng dạy
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 1 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+                    <span style={{ fontSize: '0.65rem', color: '#64748b' }}>Trực tuyến · Trả lời 24/7</span>
+                  </div>
+                </div>
+                {(currentSession.name || currentSession.subject_id) && (
+                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#2563eb', background: 'rgba(37,99,235,0.08)', padding: '4px 10px', borderRadius: 20, flexShrink: 0, whiteSpace: 'nowrap', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {currentSession.name || currentSession.subject_id}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span style={{ flex: 1, fontSize: '0.82rem', fontWeight: 600, color: '#94a3b8' }}>Chọn hoặc tạo cuộc trò chuyện</span>
+            )}
+            <Button variant="outline" onClick={() => navigate('/teacher/dashboard')} title="Về trang chủ" style={{ flexShrink: 0 }}>
+              <ArrowLeft size={14} />
             </Button>
-            <span style={{ flex: 1, minWidth: 0, fontSize: '0.78rem', fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {currentSession ? (currentSession.name || currentSession.subject_id || 'Chat') : 'Chọn hoặc tạo cuộc trò chuyện'}
-            </span>
           </div>
 
           {currentSession ? (
@@ -662,21 +683,26 @@ const TeacherAITutors: FC = () => {
                   onExamPreview={handleExamPreview}
                 />
               </div>
-              <ChatInput onSend={handleSend} isLoading={streaming} />
+              <ChatInput
+                onSend={handleSend}
+                isLoading={streaming}
+                placeholder="Nhập câu hỏi hoặc yêu cầu tạo đề kiểm tra..."
+                suggestions={['📝 Tạo đề kiểm tra 15 câu', '📚 Tóm tắt chương học', '❓ Gợi ý câu hỏi hay']}
+              />
             </>
           ) : (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'white', boxShadow: '0 4px 20px rgba(37,99,235,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <BookOpen size={28} color="#2563eb" />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '2rem 1rem' }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#6d28d9,#8b5cf6)', boxShadow: '0 4px 20px rgba(109,40,217,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BookOpen size={30} color="white" />
               </div>
-              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#1e293b' }}>Chào mừng đến TAI-TNUT</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', textAlign: 'center', maxWidth: 300 }}>
-                Chọn cuộc trò chuyện bên trái hoặc tạo mới để bắt đầu
+              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1e293b' }}>Chatbot hỗ trợ giảng dạy</div>
+              <div style={{ fontSize: '0.8rem', color: '#64748b', textAlign: 'center', maxWidth: 300, lineHeight: 1.6 }}>
+                Chọn cuộc trò chuyện hoặc tạo mới để bắt đầu hỏi bài và tạo đề kiểm tra
               </div>
               <button
                 onClick={handleNewChat}
                 disabled={creatingSession}
-                style={{ marginTop: 8, padding: '10px 24px', borderRadius: 12, background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', border: 'none', color: 'white', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
+                style={{ marginTop: 4, padding: '10px 28px', borderRadius: 12, background: 'linear-gradient(135deg,#6d28d9,#8b5cf6)', border: 'none', color: 'white', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 2px 10px rgba(109,40,217,0.3)' }}
               >
                 {creatingSession ? 'Đang tạo...' : '+ Cuộc trò chuyện mới'}
               </button>

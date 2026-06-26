@@ -1,12 +1,11 @@
 import { type FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
-  ArrowLeft, User, Mail, Shield, Calendar,
+  User, Mail, Shield, Calendar,
   Activity, Key, Clock, LogIn, Hash,
-  GraduationCap, RefreshCw, LogOut, Briefcase,
+  GraduationCap, Briefcase,
 } from 'lucide-react';
 import AuthRepository from '@/infra/AuthRepository';
-import { useAuthStore } from '@/views/pages/stores/auth_store';
 import type { IUserMe, ITeacherProfileData } from '@/infra/api/interfaces/IUser';
 
 // ── helpers ──────────────────────────────────────────
@@ -64,7 +63,6 @@ const InfoRow: FC<{ icon: React.ReactNode; label: string; value: string }> = ({ 
 // ── Main ─────────────────────────────────────────────
 const TeacherProfile: FC = () => {
   const navigate = useNavigate();
-  const logout   = useAuthStore(s => s.logout);
   const [user, setUser]             = useState<IUserMe | null>(null);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState<string | null>(null);
@@ -80,11 +78,6 @@ const TeacherProfile: FC = () => {
 
   useEffect(() => { fetchProfile(); }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/', { replace: true });
-  };
-
   const teacherProfile = user?.profile && isTeacherProfile(user.profile) ? user.profile : null;
 
   const card: React.CSSProperties = {
@@ -97,37 +90,8 @@ const TeacherProfile: FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#eef4ff', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif", padding: '1.5rem' }}>
+    <div style={{ minHeight: '100%', background: '#eef4ff', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif", padding: '1.5rem' }}>
       <style>{CSS}</style>
-
-      {/* ── Top bar ── */}
-      <div style={{ maxWidth: 900, margin: '0 auto 1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <button
-            onClick={() => navigate(-1)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(37,99,235,0.15)', borderRadius: 10, padding: '8px 14px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600, color: '#1e3a8a' }}
-          >
-            <ArrowLeft size={16} /> Quay lại
-          </button>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              onClick={fetchProfile}
-              disabled={loading}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(37,99,235,0.15)', borderRadius: 10, padding: '8px 14px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontWeight: 600, color: '#2563eb' }}
-            >
-              <RefreshCw size={15} style={{ animation: loading ? 'tp-spin 0.8s linear infinite' : 'none' }} />
-              Làm mới
-            </button>
-            <button
-              onClick={handleLogout}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(220,38,38,0.25)', borderRadius: 10, padding: '8px 14px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600, color: '#dc2626' }}
-            >
-              <LogOut size={15} />
-              Đăng xuất
-            </button>
-          </div>
-        </div>
-      </div>
 
       <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 

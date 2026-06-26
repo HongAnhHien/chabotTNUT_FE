@@ -1,6 +1,6 @@
 import { type FC, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { Bot, User, ArrowDown, Copy, Check, Trash2, CheckCircle, Eye, ChevronDown, ChevronUp, ExternalLink, X, Loader2, Hash, Clock, BookOpen } from 'lucide-react';
+import { Bot, ArrowDown, Copy, Check, Trash2, CheckCircle, Eye, ChevronDown, ChevronUp, ExternalLink, X, Loader2, Hash, Clock, BookOpen } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
@@ -90,11 +90,24 @@ const ExamModal: FC<{ examId: string; onClose: () => void }> = ({ examId, onClos
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    let active = true;
+
+    Promise.resolve().then(() => {
+      if (active) setLoading(true);
+    });
+
     ChatApi.getExamDetail(examId)
-      .then(r => setExam(r.data))
+      .then(r => {
+        if (active) setExam(r.data);
+      })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [examId]);
 
   const questions = exam?.questions ?? [];
@@ -164,6 +177,7 @@ const ExamModal: FC<{ examId: string; onClose: () => void }> = ({ examId, onClos
 interface Props {
   messages: ChatMessage[];
   isStreaming?: boolean;
+  role?: 'teacher' | 'student';
   onExamDismiss: (msgId: string) => void;
   onExamConfirm: (msgId: string) => void;
   onExamPreview: (msgId: string) => void;
@@ -176,7 +190,7 @@ const EXAM_API_RE = /^GET \/api\/exam\/([a-zA-Z0-9_-]+)$/;
 const cleanContent = (s: string) =>
   s.replace(/ API:/g, ':').replace(/ API\b/g, '');
 
-const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfirm, onExamPreview }: Props) => {
+const ChatContent = ({ messages, isStreaming = false, role = 'teacher', onExamDismiss, onExamConfirm, onExamPreview }: Props) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const viewingExamId = searchParams.get('exam');
   const setViewingExamId = (id: string | null) =>
@@ -250,6 +264,16 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
 
   return (
     <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <style>{`
+        .chat-bubble-bot hr { border:none; border-top:1.5px solid rgba(37,99,235,0.12); margin:10px 0; }
+        .chat-bubble-bot p { margin:0 0 6px; }
+        .chat-bubble-bot p:last-child { margin-bottom:0; }
+        .chat-bubble-bot ul { padding-left:0; list-style:none; display:flex; flex-direction:column; gap:4px; margin:6px 0; }
+        .chat-bubble-bot li { padding:6px 10px; border-radius:8px; background:rgba(37,99,235,0.04); border:1px solid rgba(37,99,235,0.09); font-size:0.85rem; }
+        .chat-bubble-bot strong { color:#1e293b; }
+        .chat-bubble-bot code { background:rgba(37,99,235,0.08); color:#2563eb; padding:1px 6px; border-radius:5px; font-size:0.82em; }
+        .chat-bubble-bot h1,.chat-bubble-bot h2,.chat-bubble-bot h3 { font-size:0.9rem; font-weight:700; color:#1e293b; margin:8px 0 4px; }
+      `}</style>
       <div ref={containerRef} onScroll={handleScroll} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
         <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
           {messages.length === 0 && !isStreaming ? (
@@ -257,9 +281,9 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
               <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,rgba(30,58,138,0.1),rgba(37,99,235,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                 <Bot size={32} color="#2563eb" />
               </div>
-              <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b', marginBottom: 6 }}>Xin chào, Giảng viên!</div>
+              <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b', marginBottom: 6 }}>Xin chào!</div>
               <div style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', maxWidth: 360 }}>
-                Tôi là <strong>TAI-TNUT</strong> — trợ lý AI tạo đề kiểm tra và hỗ trợ giảng dạy. Hãy đặt câu hỏi hoặc yêu cầu tạo đề!
+                Tôi là <strong>TAI-TNUT</strong> — trợ lý AI hỗ trợ học tập. Hãy đặt câu hỏi để bắt đầu!
               </div>
             </div>
           ) : (
@@ -271,8 +295,8 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
                     const expanded = expandedIds.has(msg.id);
                     return (
                       <div key={msg.id} style={{ display: 'flex', gap: 10 }}>
-                        <div style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2, animation: 'pulse 1.5s ease infinite' }}>
-                          <Bot size={15} color="white" />
+                        <div style={{ flexShrink: 0, width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#6d28d9,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2, animation: 'pulse 1.5s ease infinite', boxShadow: '0 2px 8px rgba(109,40,217,0.3)' }}>
+                          <Bot size={16} color="white" />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxWidth: '80%' }}>
                           {/* Typing indicator row */}
@@ -322,8 +346,8 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
                   <div key={msg.id}>
                     <div style={{ display: 'flex', gap: 10, justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                       {msg.role === 'assistant' && (
-                        <div style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
-                          <Bot size={15} color="white" />
+                        <div style={{ flexShrink: 0, width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#6d28d9,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2, boxShadow: '0 2px 8px rgba(109,40,217,0.25)' }}>
+                          <Bot size={16} color="white" />
                         </div>
                       )}
 
@@ -331,22 +355,41 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
                         {/* Bubble */}
                         <div style={{
                           padding: '10px 14px',
-                          borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '4px 16px 16px 16px',
+                          borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '4px 18px 18px 18px',
                           background: msg.role === 'user' ? 'linear-gradient(135deg,#1e3a8a,#2563eb)' : 'white',
                           color: msg.role === 'user' ? 'white' : '#1e293b',
-                          boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
-                          border: msg.role === 'assistant' ? '1px solid rgba(37,99,235,0.08)' : 'none',
+                          boxShadow: msg.role === 'user' ? '0 2px 10px rgba(37,99,235,0.25)' : '0 2px 12px rgba(0,0,0,0.07)',
                           fontSize: '0.875rem',
                           lineHeight: 1.6,
                         }}>
                           {msg.role === 'assistant' ? (
-                            <div className="prose prose-sm max-w-none" style={{ fontSize: '0.875rem' }}>
+                            <div className="chat-bubble-bot prose prose-sm max-w-none" style={{ fontSize: '0.875rem' }}>
                               <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={mdComponents}>
                                 {cleanContent(msg.content)}
                               </ReactMarkdown>
                             </div>
                           ) : (
                             <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{msg.content}</p>
+                          )}
+                          {/* Assignment button — inside bubble, student only */}
+                          {role === 'student' && msg.role === 'assistant' && msg.intent === 'luyen_tap_tao_de' && msg.assignmentLink && !msg.isStreaming && (
+                            <div style={{ marginTop: 10 }}>
+                              <a
+                                href={(() => { try { return new URL(msg.assignmentLink).pathname; } catch { return msg.assignmentLink; } })()}
+                                style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: 7,
+                                  padding: '8px 18px', borderRadius: 9,
+                                  background: 'linear-gradient(135deg,#2563eb,#3b82f6)',
+                                  color: 'white', fontWeight: 700, fontSize: '0.8rem',
+                                  textDecoration: 'none', boxShadow: '0 2px 8px rgba(37,99,235,0.28)',
+                                  transition: 'opacity .15s',
+                                }}
+                                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.85'; }}
+                                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+                              >
+                                ✏️ Làm bài kiểm tra
+                              </a>
+                            </div>
                           )}
                         </div>
 
@@ -363,8 +406,8 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
                           <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{fmtTime(msg.timestamp)}</span>
                         </div>
 
-                        {/* Exam action buttons */}
-                        {msg.role === 'assistant' && msg.examMeta && !msg.examMeta.dismissed && !msg.examMeta.confirmed && (
+                        {/* Exam action buttons — teacher only */}
+                        {role === 'teacher' && msg.role === 'assistant' && msg.examMeta && !msg.examMeta.dismissed && !msg.examMeta.confirmed && (
                           <div style={{ marginTop: 8, display: 'flex', gap: 7, flexWrap: 'wrap' }}>
                             <button
                               onClick={() => onExamDismiss(msg.id)}
@@ -386,7 +429,7 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
                             </button>
                           </div>
                         )}
-                        {msg.role === 'assistant' && msg.examMeta?.confirmed && (
+                        {role === 'teacher' && msg.role === 'assistant' && msg.examMeta?.confirmed && (
                           <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                             <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: '#059669', fontWeight: 600 }}>
                               <CheckCircle size={12} /> Đã lưu đề kiểm tra
@@ -403,11 +446,6 @@ const ChatContent = ({ messages, isStreaming = false, onExamDismiss, onExamConfi
                         )}
                       </div>
 
-                      {msg.role === 'user' && (
-                        <div style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg,#7c3aed,#a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
-                          <User size={15} color="white" />
-                        </div>
-                      )}
                     </div>
                   </div>
                   );

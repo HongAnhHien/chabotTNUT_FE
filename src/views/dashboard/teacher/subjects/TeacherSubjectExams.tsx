@@ -1,7 +1,7 @@
 import { type FC, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import {
-  ArrowLeft, ClipboardList, Eye, Trash2, Send,
+  ClipboardList, Eye, Trash2, Send,
   Loader2, ChevronLeft, BookOpen, Clock, Hash,
   Pencil, X, Save, Calendar, Users, CheckCircle,
   AlertCircle, Search, User, BarChart2,
@@ -487,45 +487,81 @@ const TeacherSubjectExams: FC = () => {
     finally { setDeletingId(null); }
   };
 
-  const confirmed = exams.filter(e => e.status === 'confirmed').length;
-  const draft     = exams.filter(e => e.status !== 'confirmed').length;
+  const [openingChat,    setOpeningChat]    = useState(false);
+  const [search,         setSearch]         = useState('');
+  const [examTypeFilter, setExamTypeFilter] = useState('');
+
+  const EXAM_TYPES = [
+    { value: 'kiem_tra_chuong', label: 'Kiểm tra chương' },
+    { value: 'giua_ky',        label: 'Giữa kỳ'          },
+  ];
+
+  const filteredExams = useMemo(() => {
+    let list = exams;
+    if (examTypeFilter) list = list.filter(e => e.exam_type === examTypeFilter);
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter(e =>
+        (e.ten_mon ?? '').toLowerCase().includes(q) ||
+        (e.ma_mon ?? '').toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [exams, search, examTypeFilter]);
+
+  const openChatbot = async () => {
+
+    if (!maMon || openingChat) return;
+    setOpeningChat(true);
+    try {
+      const r = await ChatApi.createSession(maMon);
+      navigate(`/teacher/chat/${r.session_id}`);
+    } catch {
+      toast.error('Không thể mở chatbot. Vui lòng thử lại.');
+    } finally {
+      setOpeningChat(false);
+    }
+  };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg,#eef4ff 0%,#e0eaff 40%,#f0f9ff 100%)', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif" }}>
+    <div style={{ minHeight: '100%', background: 'linear-gradient(160deg,#eef4ff 0%,#e0eaff 40%,#f0f9ff 100%)', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif" }}>
       <style>{CSS}</style>
-
-      {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e3a8a)', position: 'sticky', top: 0, zIndex: 20, boxShadow: '0 2px 16px rgba(15,23,42,0.25)' }}>
-        <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 16px', height: 56, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
-            <ArrowLeft size={13} /> Quay lại
-          </button>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'white', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <ClipboardList size={14} color="#93c5fd" /> Đề kiểm tra
-            </div>
-            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)' }}>{tenMon} · <span style={{ fontFamily: 'monospace' }}>{maMon}</span></div>
-          </div>
-          <button onClick={() => navigate('/teacher/chat')} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 9, background: 'rgba(147,197,253,0.15)', border: '1px solid rgba(147,197,253,0.25)', color: '#bfdbfe', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>
-            + Tạo đề mới
-          </button>
-        </div>
-      </div>
 
       {/* Content */}
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-          {[
-            { label: 'Tổng đề',     value: exams.length, color: '#1e3a8a' },
-            { label: 'Đã xác nhận', value: confirmed,    color: '#059669' },
-            { label: 'Nháp',        value: draft,        color: '#d97706' },
-          ].map(({ label, value, color }) => (
-            <div key={label} style={{ background: 'white', borderRadius: 12, border: `1px solid ${color}18`, padding: '12px 10px', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.5rem', fontWeight: 900, color, lineHeight: 1 }}>{value}</div>
-              <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 600, marginTop: 3 }}>{label}</div>
+
+        {/* Title + action bar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <ClipboardList size={15} color="#2563eb" /> Đề kiểm tra
             </div>
-          ))}
+            <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: 2 }}>{tenMon} · <span style={{ fontFamily: 'monospace' }}>{maMon}</span></div>
+          </div>
+          <button onClick={openChatbot} disabled={openingChat} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 16px', borderRadius: 10, background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', border: 'none', color: 'white', fontSize: '0.78rem', fontWeight: 700, cursor: openingChat ? 'not-allowed' : 'pointer', opacity: openingChat ? 0.7 : 1, flexShrink: 0 }}>
+            {openingChat ? '...' : '+ Tạo đề mới'}
+          </button>
+        </div>
+
+        {/* Search + Filter bar */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 180, position: 'relative' }}>
+            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Tìm kiếm đề..."
+              style={{ width: '100%', paddingLeft: 30, paddingRight: 10, height: 36, borderRadius: 10, border: '1px solid rgba(37,99,235,0.18)', fontSize: '0.82rem', outline: 'none', background: 'white', boxSizing: 'border-box' }}
+            />
+          </div>
+          <select
+            value={examTypeFilter}
+            onChange={e => setExamTypeFilter(e.target.value)}
+            style={{ height: 36, borderRadius: 10, border: '1px solid rgba(37,99,235,0.18)', fontSize: '0.82rem', padding: '0 10px 0 10px', background: 'white', color: '#1e293b', cursor: 'pointer', outline: 'none', appearance: 'none', WebkitAppearance: 'none', paddingRight: 28, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
+          >
+            <option value=''>Tất cả loại đề</option>
+            {EXAM_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
         </div>
 
         {/* List */}
@@ -539,13 +575,17 @@ const TeacherSubjectExams: FC = () => {
               <ClipboardList size={42} color="#bfdbfe" style={{ margin: '0 auto 12px', display: 'block' }} />
               <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1e293b' }}>Chưa có đề kiểm tra nào</div>
               <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 4 }}>Sử dụng chatbot TAI để tạo đề mới</div>
-              <button onClick={() => navigate('/teacher/chat')} style={{ marginTop: 14, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 10, background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', border: 'none', color: 'white', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
-                Mở chatbot TAI
+              <button onClick={openChatbot} disabled={openingChat} style={{ marginTop: 14, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 10, background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', border: 'none', color: 'white', fontSize: '0.8rem', fontWeight: 700, cursor: openingChat ? 'not-allowed' : 'pointer', opacity: openingChat ? 0.7 : 1 }}>
+                {openingChat ? 'Đang mở...' : 'Mở chatbot TAI'}
               </button>
+            </div>
+          ) : filteredExams.length === 0 ? (
+            <div style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>Không tìm thấy đề phù hợp</div>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {exams.map((exam, idx) => {
+              {filteredExams.map((exam, idx) => {
                 const isConfirmed = exam.status === 'confirmed';
                 const ribbon = isConfirmed
                   ? { bg: 'linear-gradient(135deg,#059669,#10b981)', text: 'Đã xác nhận', shadow: 'rgba(5,150,105,0.35)' }
@@ -554,7 +594,7 @@ const TeacherSubjectExams: FC = () => {
                 const aBadge = asgn ? aStatusBadge(asgn.status) : null;
 
                 return (
-                  <div key={exam.id} style={{ position: 'relative', overflow: 'hidden', borderBottom: idx < exams.length - 1 ? '1px solid rgba(37,99,235,0.06)' : 'none', animation: `se-fade .3s ease ${idx * 0.05}s both` }}>
+                  <div key={exam.id} style={{ position: 'relative', overflow: 'hidden', borderBottom: idx < filteredExams.length - 1 ? '1px solid rgba(37,99,235,0.06)' : 'none', animation: `se-fade .3s ease ${idx * 0.05}s both` }}>
                     {/* Ribbon */}
                     <div style={{ position: 'absolute', top: 14, right: -26, width: 96, background: ribbon.bg, boxShadow: `0 2px 6px ${ribbon.shadow}`, transform: 'rotate(45deg)', textAlign: 'center', padding: '4px 0', zIndex: 1, pointerEvents: 'none' }}>
                       <span style={{ fontSize: '0.5rem', fontWeight: 900, color: 'white', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{ribbon.text}</span>
@@ -570,6 +610,11 @@ const TeacherSubjectExams: FC = () => {
                           {exam.ten_mon || exam.ma_mon || '—'}
                         </div>
                         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
+                          {exam.exam_type && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', fontWeight: 700, color: '#c2410c', background: 'rgba(194,65,12,0.08)', borderRadius: 20, padding: '2px 8px', border: '1px solid rgba(194,65,12,0.15)' }}>
+                              {EXAM_TYPES.find(t => t.value === exam.exam_type)?.label ?? exam.exam_type}
+                            </span>
+                          )}
                           {exam.question_count != null && (
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', fontWeight: 700, color: '#1e3a8a', background: 'rgba(30,58,138,0.07)', borderRadius: 20, padding: '2px 8px' }}>
                               <Hash size={9} /> {exam.question_count} câu

@@ -53,3 +53,14 @@ export interface IStudentSemesterSubjectsResponse {
   success: boolean;
   data: IStudentSubject[];
 }
+
+// ── Student exam status ────────────────────────────────
+export type ExamStatus = 'none' | 'not_started' | 'submitted';
+
+export interface IStudentExamStatusResponse {
+  success: boolean;
+  can_create: boolean;
+  status: ExamStatus;
+  exam_id: string | null;
+  link: string | null;
+}

@@ -1,7 +1,7 @@
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import {
-  Bell, LogOut,  BookOpen, Users,
+  Bell, BookOpen, Users,
   ChevronRight, RefreshCw, MapPin, Clock,
   Calendar, GraduationCap, Layers, Sparkles, FileText,  ClipboardList,
   X, Loader2, Eye, Trash2, Send,
@@ -10,7 +10,6 @@ import { useAuthStore } from '@/views/pages/stores/auth_store';
 import toast from 'react-hot-toast';
 import TeacherApi from '@/infra/teacher/teacher_api';
 import ChatApi from '@/infra/chat/chat_api';
-import logoTNUT from '@/assets/logo_tnut/logo_tnut.png';
 import iconProfile from '@/assets/icon/icon_profile.png';
 import iconAI      from '@/assets/icon/icon_TNUT_AI.png';
 import iconExam    from '@/assets/icon/icon_exam.png';
@@ -1208,7 +1207,6 @@ const TeacherAspx: FC = () => {
   const [searchParams] = useSearchParams();
   const notifRef     = useRef<HTMLDivElement>(null);
   const user         = useAuthStore(s => s.user);
-  const logout       = useAuthStore(s => s.logout);
   const [semesters, setSemesters]         = useState<ISemester[]>([]);
   const [currentHocKy, setCurrentHocKy]  = useState<number | null>(null);
   const [selectedHocKy, setSelectedHocKy]= useState<number | null>(null);
@@ -1256,23 +1254,6 @@ const TeacherAspx: FC = () => {
       .finally(() => setLoadingCourses(false));
   }, [selectedHocKy]);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/', { replace: true });
-  };
-
-     const [isScrolled, setIsScrolled] = useState(false);
-
-  // Track scroll position
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   // Stats
   const totalClasses  = courses.reduce((s, c) => s + c.classes.length, 0);
   const totalStudents = courses.reduce((s, c) => s + c.classes.reduce((a, cl) => a + cl.sl_dk, 0), 0);
@@ -1281,51 +1262,8 @@ const TeacherAspx: FC = () => {
   const unread        = NOTIFICATIONS.filter(n => n.unread).length;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg,#eef4ff,#e0eaff)', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif" }}>
+    <div style={{ minHeight: '100%', background: 'linear-gradient(160deg,#eef4ff,#e0eaff)', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif" }}>
       <style>{CSS}</style>
-
-      {/* ══ NAVBAR ══ */}
-      <div 
-       className={`
-          sticky top-0 
-          z-30 border-border border-b-none border-x backdrop-blur-md
-          transition-[background-color,box-shadow] duration-300 ease-in-out 
-          ${isScrolled ? "bg-background/40 shadow-md" : "bg-background"}
-        `}
-      >
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', gap: 12, height: 56 }}>
-          {/* Brand */}
-          <img src={logoTNUT} alt="TNUT" style={{ width: 30, height: 30, objectFit: 'contain', flexShrink: 0 }} />
-          <div style={{ width: 1, height: 20, background: 'rgba(0,0,0,0.1)', flexShrink: 0 }} />
-          <span className="t-nav-title">Cổng giảng viên</span>
-
-          {/* Spacer */}
-          <div style={{ flex: 1 }} />
-
-          {/* Bell */}
-          <button className="t-nav-btn" style={{ position: 'relative' }} onClick={() => notifRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-            <Bell size={15} />
-            {unread > 0 && <span style={{ position: 'absolute', top: 7, right: 7, width: 5, height: 5, borderRadius: '50%', background: '#ef4444' }} />}
-          </button>
-
-          {/* Divider */}
-          <div style={{ width: 1, height: 20, background: 'rgba(0,0,0,0.08)', flexShrink: 0 }} />
-
-          {/* User pill */}
-          {/* <button className="t-nav-user" onClick={() => navigate('/teacher/profile')}>
-            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#1e3a8a,#3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.62rem', fontWeight: 800, color: 'white', flexShrink: 0, boxShadow: '0 1px 4px rgba(37,99,235,0.3)' }}>
-              {user?.name?.split(' ').map((w: string) => w[0]).slice(-2).join('').toUpperCase() ?? 'GV'}
-            </div>
-            <span className="t-nav-name">{user?.name ?? user?.username}</span>
-          </button> */}
-
-          {/* Logout */}
-          <button className="t-nav-logout" onClick={handleLogout}>
-            <LogOut size={13} />
-            Đăng xuất
-          </button>
-        </div>
-      </div>
 
       {/* ══ HERO ══ */}
       <div className="t-hero" style={{ background: 'linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 60%,#3b82f6 100%)', position: 'relative', overflow: 'hidden' }}>

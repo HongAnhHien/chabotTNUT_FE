@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { ILoginRequest, IRegisterRequest } from '@/infra/api/interfaces/IAuth';
 import type { IUser } from '@/infra/api/interfaces/IUser';
 import type { IApiError } from '@/helper/IError';
@@ -13,7 +14,6 @@ let _refreshTimer: ReturnType<typeof setTimeout> | null = null;
 function scheduleTokenRefresh(expiresInSeconds: number) {
   if (_refreshTimer) clearTimeout(_refreshTimer);
 
-  // Refresh 90s trước khi hết hạn, tối thiểu 5s
   const delayMs = Math.max((expiresInSeconds - 90) * 1000, 5_000);
 
   if (import.meta.env.DEV) {
@@ -27,15 +27,12 @@ function scheduleTokenRefresh(expiresInSeconds: number) {
 
       storage.setToken(access_token);
       storage.setTokenExpiresAt(Date.now() + expires_in * 1000);
-
-      // Lên lịch refresh tiếp theo
       scheduleTokenRefresh(expires_in);
 
       if (import.meta.env.DEV) {
         console.log(`✅ Token auto-refreshed, next in ${expires_in - 90}s`);
       }
     } catch {
-      // Refresh thất bại → force logout
       cancelTokenRefresh();
       storage.clearAuth();
       useAuthStore.setState({ user: null, isAuthenticated: false, error: null });
@@ -67,103 +64,125 @@ interface AuthState {
   clearError:     () => void;
 }
 
-// ── Store ─────────────────────────────────────────────
-export const useAuthStore = create<AuthState>()((set) => ({
-  user:            null,
-  isAuthenticated: false,
-  isLoading:       false,
-  isInitialized:   false,
-  error:           null,
+// ── Store với persist middleware ──────────────────────
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user:            null,
+      isAuthenticated: false,
+      isLoading:       false,
+      isInitialized:   false,
+      error:           null,
 
-  // Khởi tạo auth khi app mount — kiểm tra token còn hạn không
-  initializeAuth: () => {
-    const token     = storage.getToken();
-    const user      = storage.getUser<IUser>();
-    const expiresAt = storage.getTokenExpiresAt();
+      // Khởi tạo khi app mount — token/expiry vẫn dùng storage thủ công
+      // User data được Zustand persist tự restore từ localStorage
+      initializeAuth: () => {
+        const token     = storage.getToken();
+        const expiresAt = storage.getTokenExpiresAt();
 
-    if (token && user) {
-      const now = Date.now();
+        if (!token) {
+          set({ isInitialized: true, user: null, isAuthenticated: false });
+          return;
+        }
 
-      // Token đã hết hạn
-      if (expiresAt && expiresAt <= now) {
-        storage.clearAuth();
-        set({ isInitialized: true });
-        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-        return;
-      }
+        const now = Date.now();
+        if (expiresAt && expiresAt <= now) {
+          cancelTokenRefresh();
+          storage.clearAuth();
+          set({ user: null, isAuthenticated: false, isInitialized: true });
+          toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+          return;
+        }
 
-      set({ user, isAuthenticated: true, isInitialized: true });
+        // Token hợp lệ — user đã được persist restore, chỉ cần mark initialized
+        set({ isAuthenticated: true, isInitialized: true });
 
-      // Lên lịch refresh với thời gian còn lại
-      if (expiresAt) {
-        const remainingSeconds = Math.floor((expiresAt - now) / 1000);
-        scheduleTokenRefresh(remainingSeconds);
-      }
-    } else {
-      storage.clearAuth();
-      set({ isInitialized: true });
+        if (expiresAt) {
+          scheduleTokenRefresh(Math.floor((expiresAt - now) / 1000));
+        }
+
+        // Làm mới profile từ server (cập nhật name/avatar nếu thay đổi)
+        AuthRepository.getMe().then(res => {
+          set({ user: res.data as unknown as IUser });
+        }).catch(() => {
+          // Giữ data persist hiện có nếu lỗi mạng
+        });
+      },
+
+      // Đăng nhập
+      login: async (credentials) => {
+        try {
+          set({ isLoading: true, error: null });
+
+          const res = await AuthRepository.login(credentials);
+
+          storage.setToken(res.data.access_token);
+          storage.setTokenExpiresAt(Date.now() + res.data.expires_in * 1000);
+          scheduleTokenRefresh(res.data.expires_in);
+
+          // Lưu tạm từ login response
+          set({
+            user:            res.data.user,
+            isAuthenticated: true,
+            isLoading:       false,
+            error:           null,
+          });
+
+          // Lấy full profile (có đủ name, email, avatar...)
+          AuthRepository.getMe().then(meRes => {
+            set({ user: meRes.data as unknown as IUser });
+          }).catch(() => {});
+
+          toast.success('Đăng nhập thành công!');
+          return true;
+        } catch (error) {
+          const apiError = handleApiError(error, false);
+          set({ isLoading: false, error: apiError, isAuthenticated: false });
+          return false;
+        }
+      },
+
+      // Đăng ký
+      register: async (data) => {
+        try {
+          set({ isLoading: true, error: null });
+          await AuthRepository.register(data);
+          set({ isLoading: false, error: null });
+          toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
+          return true;
+        } catch (error) {
+          const apiError = handleApiError(error, false);
+          set({ isLoading: false, error: apiError });
+          return false;
+        }
+      },
+
+      // Đăng xuất
+      logout: async () => {
+        cancelTokenRefresh();
+        try {
+          await AuthRepository.logout();
+        } catch {
+          // Bỏ qua lỗi server, vẫn xóa local state
+        } finally {
+          storage.clearAuth();
+          set({ user: null, isAuthenticated: false, error: null });
+        }
+      },
+
+      clearError: () => set({ error: null }),
+    }),
+    {
+      name: 'tnut-auth',
+      storage: createJSONStorage(() => localStorage),
+      // Chỉ persist user và isAuthenticated — isLoading/isInitialized/error là runtime state
+      partialize: (state) => ({
+        user:            state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
-  },
-
-  // Đăng nhập — lưu token + expiry + schedule refresh
-  login: async (credentials) => {
-    try {
-      set({ isLoading: true, error: null });
-
-      const res = await AuthRepository.login(credentials);
-
-      storage.setToken(res.data.access_token);
-      storage.setUser(res.data.user);
-      storage.setTokenExpiresAt(Date.now() + res.data.expires_in * 1000);
-
-      scheduleTokenRefresh(res.data.expires_in);
-
-      set({
-        user:            res.data.user,
-        isAuthenticated: true,
-        isLoading:       false,
-        error:           null,
-      });
-
-      toast.success('Đăng nhập thành công!');
-      return true;
-    } catch (error) {
-      const apiError = handleApiError(error, false);
-      set({ isLoading: false, error: apiError, isAuthenticated: false });
-      return false;
-    }
-  },
-
-  // Đăng ký
-  register: async (data) => {
-    try {
-      set({ isLoading: true, error: null });
-      await AuthRepository.register(data);
-      set({ isLoading: false, error: null });
-      toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
-      return true;
-    } catch (error) {
-      const apiError = handleApiError(error, false);
-      set({ isLoading: false, error: apiError });
-      return false;
-    }
-  },
-
-  // Đăng xuất — huỷ timer trước, rồi xóa state
-  logout: async () => {
-    cancelTokenRefresh();
-    try {
-      await AuthRepository.logout();
-    } catch {
-      // Bỏ qua lỗi server, vẫn xóa local state
-    } finally {
-      storage.clearAuth();
-      set({ user: null, isAuthenticated: false, error: null });
-    }
-  },
-
-  clearError: () => set({ error: null }),
-}));
+  )
+);
 
 // ── Selectors ─────────────────────────────────────────
 export const selectUser            = (s: AuthState) => s.user;

@@ -1,6 +1,6 @@
 import { type FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeft, ClipboardList, Users, CheckCircle, Clock, ChevronRight, Loader2, BookOpen } from 'lucide-react';
+import { ClipboardList, Users, CheckCircle, Clock, ChevronRight, Loader2, BookOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
 import TeacherApi from '@/infra/teacher/teacher_api';
 import type { IAssignmentListItem } from '@/infra/api/interfaces/IAssignment';
@@ -41,28 +41,8 @@ const TeacherAssignments: FC = () => {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#f0f4ff 0%,#e8f0fe 50%,#f5f3ff 100%)' }}>
+    <div style={{ minHeight: '100%', background: 'linear-gradient(135deg,#f0f4ff 0%,#e8f0fe 50%,#f5f3ff 100%)' }}>
       <style>{CSS}</style>
-
-      {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e3a8a)', padding: '0 20px', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 820, margin: '0 auto', height: 56, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={() => navigate('/teacher/dashboard')}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}
-          >
-            <ArrowLeft size={13} /> Quay lại
-          </button>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <ClipboardList size={16} color="#93c5fd" />
-              <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'white' }}>Quản lý bài giao</span>
-            </div>
-          </div>
-          <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
-            {assignments.length} bài
-          </div>
-        </div>
-      </div>
 
       {/* Content */}
       <div style={{ maxWidth: 820, margin: '0 auto', padding: '20px 16px' }}>

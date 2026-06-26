@@ -74,6 +74,7 @@ export const API_ENDPOINTS = {
   STUDENT_ASSIGNMENT: {
     LIST:   '/student/assignments',
     DETAIL: (id: string) => `/student/assignments/${id}`,
+    START:  (id: string) => `/student/assignments/${id}/start`,
     SUBMIT: (id: string) => `/student/assignments/${id}/submit`,
   },
 
@@ -81,6 +82,9 @@ export const API_ENDPOINTS = {
     SUBJECTS:          '/student/subjects',
     SEMESTERS:         '/student/semesters',
     SEMESTER_SUBJECTS: (hocKy: number) => `/student/semesters/${hocKy}/subjects`,
+    EXAM_STATUS:       (userId: string, maMon: string) => `/chatbot/student-exam-status?user_id=${encodeURIComponent(userId)}&ma_mon=${encodeURIComponent(maMon)}`,
+    DASHBOARD_OVERVIEW: (semesterFrom?: string) => `/student/dashboard/overview${semesterFrom ? `?semester_from=${semesterFrom}` : ''}`,
+    DASHBOARD_SUBJECT:  (maMon: string) => `/student/dashboard?ma_mon=${encodeURIComponent(maMon)}`,
   },
 
   FILES: {

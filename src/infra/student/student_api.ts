@@ -5,12 +5,18 @@ import type {
   IStudentAssignmentDetailResponse,
   ISubmitBody,
   ISubmitResponse,
+  IStartAssignmentResponse,
 } from '@/infra/api/interfaces/IAssignment';
 import type {
   IStudentSubjectsResponse,
   IStudentSemestersResponse,
   IStudentSemesterSubjectsResponse,
+  IStudentExamStatusResponse,
 } from '@/infra/api/interfaces/IStudent';
+import type {
+  IDashboardOverviewResponse,
+  IDashboardSubjectResponse,
+} from '@/infra/api/interfaces/IDashboard';
 
 class StudentApi {
   async getAssignments(): Promise<IStudentAssignmentsResponse> {
@@ -23,6 +29,13 @@ class StudentApi {
   async getAssignmentDetail(id: string): Promise<IStudentAssignmentDetailResponse> {
     const res = await axiosInstance.get<IStudentAssignmentDetailResponse>(
       API_ENDPOINTS.STUDENT_ASSIGNMENT.DETAIL(id)
+    );
+    return res.data;
+  }
+
+  async startAssignment(id: string): Promise<IStartAssignmentResponse> {
+    const res = await axiosInstance.post<IStartAssignmentResponse>(
+      API_ENDPOINTS.STUDENT_ASSIGNMENT.START(id)
     );
     return res.data;
   }
@@ -48,6 +61,27 @@ class StudentApi {
   async getSubjectsBySemester(hocKy: number): Promise<IStudentSemesterSubjectsResponse> {
     const res = await axiosInstance.get<IStudentSemesterSubjectsResponse>(
       API_ENDPOINTS.STUDENT.SEMESTER_SUBJECTS(hocKy)
+    );
+    return res.data;
+  }
+
+  async getExamStatus(userId: string, maMon: string): Promise<IStudentExamStatusResponse> {
+    const res = await axiosInstance.get<IStudentExamStatusResponse>(
+      API_ENDPOINTS.STUDENT.EXAM_STATUS(userId, maMon)
+    );
+    return res.data;
+  }
+
+  async getDashboardOverview(semesterFrom?: string): Promise<IDashboardOverviewResponse> {
+    const res = await axiosInstance.get<IDashboardOverviewResponse>(
+      API_ENDPOINTS.STUDENT.DASHBOARD_OVERVIEW(semesterFrom)
+    );
+    return res.data;
+  }
+
+  async getDashboardSubject(maMon: string): Promise<IDashboardSubjectResponse> {
+    const res = await axiosInstance.get<IDashboardSubjectResponse>(
+      API_ENDPOINTS.STUDENT.DASHBOARD_SUBJECT(maMon)
     );
     return res.data;
   }

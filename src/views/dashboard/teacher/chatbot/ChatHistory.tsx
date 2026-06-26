@@ -1,6 +1,5 @@
-import { Plus, MessageSquare, Trash2, Loader2, Bot } from 'lucide-react';
+import { Plus, MessageSquare, Trash2, Loader2 } from 'lucide-react';
 import type { IChatSession } from '@/infra/api/interfaces/IChat';
-import logoTNUT from '@/assets/logo_tnut/logo_tnut.png';
 
 interface Props {
   sessions: IChatSession[];
@@ -17,24 +16,22 @@ const fmtDate = (iso?: string) => {
 };
 
 const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onNewChat, onDeleteSession, isLoading = false }: Props) => (
-  <aside style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'white', borderRight: '1px solid rgba(30,58,138,0.1)' }}>
+  <aside style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'white', borderRight: '1px solid #e8edf3' }}>
 
-    {/* Header */}
-    <div style={{ flexShrink: 0, padding: '14px 14px 12px', background: 'linear-gradient(135deg,#1e3a8a,#2563eb)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 12 }}>
-        <img src={logoTNUT} alt="TNUT" style={{ width: 30, height: 30, objectFit: 'contain', flexShrink: 0 }} />
-        <div>
-          <div style={{ fontWeight: 800, fontSize: '0.88rem', color: 'white', lineHeight: 1.2 }}>TAI - TNUT</div>
-          <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.75)' }}>Trợ lý AI giảng viên</div>
-        </div>
-      </div>
-      <button
-        onClick={onNewChat}
-        disabled={isLoading}
-        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 0', borderRadius: 9, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', fontSize: '0.8rem', fontWeight: 700, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1 }}
-      >
-        {isLoading ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Plus size={13} />}
-        Cuộc trò chuyện mới
+    {/* New chat button */}
+    <div style={{ flexShrink: 0, padding: '14px 12px 10px' }}>
+      <button onClick={onNewChat} disabled={isLoading} style={{
+        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+        padding: '10px', borderRadius: 10, background: 'linear-gradient(135deg,#2563eb,#3b82f6)',
+        border: 'none', color: 'white', fontSize: '0.82rem', fontWeight: 700,
+        cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1,
+        boxShadow: '0 2px 10px rgba(37,99,235,0.28)', transition: 'opacity .15s',
+      }}>
+        {isLoading
+          ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} />
+          : <Plus size={14} />
+        }
+        Hội thoại mới
       </button>
     </div>
 
@@ -42,7 +39,7 @@ const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onNewChat, o
     <div style={{ flex: 1, overflowY: 'auto' }}>
       {isLoading && sessions.length === 0 ? (
         <div style={{ padding: '2.5rem 1rem', textAlign: 'center' }}>
-          <Loader2 size={24} color="#3b82f6" style={{ margin: '0 auto 8px', display: 'block', animation: 'spin 1s linear infinite' }} />
+          <Loader2 size={22} color="#3b82f6" style={{ margin: '0 auto 8px', display: 'block', animation: 'spin 1s linear infinite' }} />
           <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Đang tải...</div>
         </div>
       ) : sessions.length === 0 ? (
@@ -51,37 +48,50 @@ const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onNewChat, o
             <MessageSquare size={20} color="#bfdbfe" />
           </div>
           <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 500 }}>Chưa có cuộc trò chuyện</div>
-          <div style={{ fontSize: '0.68rem', color: '#cbd5e1', marginTop: 3 }}>Nhấn nút "+" để bắt đầu</div>
+          <div style={{ fontSize: '0.68rem', color: '#cbd5e1', marginTop: 3 }}>Nhấn "Hội thoại mới" để bắt đầu</div>
         </div>
       ) : (
-        <div style={{ padding: '6px 0' }}>
+        <div style={{ padding: '0 8px' }}>
+          <div style={{ padding: '8px 4px 4px', fontSize: '0.6rem', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            Gần đây
+          </div>
           {sessions.map(s => {
             const active = s.id === currentSessionId;
             return (
-              <div
-                key={s.id}
-                onClick={() => onSelectSession(s.id)}
-                style={{ position: 'relative', padding: '8px 10px', cursor: 'pointer', background: active ? 'rgba(37,99,235,0.07)' : 'transparent', borderLeft: `3px solid ${active ? '#2563eb' : 'transparent'}`, transition: 'background .12s' }}
-              >
-                {/* bot icon + name */}
+              <div key={s.id} onClick={() => onSelectSession(s.id)} style={{
+                position: 'relative', padding: '8px', cursor: 'pointer', borderRadius: 9, marginBottom: 1,
+                background: active ? 'rgba(37,99,235,0.08)' : 'transparent', transition: 'background .12s',
+              }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 7, background: active ? 'rgba(37,99,235,0.12)' : 'rgba(100,116,139,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Bot size={13} color={active ? '#2563eb' : '#94a3b8'} />
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                    background: active ? 'rgba(37,99,235,0.13)' : 'rgba(100,116,139,0.07)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <MessageSquare size={13} color={active ? '#2563eb' : '#94a3b8'} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '0.78rem', fontWeight: active ? 700 : 500, color: active ? '#1e3a8a' : '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{
+                      fontSize: '0.78rem', fontWeight: active ? 700 : 500,
+                      color: active ? '#1e3a8a' : '#334155',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
                       {s.name || 'Cuộc trò chuyện'}
                     </div>
-                    <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
-                      {s.subject_id && <span style={{ fontSize: '0.6rem', color: '#3b82f6', fontWeight: 700, background: 'rgba(59,130,246,0.08)', borderRadius: 20, padding: '0 5px' }}>{s.subject_id}</span>}
+                    <div style={{ display: 'flex', gap: 5, marginTop: 1 }}>
+                      {s.subject_id && (
+                        <span style={{ fontSize: '0.6rem', color: '#3b82f6', fontWeight: 700, background: 'rgba(59,130,246,0.08)', borderRadius: 20, padding: '0 6px' }}>
+                          {s.subject_id}
+                        </span>
+                      )}
                       {s.updated_at && <span style={{ fontSize: '0.6rem', color: '#94a3b8' }}>{fmtDate(s.updated_at)}</span>}
                     </div>
                   </div>
-                  <button
-                    onClick={e => { e.stopPropagation(); onDeleteSession(s.id); }}
-                    style={{ width: 22, height: 22, borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', flexShrink: 0, opacity: 0.6 }}
-                    title="Xóa"
-                  >
+                  <button onClick={e => { e.stopPropagation(); onDeleteSession(s.id); }} style={{
+                    width: 22, height: 22, borderRadius: 6, background: 'none', border: 'none',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#94a3b8', flexShrink: 0, opacity: 0.5,
+                  }} title="Xóa">
                     <Trash2 size={12} />
                   </button>
                 </div>
@@ -93,8 +103,12 @@ const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onNewChat, o
     </div>
 
     {/* Footer */}
-    <div style={{ flexShrink: 0, padding: '8px 12px', borderTop: '1px solid rgba(30,58,138,0.07)', fontSize: '0.65rem', color: '#94a3b8', textAlign: 'center' }}>
-      {sessions.length} cuộc trò chuyện
+    <div style={{
+      flexShrink: 0, padding: '8px 14px', borderTop: '1px solid rgba(30,58,138,0.07)',
+      display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.65rem', color: '#94a3b8',
+    }}>
+      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+      {sessions.length} lượt hỏi học kỳ này
     </div>
   </aside>
 );

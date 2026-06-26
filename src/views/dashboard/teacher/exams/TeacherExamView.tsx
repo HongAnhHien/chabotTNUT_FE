@@ -1,7 +1,7 @@
 import { type FC, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import {
-  ArrowLeft, Loader2, ClipboardList, Clock, BookOpen,
+  Loader2, ClipboardList, Clock, BookOpen,
   Hash, CheckCircle, ChevronDown, ChevronUp, Layers,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -161,7 +161,6 @@ const ChapterHeader: FC<{ chapter: IExamChapter; count: number }> = ({ chapter, 
 // ── Main page ─────────────────────────────────────────────
 const TeacherExamView: FC = () => {
   const { id }   = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [exam,    setExam]    = useState<FullExam | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -175,8 +174,6 @@ const TeacherExamView: FC = () => {
 
   const questions = exam?.questions ?? [];
   const chapters  = exam?.chapters  ?? [];
-  const isConfirmed = exam?.status === 'confirmed';
-
   const grouped = chapters.length > 0
     ? chapters.map(ch => ({ chapter: ch, qs: questions.filter(q => q.chapter_id === ch.id) }))
     : [{ chapter: null as IExamChapter | null, qs: questions }];
@@ -184,33 +181,8 @@ const TeacherExamView: FC = () => {
   let globalIdx = 1;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#f0f4ff 0%,#e8f0fe 50%,#f5f3ff 100%)' }}>
+    <div style={{ minHeight: '100%', background: 'linear-gradient(135deg,#f0f4ff 0%,#e8f0fe 50%,#f5f3ff 100%)' }}>
       <style>{CSS}</style>
-
-      {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e3a8a)', padding: '0 20px', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', height: 56, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button onClick={() => navigate(-1)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)', color: 'white', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}
-          >
-            <ArrowLeft size={13} /> Quay lại
-          </button>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {loading ? 'Đang tải...' : (exam?.ten_mon ?? 'Đề kiểm tra')}
-            </div>
-            {exam && (
-              <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                {exam.ma_mon && <><ClipboardList size={10} /> <span style={{ fontFamily: 'monospace' }}>{exam.ma_mon}</span></>}
-                {exam.ma_mon && <span>·</span>}
-                <span style={{ color: isConfirmed ? '#4ade80' : '#fbbf24' }}>
-                  {isConfirmed ? 'Đã xác nhận' : 'Nháp'}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '5rem' }}>

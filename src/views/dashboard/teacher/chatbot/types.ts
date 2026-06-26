@@ -4,6 +4,8 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
   isStreaming?: boolean;
+  intent?: string;
+  assignmentLink?: string;
   examMeta?: {
     examId: string;
     sessionId: string;

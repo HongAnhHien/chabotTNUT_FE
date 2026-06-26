@@ -2,9 +2,9 @@ import {
   type FC, type ChangeEvent,
   useCallback, useEffect, useRef, useState,
 } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 import {
-  ArrowLeft, Upload, RefreshCw, Download, Trash2,
+  Upload, RefreshCw, Download, Trash2,
   Eye, Send, Clock, CheckCircle, XCircle, Loader2,
   FileText, AlertCircle, X, Bot,
   Image, Film, Archive, FileSpreadsheet, Sparkles,
@@ -595,7 +595,6 @@ const SentTab: FC<{
 // ── Main Page ─────────────────────────────────────────────
 const TeacherSubjectFiles: FC = () => {
   const { maMon }       = useParams<{ maMon: string }>();
-  const navigate        = useNavigate();
   const [searchParams]  = useSearchParams();
 
   const [tab, setTab] = useState<Tab>(() =>
@@ -751,36 +750,8 @@ const TeacherSubjectFiles: FC = () => {
   const needPoll = sentFiles.some(f => POLLING_STATUSES.includes((f.external_status ?? null) as IFileExternalStatus));
 
   return (
-    <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#f0f4ff 0%,#e8f0fe 40%,#eff6ff 100%)' }}>
+    <div style={{ minHeight:'100%', background:'linear-gradient(160deg,#f0f4ff 0%,#e8f0fe 40%,#eff6ff 100%)' }}>
       <style>{CSS}</style>
-
-      {/* Header */}
-      <div style={{ background:'linear-gradient(135deg,#0f172a,#1e3a8a)', position:'sticky', top:0, zIndex:20, boxShadow:'0 2px 16px rgba(15,23,42,0.2)' }}>
-        <div style={{ maxWidth:900, margin:'0 auto', padding:'0 16px', height:56, display:'flex', alignItems:'center', gap:10 }}>
-          <button onClick={() => navigate(-1)}
-            style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 12px', borderRadius:8, background:'rgba(255,255,255,0.12)', border:'1px solid rgba(255,255,255,0.18)', color:'white', fontSize:'0.78rem', fontWeight:600, cursor:'pointer' }}>
-            <ArrowLeft size={13} /> Quay lại
-          </button>
-
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontWeight:800, fontSize:'0.9rem', color:'white' }}>Tài liệu & Train AI</div>
-            <div style={{ fontSize:'0.62rem', color:'rgba(255,255,255,0.5)', fontFamily:'monospace' }}>{maMon}</div>
-          </div>
-
-          {needPoll && (
-            <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.65rem', color:'rgba(255,255,255,0.5)' }}>
-              <Loader2 size={10} style={{ animation:'sf-spin 1s linear infinite' }} /> Đang poll...
-            </div>
-          )}
-
-          {tab === 'files' && (
-            <button onClick={() => openUpload('ly_thuyet')}
-              style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 14px', borderRadius:9, background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.25)', color:'white', fontSize:'0.78rem', fontWeight:700, cursor:'pointer' }}>
-              <Upload size={13} /> Upload
-            </button>
-          )}
-        </div>
-      </div>
 
       <div style={{ maxWidth:900, margin:'0 auto', padding:'16px' }}>
         {/* Stats */}
@@ -794,8 +765,8 @@ const TeacherSubjectFiles: FC = () => {
           ))}
         </div>
 
-        {/* Tabs */}
-        <div style={{ display:'flex', gap:6, marginBottom:14 }}>
+        {/* Tabs + Upload */}
+        <div style={{ display:'flex', gap:6, marginBottom:14, alignItems:'center' }}>
           <button className={`sf-tab ${tab==='files'?'active':'inactive'}`} onClick={() => setTab('files')}>
             <FileText size={12} style={{ marginRight:4, verticalAlign:'middle' }} /> Tài liệu
           </button>
@@ -804,6 +775,18 @@ const TeacherSubjectFiles: FC = () => {
             <Bot size={12} style={{ marginRight:4, verticalAlign:'middle' }} /> Train AI
             {needPoll && <span style={{ marginLeft:5, width:6, height:6, borderRadius:'50%', background:'#f59e0b', display:'inline-block' }} />}
           </button>
+          <div style={{ flex:1 }} />
+          {needPoll && (
+            <span style={{ display:'flex', alignItems:'center', gap:4, fontSize:'0.65rem', color:'#94a3b8' }}>
+              <Loader2 size={10} style={{ animation:'sf-spin 1s linear infinite' }} /> Đang xử lý...
+            </span>
+          )}
+          {tab === 'files' && (
+            <button onClick={() => openUpload('ly_thuyet')}
+              style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 14px', borderRadius:9, background:'linear-gradient(135deg,#1e3a8a,#2563eb)', border:'none', color:'white', fontSize:'0.78rem', fontWeight:700, cursor:'pointer' }}>
+              <Upload size={13} /> Upload
+            </button>
+          )}
         </div>
 
         {/* Tab content */}
