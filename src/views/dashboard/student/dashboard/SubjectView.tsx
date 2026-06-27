@@ -120,12 +120,12 @@ const SubjectView: FC<SubjectViewProps> = ({ data, assignments, maMon, tenMon })
             <ResponsiveContainer width="100%" height={90}>
               <BarChart data={chartDays} margin={{ top:8, right:4, left:-28, bottom:0 }} barSize={18}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="date" tickFormatter={d => d.slice(5).replace('-', '/')} tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
+                <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(5).replace('-', '/')} tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{ fontSize:'0.72rem', borderRadius:8, border:'1px solid #eef0f5', boxShadow:'0 4px 12px rgba(0,0,0,0.08)' }}
-                  formatter={(v) => [v, 'Câu hỏi']}
-                  labelFormatter={d => d.slice(5).replace('-', '/')}
+                  formatter={(v: unknown) => [v as number, 'Câu hỏi']}
+                  labelFormatter={(d) => typeof d === 'string' ? d.slice(5).replace('-', '/') : String(d ?? '')}
                   labelStyle={{ color:'#64748b', fontWeight:600 }}
                 />
                 <Bar dataKey="messages" fill="#7c3aed" radius={[4,4,0,0]} />

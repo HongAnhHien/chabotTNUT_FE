@@ -4,7 +4,7 @@ import { Calendar, CheckCircle2, MessageCircle, Bot, BookOpen, TrendingUp } from
 import type { IDashboardOverview } from '@/infra/api/interfaces/IDashboard';
 import type { IStudentAssignmentListItem } from '@/infra/api/interfaces/IAssignment';
 import type { IStudentSubject } from '@/infra/api/interfaces/IStudent';
-import { scoreColor, fmt1, fmtDate, EXAM_TYPE_COLOR, EXAM_TYPE_SHORT } from './dashboard.constants';
+import { scoreColor, fmt1, EXAM_TYPE_COLOR, EXAM_TYPE_SHORT } from './dashboard.constants';
 import StatCard from './StatCard';
 import ActivityHeatmap from './ActivityHeatmap';
 import ExamCalendar from './ExamCalendar';

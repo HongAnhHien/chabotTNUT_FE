@@ -25,7 +25,7 @@ const DonutRing: FC<{ completed: number; pending: number; overdue: number }> = (
           {!isEmpty && (
             <Tooltip
               contentStyle={{ fontSize:'0.68rem', borderRadius:8, border:'1px solid #eef0f5' }}
-              formatter={(v) => [v, '']}
+              formatter={(v: unknown) => [v as number, '']}
             />
           )}
         </PieChart>

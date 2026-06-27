@@ -1,7 +1,7 @@
 import { type FC, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import {
-  LayoutDashboard, BookOpen, ClipboardList, MessageCircle,
+  LayoutDashboard, BookOpen, MessageCircle,
   LogOut, ChevronLeft, ChevronRight, GraduationCap,
   ChevronRight as ArrowRight, X, CalendarDays, BarChart2,
 } from 'lucide-react';
