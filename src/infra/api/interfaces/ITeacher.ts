@@ -60,6 +60,12 @@ export interface ITeacherStudent {
   ten_lop: string;
   dien_thoai: string | null;
   e_mail: string;
+  // Analytics fields
+  avg_score?: number | null;
+  pending_assignments?: number | null;
+  total_assignments?: number | null;
+  warning_level?: 'rat_nguy_co' | 'nguy_co' | 'nhe' | null;
+  warning_label?: string | null;
 }
 
 export interface IStudentsResponse {
@@ -179,6 +185,84 @@ export interface ISendToApiResponse {
   message?: string;
   data?: ISendToApiResult[];
 }
+
+// ── Analytics ─────────────────────────────────────────────
+export interface IAttentionStudent {
+  ma_sinh_vien: string;
+  ho_ten: string;
+  e_mail: string;
+  warning_level: 'rat_nguy_co' | 'nguy_co' | 'nhe';
+  warnings: string[];
+  pending_assignments: number;
+  avg_score: number;
+}
+
+export interface IScheduleItem {
+  assignment_id: string;
+  title: string;
+  exam_type: string;
+  available_from: string;
+  due_at: string;
+  total_students: number;
+  submitted: number;
+  pending_count: number;
+  pending_students: { ma_sinh_vien: string; ho_ten: string; e_mail: string }[];
+}
+
+// Chart item types
+export interface IScoreDistItem      { label: string; count: number }
+export interface ICompletionTypeItem { exam_type: string; label: string; total_slots: number; submitted: number; completion_rate: number }
+export interface ITrendItem          { date: string; count: number }
+export interface IAiUsageItem        { label: string; count: number }
+export interface IWarningItem        { label: string; level: string | null; count: number }
+export interface IScoreByClassItem   { label: string; id_to_hoc: string; completion_rate: number; attention_count: number; ai_rate: number }
+export interface IAttByClassItem     { label: string; nhe: number; nguy_co: number; rat_nguy_co: number }
+
+export interface IClassCharts {
+  score_distribution:  IScoreDistItem[];
+  completion_by_type:  ICompletionTypeItem[];
+  submission_trend:    ITrendItem[];
+  ai_usage:            IAiUsageItem[];
+  warning_breakdown:   IWarningItem[];
+}
+
+export interface ISubjectCharts {
+  score_by_class:     IScoreByClassItem[];
+  attention_by_class: IAttByClassItem[];
+  score_distribution: IScoreDistItem[];
+  submission_trend:   ITrendItem[];
+}
+
+export interface IClassAnalytics {
+  id_to_hoc: string;
+  ten_lop: string;
+  lop: string;
+  ma_mon: string;
+  ten_mon: string;
+  total_students: number;
+  ai_users: number;
+  attention_count: number;
+  attention_students: IAttentionStudent[];
+  assignments: { total: number; total_submitted: number; completion_rate: number };
+  schedule: IScheduleItem[];
+  charts?: IClassCharts;
+}
+
+export interface ISubjectAnalytics {
+  ma_mon: string;
+  ten_mon: string;
+  total_classes: number;
+  total_students: number;
+  ai_users: number;
+  attention_count: number;
+  attention_students: IAttentionStudent[];
+  assignments: { total: number; total_submitted: number; completion_rate: number };
+  by_class: IClassAnalytics[];
+  charts?: ISubjectCharts;
+}
+
+export interface IClassAnalyticsResponse  { success: boolean; data: IClassAnalytics }
+export interface ISubjectAnalyticsResponse { success: boolean; data: ISubjectAnalytics }
 
 // ── AI training files (legacy — kept for backward compat) ─
 export type IAiFileType = 'de_cuong' | 'ly_thuyet' | 'ma_tran_cau_hoi' | 'ngan_hang_cau_hoi' | 'khac';

@@ -4,6 +4,8 @@ import type {
   ISemestersResponse,
   ITeacherSemesterCoursesResponse,
   IStudentsResponse,
+  IClassAnalyticsResponse,
+  ISubjectAnalyticsResponse,
   ISubjectFilesResponse,
   ISubjectFileResponse,
   ISubjectFileDeleteResponse,
@@ -39,16 +41,36 @@ class TeacherApi {
     return res.data;
   }
 
-  async getSemesterCourses(hocKy: number): Promise<ITeacherSemesterCoursesResponse> {
+  async getSemesterCourses(hocKy: number, search?: string): Promise<ITeacherSemesterCoursesResponse> {
     const res = await axiosInstance.get<ITeacherSemesterCoursesResponse>(
-      API_ENDPOINTS.TEACHER.SEMESTER_COURSES(hocKy)
+      API_ENDPOINTS.TEACHER.SEMESTER_COURSES(hocKy),
+      { params: search ? { search } : undefined }
     );
     return res.data;
   }
 
-  async getCourseStudents(idToHoc: string): Promise<IStudentsResponse> {
+  async getCourseStudents(
+    idToHoc: string,
+    params?: { search?: string; status?: string; warning_level?: string }
+  ): Promise<IStudentsResponse> {
     const res = await axiosInstance.get<IStudentsResponse>(
-      API_ENDPOINTS.TEACHER.COURSE_STUDENTS(idToHoc)
+      API_ENDPOINTS.TEACHER.COURSE_STUDENTS(idToHoc),
+      { params }
+    );
+    return res.data;
+  }
+
+  async getClassAnalytics(idToHoc: string): Promise<IClassAnalyticsResponse> {
+    const res = await axiosInstance.get<IClassAnalyticsResponse>(
+      API_ENDPOINTS.TEACHER.COURSE_ANALYTICS(idToHoc)
+    );
+    return res.data;
+  }
+
+  async getSubjectAnalytics(maMon: string, hocKy?: number): Promise<ISubjectAnalyticsResponse> {
+    const res = await axiosInstance.get<ISubjectAnalyticsResponse>(
+      API_ENDPOINTS.TEACHER.SUBJECT_ANALYTICS(maMon),
+      { params: hocKy ? { hoc_ky: hocKy } : undefined }
     );
     return res.data;
   }

@@ -1,0 +1,159 @@
+const CSS = `
+  @keyframes an-fade   { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes an-spin   { to{transform:rotate(360deg)} }
+  @keyframes an-pop    { 0%{transform:scale(.96);opacity:0} 100%{transform:scale(1);opacity:1} }
+  @keyframes an-expand { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+
+  .an-card {
+    background:white; border:1px solid #e8edf3;
+    border-radius:14px; box-shadow:0 1px 3px rgba(15,23,42,0.04);
+    animation:an-pop .28s cubic-bezier(.34,1.3,.64,1) both;
+  }
+  .an-section { animation:an-fade .3s ease both; }
+
+  .an-stat-grid {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px;
+  }
+  .an-stat-card {
+    background:white; border:1px solid #e8edf3; border-radius:12px;
+    padding:16px 18px; display:flex; flex-direction:column; gap:6px;
+    box-shadow:0 1px 3px rgba(15,23,42,0.04);
+    animation:an-pop .3s cubic-bezier(.34,1.4,.64,1) both;
+  }
+
+  /* ── Tabs ── */
+  .an-tabs {
+    display:flex; gap:0; padding:0 24px;
+    border-bottom:1px solid #f0f4f8; background:white;
+  }
+  .an-tab-btn {
+    display:flex; align-items:center; gap:6px;
+    padding:10px 16px; border:none; background:none;
+    font-size:0.8rem; font-weight:500; color:#64748b;
+    cursor:pointer; border-bottom:2px solid transparent;
+    margin-bottom:-1px; transition:color .15s, border-color .15s;
+    white-space:nowrap;
+  }
+  .an-tab-btn:hover { color:#1e293b; }
+  .an-tab-btn.active { color:#2563eb; font-weight:700; border-bottom-color:#2563eb; }
+  .an-tab-badge {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:18px; height:18px; padding:0 5px;
+    border-radius:9px; font-size:0.62rem; font-weight:700;
+    background:#f1f5f9; color:#64748b;
+  }
+  .an-tab-badge.red { background:rgba(220,38,38,0.1); color:#dc2626; }
+
+  /* ── Filter chips ── */
+  .an-chip-row { display:flex; gap:6px; flex-wrap:wrap; }
+  .an-chip {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:5px 12px; border-radius:20px; font-size:0.74rem; font-weight:600;
+    border:1.5px solid #e2e8f0; background:white; color:#64748b;
+    cursor:pointer; transition:all .13s; white-space:nowrap;
+  }
+  .an-chip:hover { border-color:#cbd5e1; background:#f8fafc; }
+  .an-chip.active { background:rgba(37,99,235,0.08); border-color:rgba(37,99,235,0.3); color:#2563eb; }
+  .an-chip.active.yellow { background:rgba(217,119,6,0.08); border-color:rgba(217,119,6,0.3); color:#d97706; }
+  .an-chip.active.orange { background:rgba(234,88,12,0.08); border-color:rgba(234,88,12,0.3); color:#ea580c; }
+  .an-chip.active.red    { background:rgba(220,38,38,0.08); border-color:rgba(220,38,38,0.3); color:#dc2626; }
+
+  /* ── Student row ── */
+  .an-student-row {
+    display:flex; align-items:center; gap:12px; padding:11px 14px;
+    background:white; border:1px solid #e8edf3; border-radius:10px;
+    transition:box-shadow .13s;
+  }
+  .an-student-row:hover { box-shadow:0 2px 8px rgba(15,23,42,0.06); }
+  .an-student-row.warn-red    { border-left:3px solid #dc2626; }
+  .an-student-row.warn-orange { border-left:3px solid #ea580c; }
+  .an-student-row.warn-yellow { border-left:3px solid #d97706; }
+
+  .an-sticky-header {
+    background:white; border-bottom:1px solid #eef0f5;
+    position:sticky; top:0; z-index:20;
+    box-shadow:0 2px 8px rgba(30,58,138,0.05);
+  }
+  .an-header-inner {
+    padding:12px 24px; display:flex; align-items:center; gap:14px;
+  }
+  .an-content {
+    padding:20px 24px; display:flex; flex-direction:column; gap:20px;
+  }
+
+  .an-back-btn {
+    display:flex; align-items:center; gap:6px; padding:6px 12px;
+    border-radius:8px; border:1px solid #e2e8f0; background:#f8fafc;
+    color:#475569; font-size:0.76rem; font-weight:600; cursor:pointer;
+    transition:all .13s; white-space:nowrap; flex-shrink:0;
+  }
+  .an-back-btn:hover { background:#f1f5f9; border-color:#cbd5e1; }
+
+  .an-attention-row {
+    display:flex; align-items:flex-start; gap:12px; padding:12px 14px;
+    border-radius:10px; border:1px solid #fee2e2; background:#fff8f8;
+    animation:an-fade .25s ease both;
+    transition:background .15s;
+  }
+  .an-attention-row:hover { background:#fff1f1; }
+  .an-attention-row.orange { border-color:#fed7aa; background:#fff8f2; }
+  .an-attention-row.orange:hover { background:#fef0e4; }
+  .an-attention-row.yellow { border-color:#fde68a; background:#fffdf0; }
+  .an-attention-row.yellow:hover { background:#fffbe0; }
+
+  .an-schedule-card {
+    border:1px solid #e8edf3; border-radius:12px; overflow:hidden;
+    background:white; animation:an-fade .3s ease both;
+  }
+  .an-schedule-header {
+    display:flex; align-items:center; gap:12px; padding:13px 16px;
+    cursor:pointer; user-select:none; transition:background .13s;
+  }
+  .an-schedule-header:hover { background:#f8fafc; }
+
+  .an-progress-bar {
+    height:6px; border-radius:3px; background:#e2e8f0; overflow:hidden;
+  }
+  .an-progress-fill {
+    height:100%; border-radius:3px; transition:width .5s ease;
+  }
+
+  .an-chart-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  }
+  .an-chart-card {
+    background:white; border:1px solid #e8edf3; border-radius:12px;
+    padding:14px 16px; box-shadow:0 1px 3px rgba(15,23,42,0.04);
+  }
+  .an-chart-title {
+    font-size:0.74rem; font-weight:700; color:'#1e293b'; margin-bottom:8px;
+  }
+  .an-chart-full {
+    background:white; border:1px solid #e8edf3; border-radius:12px;
+    padding:14px 16px; box-shadow:0 1px 3px rgba(15,23,42,0.04);
+  }
+
+  .an-class-accordion {
+    border:1px solid #e8edf3; border-radius:12px; overflow:hidden;
+    animation:an-fade .3s ease both;
+  }
+  .an-class-acc-header {
+    display:flex; align-items:center; gap:12px; padding:14px 18px;
+    cursor:pointer; user-select:none; background:white; transition:background .13s;
+  }
+  .an-class-acc-header:hover { background:#f8fafc; }
+
+  @media (max-width:900px) {
+    .an-stat-grid { grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width:768px) {
+    .an-header-inner { padding:10px 16px; }
+    .an-content { padding:14px 16px; }
+  }
+  @media (max-width:480px) {
+    .an-stat-grid { grid-template-columns:1fr 1fr; gap:10px; }
+    .an-stat-card { padding:12px 14px; }
+  }
+`;
+
+export default CSS;

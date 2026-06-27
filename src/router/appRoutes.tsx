@@ -26,6 +26,9 @@ const StudentSubjectDetailPage  = lazy(() => import("@views/dashboard/student/su
 
 // Teacher pages
 const TeacherAspx          = lazy(() => import("@views/dashboard/teacher/Teacher_Aspx"));
+const TeacherSubjectList      = lazy(() => import("@views/dashboard/teacher/subjects/TeacherSubjectList"));
+const ClassAnalyticsPage      = lazy(() => import("@views/dashboard/teacher/analytics/ClassAnalyticsPage"));
+const SubjectAnalyticsPage    = lazy(() => import("@views/dashboard/teacher/analytics/SubjectAnalyticsPage"));
 const TeacherProfile       = lazy(() => import("@views/dashboard/teacher/profile"));
 const TeacherChatPage      = lazy(() => import("@views/dashboard/teacher/chatbot/TeacherAITutors"));
 const TeacherAssignmentsPage  = lazy(() => import("@views/dashboard/teacher/assignments/TeacherAssignments"));
@@ -100,15 +103,18 @@ export const appRoutes: RouteObject[] = [
     ),
     children: [
       { path: "dashboard",           element: <TeacherAspx /> },
+      { path: "subjects",            element: <TeacherSubjectList /> },
       { path: "profile",             element: <TeacherProfile /> },
       { path: "chat",                element: <TeacherChatPage /> },
       { path: "chat/:sessionId",     element: <TeacherChatPage /> },
       { path: "assignments",         element: <TeacherAssignmentsPage /> },
       { path: "assignments/:id",     element: <TeacherAssignmentDetail /> },
       { path: "exams/:id",           element: <TeacherExamView /> },
-      { path: "subjects/:maMon/files",  element: <TeacherSubjectFiles /> },
-      { path: "subjects/:maMon/exams",  element: <TeacherSubjectExams /> },
-      { path: "courses/:idToHoc/students", element: <ClassStudentsPage /> },
+      { path: "subjects/:maMon/files",       element: <TeacherSubjectFiles /> },
+      { path: "subjects/:maMon/exams",       element: <TeacherSubjectExams /> },
+      { path: "subjects/:maMon/analytics",   element: <SubjectAnalyticsPage /> },
+      { path: "courses/:idToHoc/students",   element: <ClassStudentsPage /> },
+      { path: "courses/:idToHoc/analytics",  element: <ClassAnalyticsPage /> },
     ],
   },
 

@@ -1,5 +1,5 @@
 import { type FC } from 'react';
-import { Search, Bell, LogOut, Menu } from 'lucide-react';
+import { Bell, LogOut, Menu } from 'lucide-react';
 
 interface Props {
   unreadCount?: number;
@@ -44,22 +44,6 @@ const StudentHeader: FC<Props> = ({ unreadCount = 0, onBellClick, onLogout, onMe
       </button>
     )}
 
-    {/* Search */}
-    <div className="sv-hdr-search" style={{
-      flex: 1, maxWidth: 440,
-      display: 'flex', alignItems: 'center', gap: 8,
-      background: '#f8fafc', border: '1px solid #e2e8f0',
-      borderRadius: 10, padding: '7px 12px', transition: 'border-color .15s, background .15s',
-    }}>
-      <Search size={14} color="#94a3b8" style={{ flexShrink: 0 }} />
-      <input
-        placeholder="Tìm môn học, bài kiểm tra, tài liệu..."
-        style={{
-          flex: 1, border: 'none', background: 'transparent',
-          fontSize: '0.8rem', color: '#1e293b', outline: 'none',
-        }}
-      />
-    </div>
 
     <div style={{ flex: 1 }} />
 

@@ -1,9 +1,9 @@
 import { type FC, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import {
-  LayoutDashboard, ClipboardList, MessageCircle,
+  LayoutDashboard, BookOpen, ClipboardList, MessageCircle,
   LogOut, ChevronLeft, ChevronRight, BookOpenCheck,
-  ChevronRight as ArrowRight, X, Users, BarChart2,
+  ChevronRight as ArrowRight, X,
 } from 'lucide-react';
 import logoTNUT from '@/assets/logo_tnut/logo_tnut.png';
 
@@ -26,16 +26,15 @@ const NAV_SECTIONS = [
   {
     label: 'Tổng quan',
     items: [
-      { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard' },
+      { icon: LayoutDashboard, label: 'Dashboard',    path: '#' },
     ],
   },
   {
-    label: 'Giảng dạy',
+    label: 'Quản lý',
     items: [
+      { icon: BookOpen,      label: 'Môn học',      path: '/teacher/subjects' },
       { icon: ClipboardList, label: 'Bài kiểm tra', path: '/teacher/assignments' },
       { icon: MessageCircle, label: 'Chatbot AI',   path: '/teacher/chat' },
-      { icon: Users,         label: 'Lớp học',      path: '/teacher/classes',  soon: true },
-      { icon: BarChart2,     label: 'Báo cáo',      path: '/teacher/reports',  soon: true },
     ],
   },
 ];
@@ -116,17 +115,17 @@ const TeacherSidebar: FC<Props> = ({
             <>
               <img src={logoTNUT} alt="TNUT" style={{ height: 44, width: 'auto', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.73rem', fontWeight: 800, color: '#4c1d95', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '1rem', fontWeight: 800, color: '#4c1d95', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                   TNUT Learning
                 </div>
-                <div style={{ fontSize: '0.58rem', color: '#94a3b8', marginTop: 2, whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: 2, whiteSpace: 'nowrap' }}>
                   Cổng giáo viên · Trợ lý AI
                 </div>
               </div>
               {isMobile && (
                 <button className="tv3-close" onClick={onMobileClose} style={{
                   width: 32, height: 32, borderRadius: 8, border: 'none',
-                  background: 'transparent', color: '#94a3b8',
+                  background: 'transparent', color: '#64748b',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', flexShrink: 0,
                 }}><X size={16} /></button>
@@ -245,14 +244,7 @@ const TeacherSidebar: FC<Props> = ({
                     fontSize: '0.8rem', fontWeight: 700, color: '#1e293b',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>{userName ?? 'Giáo viên'}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
-                    <span style={{
-                      fontSize: '0.58rem', fontWeight: 700, color: ACCENT,
-                      background: 'rgba(124,58,237,0.12)', padding: '1px 5px', borderRadius: 5,
-                      textTransform: 'uppercase', letterSpacing: '0.05em',
-                    }}>Giáo viên</span>
-                    {userCode && <span style={{ fontSize: '0.6rem', color: '#94a3b8' }}>{userCode}</span>}
-                  </div>
+                  {userCode && <div style={{ marginTop: 2 }}><span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#64748b' }}>{userCode}</span></div>}
                 </div>
                 <ArrowRight size={13} color="#cbd5e1" style={{ flexShrink: 0 }} />
               </button>

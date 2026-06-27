@@ -26,7 +26,9 @@ export const API_ENDPOINTS = {
   TEACHER: {
     SEMESTERS:        '/teacher/semesters',
     SEMESTER_COURSES: (hocKy: number) => `/teacher/semesters/${hocKy}`,
-    COURSE_STUDENTS:  (idToHoc: string) => `/teacher/courses/${encodeURIComponent(idToHoc)}/students`,
+    COURSE_STUDENTS:   (idToHoc: string) => `/teacher/courses/${encodeURIComponent(idToHoc)}/students`,
+    COURSE_ANALYTICS:  (idToHoc: string) => `/teacher/courses/${encodeURIComponent(idToHoc)}/analytics`,
+    SUBJECT_ANALYTICS: (maMon: string)   => `/teacher/subjects/${maMon}/analytics`,
 
     // File management
     SUBJECT_FILES:        (s: string) => `/teacher/subjects/${s}/files`,
