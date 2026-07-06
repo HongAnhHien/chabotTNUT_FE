@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 import { RefreshCw, Bot, Eye, X, Trash2, Loader2, AlertTriangle } from 'lucide-react';
 import type { ISubjectFile } from '@/infra/api/interfaces/ITeacher';
-import { TYPE_LABEL, STATUS_CFG, POLLING_STATUSES } from '../constants';
+import { TYPE_LABEL, POLLING_STATUSES } from '../constants';
 import { fmtSize } from '../helpers';
 import { ExtBadge, StatusBadge, Spinner } from './shared';
 
@@ -48,7 +48,6 @@ const TrainTab: FC<Props> = ({ files, working, onRefresh, onPreview, onCancel, o
           {trainFiles.map(f => {
             const name = f.original_name ?? '—';
             const st   = f.external_status;
-            const cfg  = st ? STATUS_CFG[st] : null;
             return (
               <div key={f.id} style={{ background:'#fff', border:'1px solid #e7ecf3', borderRadius:14, padding:'14px 17px', display:'flex', alignItems:'center', gap:14 }}>
                 <ExtBadge name={name} size={40} />

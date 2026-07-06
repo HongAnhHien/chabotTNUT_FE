@@ -1,5 +1,5 @@
 import { type FC } from 'react';
-import { Send, Loader2 } from 'lucide-react';
+import { Send } from 'lucide-react';
 import type { ISubjectFile } from '@/infra/api/interfaces/ITeacher';
 import { STATUS_CFG } from '../constants';
 import { fmtRelative } from '../helpers';
