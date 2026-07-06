@@ -185,9 +185,12 @@ axiosInstance.interceptors.response.use(
         try {
           console.log("🔄 Attempting to refresh access token...");
 
+          const expiredToken = storage.get<string>(STORAGE_KEYS.TOKEN, "");
+
           const response = await axios.post(
             `${BASE_URL}/auth/refresh`,
-            {}
+            {},
+            { headers: { Authorization: `Bearer ${expiredToken}` } }
           );
 
           const { access_token } = response.data.data;
@@ -275,13 +278,17 @@ axiosInstance.interceptors.response.use(
 );
 
 // ✅ Helper: Clear auth data only
-function clearAuthData() {
+// Dynamic import tránh circular dependency (auth_store -> AuthRepository -> axiosInstance)
+async function clearAuthData() {
   storage.clearAuth();
+
+  const { useAuthStore } = await import("@/views/pages/stores/auth_store");
+  useAuthStore.setState({ user: null, isAuthenticated: false, error: null });
 }
 
 // ✅ Helper: Clear auth and redirect
 function clearAuthAndRedirect(redirectPath: string = "/login") {
-  clearAuthData();
+  void clearAuthData();
 
   setTimeout(() => {
     window.location.href = redirectPath;

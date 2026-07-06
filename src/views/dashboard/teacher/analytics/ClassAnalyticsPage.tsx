@@ -1,5 +1,5 @@
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import {
   ArrowLeft, Loader2, BookOpen, Search, X,
   AlertTriangle, CalendarDays, Clock, ChevronDown, ChevronsUpDown, Mail, Sparkles, Users, CheckCircle,
@@ -19,7 +19,6 @@ const WARN_CFG = {
 } as const;
 const STATUS_OK = { color:'#16a34a', bg:'rgba(22,163,74,0.09)', label:'Bình thường' };
 
-// NOTE: ai_usage_level isn't returned by backend yet — see docs/backend-api-requests.md
 const AI_USAGE_CFG: Record<string, { label: string; bg: string; color: string }> = {
   high: { label:'Tích cực',  bg:'rgba(124,58,237,0.09)', color:'#7c3aed' },
   mid:  { label:'Vừa phải',  bg:'rgba(79,70,229,0.09)',  color:'#4f46e5' },
@@ -141,19 +140,18 @@ const AssignmentCard: FC<{ item: IScheduleItem; idx: number }> = ({ item, idx })
   const ringOff = ringLen * (1 - pct / 100);
   const left = daysLeftLabel(item.due_at);
 
-  // Reminders/export aren't implemented on backend yet — see docs/backend-api-requests.md
   const handleExport = async () => {
     setExporting(true);
     try {
-      const blob = await TeacherApi.exportAssignmentRoster(item.assignment_id);
+      const { blob, filename } = await TeacherApi.exportAssignmentRoster(item.assignment_id);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${item.title}.xlsx`;
+      a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      toast.error('Chưa thể xuất danh sách — tính năng đang chờ backend hỗ trợ.');
+      toast.error('Không thể xuất danh sách. Vui lòng thử lại.');
     } finally {
       setExporting(false);
     }
@@ -166,7 +164,7 @@ const AssignmentCard: FC<{ item: IScheduleItem; idx: number }> = ({ item, idx })
       toast.success(res.message || 'Đã gửi nhắc nhở.');
       setRemindedIds(new Set(item.pending_students.map(s => s.ma_sinh_vien)));
     } catch {
-      toast.error('Chưa thể gửi nhắc nhở — tính năng đang chờ backend hỗ trợ.');
+      toast.error('Không thể gửi nhắc nhở. Vui lòng thử lại.');
     } finally {
       setRemindingAll(false);
     }
@@ -179,7 +177,7 @@ const AssignmentCard: FC<{ item: IScheduleItem; idx: number }> = ({ item, idx })
       toast.success(res.message || 'Đã gửi nhắc nhở.');
       setRemindedIds(prev => new Set(prev).add(maSinhVien));
     } catch {
-      toast.error('Chưa thể gửi nhắc nhở — tính năng đang chờ backend hỗ trợ.');
+      toast.error('Không thể gửi nhắc nhở. Vui lòng thử lại.');
     } finally {
       setRemindingIds(prev => { const next = new Set(prev); next.delete(maSinhVien); return next; });
     }
@@ -318,13 +316,17 @@ const AssignmentCard: FC<{ item: IScheduleItem; idx: number }> = ({ item, idx })
 const ClassAnalyticsPage: FC = () => {
   const { idToHoc } = useParams<{ idToHoc: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // Analytics
   const [data,    setData]    = useState<IClassAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Tabs
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState(() => {
+    const t = Number(searchParams.get('tab'));
+    return t === 1 || t === 2 ? t : 0;
+  });
 
   // Students tab
   const [students,       setStudents]       = useState<ITeacherStudent[]>([]);

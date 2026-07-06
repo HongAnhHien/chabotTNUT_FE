@@ -2,7 +2,7 @@ import { type FC, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import {
   LayoutDashboard, BookOpen, ClipboardList, MessageCircle,
-  LogOut, ChevronLeft, ChevronRight, BookOpenCheck,
+  LogOut, ChevronLeft, ChevronRight, BookOpenCheck, FileSearch,
   ChevronRight as ArrowRight, X,
 } from 'lucide-react';
 import logoTNUT from '@/assets/logo_tnut/logo_tnut.png';
@@ -35,6 +35,7 @@ const NAV_SECTIONS = [
       { icon: BookOpen,      label: 'Môn học',      path: '/teacher/subjects' },
       { icon: ClipboardList, label: 'Bài kiểm tra', path: '/teacher/assignments' },
       { icon: MessageCircle, label: 'Chatbot AI',   path: '/teacher/chat' },
+      { icon: FileSearch,    label: 'Nhật ký xử lý', path: '/teacher/parse-logs' },
     ],
   },
 ];
@@ -247,16 +248,6 @@ const TeacherSidebar: FC<Props> = ({
                   {userCode && <div style={{ marginTop: 2 }}><span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#64748b' }}>{userCode}</span></div>}
                 </div>
                 <ArrowRight size={13} color="#cbd5e1" style={{ flexShrink: 0 }} />
-              </button>
-              <button className="tv3-logout" onClick={onLogout}
-                style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '7px 10px', borderRadius: 8, border: 'none',
-                  cursor: 'pointer', background: 'transparent', color: '#94a3b8',
-                  fontSize: '0.75rem', fontWeight: 500,
-                }}>
-                <LogOut size={14} style={{ flexShrink: 0 }} />
-                Đăng xuất
               </button>
             </div>
           ) : (

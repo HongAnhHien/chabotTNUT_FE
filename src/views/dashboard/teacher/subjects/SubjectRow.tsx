@@ -1,6 +1,6 @@
 import { type FC, useState } from 'react';
 import { BookOpen, Users, MapPin, Calendar, ChevronDown, FileText, ClipboardList, Info, Sparkles, AlertTriangle } from 'lucide-react';
-import type { ITeacherSubjectWithClasses, ISubjectAnalytics } from '@/infra/api/interfaces/ITeacher';
+import type { ITeacherSubjectWithClasses, ISubjectAnalyticsEmbed } from '@/infra/api/interfaces/ITeacher';
 
 type Cls = ITeacherSubjectWithClasses['classes'][number];
 
@@ -18,7 +18,7 @@ const COLORS = [
 interface Props {
   course:     ITeacherSubjectWithClasses;
   colorIdx:   number;
-  analytics?: ISubjectAnalytics;
+  analytics?: ISubjectAnalyticsEmbed;
   analyticsLoading?: boolean;
   onDetail:   () => void;
   onFiles:    () => void;
@@ -33,7 +33,7 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, 
   const { subject, classes } = course;
   const color = COLORS[colorIdx % COLORS.length];
 
-  const completionPct = analytics ? Math.round(analytics.assignments.completion_rate) : null;
+  const completionPct = analytics ? Math.round(analytics.completion_rate) : null;
   const aiPct = analytics && analytics.total_students > 0
     ? Math.round(analytics.ai_users / analytics.total_students * 100)
     : null;

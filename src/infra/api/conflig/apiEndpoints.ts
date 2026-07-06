@@ -43,6 +43,10 @@ export const API_ENDPOINTS = {
     FILE_CANCEL_SEND:     (f: string) => `/teacher/files/${f}/cancel-send`,
     FILES_RESEND:         '/teacher/files/resend',
 
+    // Parse logs
+    PARSE_LOGS:       '/teacher/parse-logs',
+    PARSE_LOGS_STATS: '/teacher/parse-logs/stats',
+
     // Legacy aliases (kept for backward compat with existing drawers)
     SUBJECT_AI_FILES:     (s: string) => `/teacher/subjects/${s}/files/sent`,
     SUBJECT_AI_SEND:      (s: string) => `/teacher/subjects/${s}/files/send-to-api`,
@@ -71,7 +75,6 @@ export const API_ENDPOINTS = {
     DETAIL:     (id: string) => `/teacher/assignments/${id}`,
     UPDATE:     (id: string) => `/teacher/assignments/${id}`,
     DELETE:     (id: string) => `/teacher/assignments/${id}`,
-    // NOTE: not yet implemented on backend — see docs/backend-api-requests.md
     REMIND:     (id: string) => `/teacher/assignments/${id}/remind`,
     REMIND_ALL: (id: string) => `/teacher/assignments/${id}/remind-all`,
     EXPORT:     (id: string) => `/teacher/assignments/${id}/export`,

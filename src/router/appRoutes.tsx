@@ -35,8 +35,9 @@ const TeacherAssignmentsPage  = lazy(() => import("@views/dashboard/teacher/assi
 const TeacherAssignmentDetail = lazy(() => import("@views/dashboard/teacher/assignments/TeacherAssignmentDetail"));
 const TeacherExamView      = lazy(() => import("@views/dashboard/teacher/exams/TeacherExamView"));
 const TeacherSubjectFiles  = lazy(() => import("@views/dashboard/teacher/subjects/TeacherSubjectFiles"));
-const TeacherSubjectExams  = lazy(() => import("@views/dashboard/teacher/subjects/TeacherSubjectExams"));
+const TeacherSubjectExams  = lazy(() => import("@views/dashboard/teacher/subjects/exams"));
 const ClassStudentsPage    = lazy(() => import("@views/dashboard/teacher/class"));
+const TeacherParseLogsPage = lazy(() => import("@views/dashboard/teacher/parselogs/TeacherParseLogsPage"));
 
 export const appRoutes: RouteObject[] = [
   // Landing
@@ -109,6 +110,7 @@ export const appRoutes: RouteObject[] = [
       { path: "chat/:sessionId",     element: <TeacherChatPage /> },
       { path: "assignments",         element: <TeacherAssignmentsPage /> },
       { path: "assignments/:id",     element: <TeacherAssignmentDetail /> },
+      { path: "parse-logs",          element: <TeacherParseLogsPage /> },
       { path: "exams/:id",           element: <TeacherExamView /> },
       { path: "subjects/:maMon/files",       element: <TeacherSubjectFiles /> },
       { path: "subjects/:maMon/exams",       element: <TeacherSubjectExams /> },

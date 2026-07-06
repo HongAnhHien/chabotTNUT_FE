@@ -248,13 +248,6 @@ const Sidebar: FC<SidebarProps> = ({
                 </AvatarFallback>
               </Avatar>
             </button>
-            <button
-              onClick={handleLogout}
-              title="Đăng xuất"
-              className="w-7 h-7 rounded-md flex items-center justify-center text-sidebar-foreground hover:bg-red-500/10 hover:text-red-500 transition-colors"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
           </div>
         ) : (
           <div className="space-y-2">

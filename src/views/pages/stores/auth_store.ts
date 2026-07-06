@@ -103,7 +103,9 @@ export const useAuthStore = create<AuthState>()(
 
         // Làm mới profile từ server (cập nhật name/avatar nếu thay đổi)
         AuthRepository.getMe().then(res => {
-          set({ user: res.data as unknown as IUser });
+          const freshUser = res.data as unknown as IUser;
+          storage.setUser(freshUser);
+          set({ user: freshUser });
         }).catch(() => {
           // Giữ data persist hiện có nếu lỗi mạng
         });
@@ -118,6 +120,7 @@ export const useAuthStore = create<AuthState>()(
 
           storage.setToken(res.data.access_token);
           storage.setTokenExpiresAt(Date.now() + res.data.expires_in * 1000);
+          storage.setUser(res.data.user);
           scheduleTokenRefresh(res.data.expires_in);
 
           // Lưu tạm từ login response
@@ -130,7 +133,9 @@ export const useAuthStore = create<AuthState>()(
 
           // Lấy full profile (có đủ name, email, avatar...)
           AuthRepository.getMe().then(meRes => {
-            set({ user: meRes.data as unknown as IUser });
+            const freshUser = meRes.data as unknown as IUser;
+            storage.setUser(freshUser);
+            set({ user: freshUser });
           }).catch(() => {});
 
           toast.success('Đăng nhập thành công!');

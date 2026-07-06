@@ -25,7 +25,9 @@ const CSS = `
   .an-tabs {
     display:flex; gap:0; padding:0 24px;
     border-bottom:1px solid #f0f4f8; background:white;
+    overflow-x:auto; scrollbar-width:none;
   }
+  .an-tabs::-webkit-scrollbar { display:none; }
   .an-tab-btn {
     display:flex; align-items:center; gap:6px;
     padding:10px 16px; border:none; background:none;
@@ -156,19 +158,29 @@ const CSS = `
   }
   .an-class-acc-header:hover { background:#f8fafc; }
 
+  @media (max-width:1100px) {
+    .an-stat-grid { grid-template-columns:repeat(2,1fr); }
+  }
   @media (max-width:900px) {
     .an-stat-grid { grid-template-columns:repeat(2,1fr); }
+    .an-header-inner { flex-wrap:wrap; gap:10px; }
   }
   @media (max-width:768px) {
     .an-header-inner { padding:10px 16px; }
     .an-content { padding:14px 16px; }
-  }
-  @media (max-width:640px) {
     .an-chart-grid { grid-template-columns:1fr; }
+    .an-tabs { padding:0 16px; }
+  }
+  @media (max-width:600px) {
+    .an-stat-grid { grid-template-columns:1fr 1fr; gap:10px; }
   }
   @media (max-width:480px) {
-    .an-stat-grid { grid-template-columns:1fr 1fr; gap:10px; }
+    .an-stat-grid { grid-template-columns:1fr 1fr; gap:8px; }
     .an-stat-card { padding:12px 14px; }
+    .an-content { padding:10px 12px; gap:14px; }
+    .an-header-inner { padding:8px 12px; }
+    .an-tabs { padding:0 12px; }
+    .an-tab-btn { padding:8px 12px; font-size:0.75rem; }
   }
 `;
 

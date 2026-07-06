@@ -36,6 +36,11 @@ import type {
   IRemindStudentResponse,
   IRemindAllResponse,
 } from '@/infra/api/interfaces/IAssignment';
+import type {
+  IParseLogsQuery,
+  IParseLogsResponse,
+  IParseLogStatsResponse,
+} from '@/infra/api/interfaces/IParseLog';
 
 class TeacherApi {
   async getSemesters(): Promise<ISemestersResponse> {
@@ -53,7 +58,7 @@ class TeacherApi {
 
   async getCourseStudents(
     idToHoc: string,
-    params?: { search?: string; status?: string; warning_level?: string }
+    params?: { search?: string; status?: string; warning_level?: string; ai_usage_level?: string }
   ): Promise<IStudentsResponse> {
     const res = await axiosInstance.get<IStudentsResponse>(
       API_ENDPOINTS.TEACHER.COURSE_STUDENTS(idToHoc),
@@ -279,7 +284,7 @@ class TeacherApi {
     return res.data;
   }
 
-  // ── Reminders / export — backend not implemented yet, see docs/backend-api-requests.md ──
+  // ── Reminders / export ───────────────────────────────────
   async remindStudent(assignmentId: string, studentCode: string): Promise<IRemindStudentResponse> {
     const res = await axiosInstance.post<IRemindStudentResponse>(
       API_ENDPOINTS.ASSIGNMENT.REMIND(assignmentId),
@@ -295,10 +300,29 @@ class TeacherApi {
     return res.data;
   }
 
-  async exportAssignmentRoster(assignmentId: string): Promise<Blob> {
+  async exportAssignmentRoster(assignmentId: string): Promise<{ blob: Blob; filename: string }> {
     const res = await axiosInstance.get(
       API_ENDPOINTS.ASSIGNMENT.EXPORT(assignmentId),
       { responseType: 'blob' }
+    );
+    const disposition = res.headers['content-disposition'] as string | undefined;
+    const match = disposition?.match(/filename="?([^";]+)"?/);
+    const filename = match?.[1] ?? `ket-qua-bai-giao-${assignmentId}.xlsx`;
+    return { blob: res.data, filename };
+  }
+
+  // ── Parse logs ────────────────────────────────────────────
+  async getParseLogs(query?: IParseLogsQuery): Promise<IParseLogsResponse> {
+    const res = await axiosInstance.get<IParseLogsResponse>(
+      API_ENDPOINTS.TEACHER.PARSE_LOGS,
+      { params: query }
+    );
+    return res.data;
+  }
+
+  async getParseLogStats(): Promise<IParseLogStatsResponse> {
+    const res = await axiosInstance.get<IParseLogStatsResponse>(
+      API_ENDPOINTS.TEACHER.PARSE_LOGS_STATS
     );
     return res.data;
   }

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { Loader2, ChevronDown, Calendar, Search, X, BookOpen, Layers, Users, Target } from 'lucide-react';
 import toast from 'react-hot-toast';
 import TeacherApi from '@/infra/teacher/teacher_api';
-import type { ISemester, ITeacherSubjectWithClasses, ISubjectAnalytics } from '@/infra/api/interfaces/ITeacher';
+import type { ISemester, ITeacherSubjectWithClasses } from '@/infra/api/interfaces/ITeacher';
 import CSS from './subjectList.styles';
 import SubjectRow from './SubjectRow';
 import SubjectStatCards, { type ISubjectOverviewStat } from './SubjectStatCards';
@@ -21,39 +21,16 @@ const TeacherSubjectList: FC = () => {
   const [search,        setSearch]        = useState('');
   const [searchInput,   setSearchInput]   = useState('');
 
-  const [subjectAnalytics, setSubjectAnalytics] = useState<Record<string, ISubjectAnalytics>>({});
-  const [analyticsLoading, setAnalyticsLoading] = useState(false);
-
   const dropRef    = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Per-subject completion/AI/attention metrics aren't in the course-list response —
-  // fetch each subject's analytics in parallel. See docs/backend-api-requests.md for
-  // a proposed bulk endpoint that would remove the need for this N+1 fan-out.
-  const loadAnalytics = useCallback((list: ITeacherSubjectWithClasses[], hocKy: number) => {
-    if (!list.length) { setSubjectAnalytics({}); return; }
-    setAnalyticsLoading(true);
-    Promise.allSettled(list.map(c => TeacherApi.getSubjectAnalytics(c.subject.ma_mon, hocKy)))
-      .then(results => {
-        const map: Record<string, ISubjectAnalytics> = {};
-        results.forEach((r, i) => {
-          if (r.status === 'fulfilled') map[list[i].subject.ma_mon] = r.value.data;
-        });
-        setSubjectAnalytics(map);
-      })
-      .finally(() => setAnalyticsLoading(false));
-  }, []);
 
   const loadCourses = useCallback((hocKy: number, q?: string) => {
     setLoadingCourses(true);
     TeacherApi.getSemesterCourses(hocKy, q || undefined)
-      .then(res => {
-        setCourses(res.data);
-        loadAnalytics(res.data, hocKy);
-      })
+      .then(res => { setCourses(res.data); })
       .catch(() => toast.error('Không thể tải danh sách môn học.'))
       .finally(() => setLoadingCourses(false));
-  }, [loadAnalytics]);
+  }, []);
 
   const handleSearch = (val: string) => {
     setSearchInput(val);
@@ -90,9 +67,9 @@ const TeacherSubjectList: FC = () => {
   const totalStudents = courses.reduce((s, c) => s + c.classes.reduce((a, cl) => a + cl.sl_dk, 0), 0);
   const currentSem    = semesters.find(s => s.hoc_ky === selectedHocKy);
 
-  const analyticsList = Object.values(subjectAnalytics);
-  const avgCompletion = analyticsList.length
-    ? Math.round(analyticsList.reduce((s, a) => s + a.assignments.completion_rate, 0) / analyticsList.length)
+  const analyticsItems = courses.filter(c => c.analytics);
+  const avgCompletion = analyticsItems.length
+    ? Math.round(analyticsItems.reduce((s, c) => s + c.analytics!.completion_rate, 0) / analyticsItems.length)
     : null;
 
   const overviewStats: ISubjectOverviewStat[] = [
@@ -219,14 +196,13 @@ const TeacherSubjectList: FC = () => {
                 key={course.subject.ma_mon}
                 course={course}
                 colorIdx={idx}
-                analytics={subjectAnalytics[course.subject.ma_mon]}
-                analyticsLoading={analyticsLoading && !subjectAnalytics[course.subject.ma_mon]}
+                analytics={course.analytics}
                 onDetail={()     => navigate(`/teacher/subjects/${course.subject.ma_mon}/analytics${selectedHocKy ? `?hoc_ky=${selectedHocKy}` : ''}`)}
-                onFiles={()      => navigate(`/teacher/subjects/${course.subject.ma_mon}/files`)}
+                onFiles={()      => navigate(`/teacher/subjects/${course.subject.ma_mon}/files`, { state: { tenMon: course.subject.ten_mon } })}
                 onExams={()      => navigate(`/teacher/subjects/${course.subject.ma_mon}/exams`)}
                 onClsDetail={cls => navigate(`/teacher/courses/${encodeURIComponent(cls.id_to_hoc)}/analytics`)}
-                onStudents={cls  => navigate(`/teacher/courses/${encodeURIComponent(cls.id_to_hoc)}/students`)}
-                onClsExams={()   => navigate(`/teacher/subjects/${course.subject.ma_mon}/exams`)}
+                onStudents={cls  => navigate(`/teacher/courses/${encodeURIComponent(cls.id_to_hoc)}/analytics?tab=1`)}
+                onClsExams={cls  => navigate(`/teacher/courses/${encodeURIComponent(cls.id_to_hoc)}/analytics?tab=2`)}
               />
             ))}
           </div>

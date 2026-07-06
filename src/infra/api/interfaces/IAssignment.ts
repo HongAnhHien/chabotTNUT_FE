@@ -99,7 +99,6 @@ export interface IDeleteAssignmentResponse {
 }
 
 // ── Teacher: Reminders / export ────────────────────────
-// NOTE: backend endpoints not implemented yet — see docs/backend-api-requests.md
 export interface IRemindStudentResponse {
   success: boolean;
   message: string;

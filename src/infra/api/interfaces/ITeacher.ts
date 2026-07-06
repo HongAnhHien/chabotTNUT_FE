@@ -37,9 +37,17 @@ export interface ITeacherClass {
   status: string;
 }
 
+export interface ISubjectAnalyticsEmbed {
+  total_students: number;
+  ai_users: number;
+  attention_count: number;
+  completion_rate: number;
+}
+
 export interface ITeacherSubjectWithClasses {
   subject: ITeacherSubject;
   classes: ITeacherClass[];
+  analytics?: ISubjectAnalyticsEmbed;
 }
 
 export interface ITeacherSemesterCoursesResponse {
@@ -66,8 +74,8 @@ export interface ITeacherStudent {
   total_assignments?: number | null;
   warning_level?: 'rat_nguy_co' | 'nguy_co' | 'nhe' | null;
   warning_label?: string | null;
-  // NOTE: not yet returned by backend — see docs/backend-api-requests.md
   ai_usage_level?: 'high' | 'mid' | 'low' | 'none' | null;
+  ai_message_count?: number | null;
 }
 
 export interface IStudentsResponse {
@@ -102,6 +110,10 @@ export interface ISubjectFile {
   download_url: string;
   created_at?: string | null;
   updated_at?: string | null;
+  // Fields returned after parsing / embedding (see docs/backend-api-requests.md)
+  page_count?: number | null;
+  chunk_count?: number | null;
+  token_count?: number | null;
 }
 
 // ── File tree (GET /files/tree) ────────────────────────

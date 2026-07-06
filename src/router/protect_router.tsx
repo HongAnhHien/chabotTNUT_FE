@@ -1,20 +1,17 @@
 import { type FC, type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router';
 import { storage } from '@/helper/storage';
+import { useAuthStore } from '@/views/pages/stores/auth_store';
 
 interface ProtectedRouteProps {
   children: ReactNode;
   allowedRoles?: string[];
 }
 
-interface UserInfo {
-  role: string;
-}
-
 const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
   const location = useLocation();
-  const token    = storage.getToken();
-  const user     = storage.getUser<UserInfo>();
+  const token = storage.getToken();
+  const user  = useAuthStore((s) => s.user);
 
   if (!token) {
     return <Navigate to="/login" state={{ from: location }} replace />;
