@@ -33,6 +33,8 @@ import type {
   IPatchAssignmentBody,
   IPatchAssignmentResponse,
   IDeleteAssignmentResponse,
+  IRemindStudentResponse,
+  IRemindAllResponse,
 } from '@/infra/api/interfaces/IAssignment';
 
 class TeacherApi {
@@ -273,6 +275,30 @@ class TeacherApi {
   async deleteAssignment(id: string): Promise<IDeleteAssignmentResponse> {
     const res = await axiosInstance.delete<IDeleteAssignmentResponse>(
       API_ENDPOINTS.ASSIGNMENT.DELETE(id)
+    );
+    return res.data;
+  }
+
+  // ── Reminders / export — backend not implemented yet, see docs/backend-api-requests.md ──
+  async remindStudent(assignmentId: string, studentCode: string): Promise<IRemindStudentResponse> {
+    const res = await axiosInstance.post<IRemindStudentResponse>(
+      API_ENDPOINTS.ASSIGNMENT.REMIND(assignmentId),
+      { student_code: studentCode }
+    );
+    return res.data;
+  }
+
+  async remindAllPending(assignmentId: string): Promise<IRemindAllResponse> {
+    const res = await axiosInstance.post<IRemindAllResponse>(
+      API_ENDPOINTS.ASSIGNMENT.REMIND_ALL(assignmentId)
+    );
+    return res.data;
+  }
+
+  async exportAssignmentRoster(assignmentId: string): Promise<Blob> {
+    const res = await axiosInstance.get(
+      API_ENDPOINTS.ASSIGNMENT.EXPORT(assignmentId),
+      { responseType: 'blob' }
     );
     return res.data;
   }

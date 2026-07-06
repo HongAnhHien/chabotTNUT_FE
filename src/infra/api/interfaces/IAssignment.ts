@@ -98,6 +98,20 @@ export interface IDeleteAssignmentResponse {
   message: string;
 }
 
+// ── Teacher: Reminders / export ────────────────────────
+// NOTE: backend endpoints not implemented yet — see docs/backend-api-requests.md
+export interface IRemindStudentResponse {
+  success: boolean;
+  message: string;
+  data?: { student_code: string; reminded_at: string };
+}
+
+export interface IRemindAllResponse {
+  success: boolean;
+  message: string;
+  data?: { reminded_count: number };
+}
+
 // ── Student: Assignment list ───────────────────────────
 export type ExamType = 'giua_ky' | 'kiem_tra_chuong' | 'on_luyen_chuong';
 

@@ -1,22 +1,25 @@
-import { type FC } from 'react';
-import { BookOpen, Users, GraduationCap } from 'lucide-react';
+import { type FC, type ReactNode } from 'react';
 
-interface Props { subjects: number; classes: number; students: number; }
+export interface ISubjectOverviewStat {
+  icon: ReactNode;
+  label: string;
+  value: ReactNode;
+  sub?: string;
+  tint: string;
+  ink: string;
+}
 
-const SubjectStatCards: FC<Props> = ({ subjects, classes, students }) => (
+const SubjectStatCards: FC<{ stats: ISubjectOverviewStat[] }> = ({ stats }) => (
   <div className="sl-stats-grid">
-    {[
-      { icon: BookOpen,       bg:'#eff6ff', color:'#2563eb', value: subjects, label:'Môn học'   },
-      { icon: Users,          bg:'#f0fdf4', color:'#16a34a', value: classes,  label:'Lớp / Tổ'  },
-      { icon: GraduationCap,  bg:'#fdf4ff', color:'#7c3aed', value: students, label:'Sinh viên' },
-    ].map(({ icon: Icon, bg, color, value, label }) => (
-      <div key={label} className="sl-stat-card">
-        <div style={{ width:44, height:44, borderRadius:12, background:bg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-          <Icon size={22} color={color} />
+    {stats.map(s => (
+      <div key={s.label} className="sl-stat-card">
+        <div style={{ width:42, height:42, borderRadius:12, background:s.tint, color:s.ink, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+          {s.icon}
         </div>
-        <div>
-          <div style={{ fontSize:'1.6rem', fontWeight:800, color:'#0f172a', lineHeight:1 }}>{value}</div>
-          <div style={{ fontSize:'0.75rem', color:'#64748b', marginTop:3 }}>{label}</div>
+        <div style={{ minWidth:0 }}>
+          <div style={{ fontSize:'0.72rem', color:'#94a3b8', fontWeight:500 }}>{s.label}</div>
+          <div style={{ fontSize:'1.35rem', fontWeight:800, color:'#0f172a', lineHeight:1.15, letterSpacing:'-0.02em' }}>{s.value}</div>
+          {s.sub && <div style={{ fontSize:'0.7rem', color:s.ink, fontWeight:600 }}>{s.sub}</div>}
         </div>
       </div>
     ))}

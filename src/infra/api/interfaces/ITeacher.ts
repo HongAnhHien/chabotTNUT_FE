@@ -66,6 +66,8 @@ export interface ITeacherStudent {
   total_assignments?: number | null;
   warning_level?: 'rat_nguy_co' | 'nguy_co' | 'nhe' | null;
   warning_label?: string | null;
+  // NOTE: not yet returned by backend — see docs/backend-api-requests.md
+  ai_usage_level?: 'high' | 'mid' | 'low' | 'none' | null;
 }
 
 export interface IStudentsResponse {
@@ -206,7 +208,14 @@ export interface IScheduleItem {
   total_students: number;
   submitted: number;
   pending_count: number;
-  pending_students: { ma_sinh_vien: string; ho_ten: string; e_mail: string }[];
+  pending_students: {
+    ma_sinh_vien: string;
+    ho_ten: string;
+    e_mail: string;
+    // NOTE: not yet returned by backend — see docs/backend-api-requests.md
+    last_active_at?: string | null;
+    remind_count?: number;
+  }[];
 }
 
 // Chart item types

@@ -66,11 +66,15 @@ export const API_ENDPOINTS = {
   },
 
   ASSIGNMENT: {
-    ASSIGN:  (examId: string) => `/teacher/exams/${examId}/assign`,
-    LIST:    '/teacher/assignments',
-    DETAIL:  (id: string) => `/teacher/assignments/${id}`,
-    UPDATE:  (id: string) => `/teacher/assignments/${id}`,
-    DELETE:  (id: string) => `/teacher/assignments/${id}`,
+    ASSIGN:     (examId: string) => `/teacher/exams/${examId}/assign`,
+    LIST:       '/teacher/assignments',
+    DETAIL:     (id: string) => `/teacher/assignments/${id}`,
+    UPDATE:     (id: string) => `/teacher/assignments/${id}`,
+    DELETE:     (id: string) => `/teacher/assignments/${id}`,
+    // NOTE: not yet implemented on backend — see docs/backend-api-requests.md
+    REMIND:     (id: string) => `/teacher/assignments/${id}/remind`,
+    REMIND_ALL: (id: string) => `/teacher/assignments/${id}/remind-all`,
+    EXPORT:     (id: string) => `/teacher/assignments/${id}/export`,
   },
 
   STUDENT_ASSIGNMENT: {

@@ -36,7 +36,14 @@ const CSS = `
   .sf-modal{background:white;border-radius:18px;width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,0.18);animation:sf-fade .25s ease}
   .sf-md-modal{max-width:760px}
   .sf-skeleton{border-radius:10px;background:linear-gradient(90deg,#f0f4ff 25%,#e8f0fe 50%,#f0f4ff 75%);background-size:200% 100%;animation:sf-shimmer 1.4s ease infinite}
-  .sf-file-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(37,99,235,0.05);transition:background .13s}
+  .sf-file-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(37,99,235,0.05);transition:background .13s}
+  .sf-file-actions{display:flex;gap:5px;flex-shrink:0}
+  .sf-upload-headers{display:grid;grid-template-columns:1fr 130px 44px 22px;gap:6px;padding:0 8px 4px;font-size:0.59rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em}
+  .sf-upload-row{display:grid;grid-template-columns:1fr 130px 44px 22px;gap:6px;align-items:center;padding:7px 8px;border-radius:9px;transition:background .15s,border-color .15s}
+  @media (max-width:480px) {
+    .sf-file-actions{ width:100%; justify-content:flex-end; margin-top:4px; }
+    .sf-upload-headers,.sf-upload-row{ grid-template-columns:1fr 84px 32px 20px; }
+  }
   .sf-file-row:last-child{border-bottom:none}
   .sf-file-row:hover{background:rgba(37,99,235,0.02)}
   .sf-type-select{padding:3px 6px;border-radius:6px;border:1.5px solid rgba(37,99,235,0.18);font-size:0.65rem;font-weight:600;color:#1e3a8a;background:rgba(37,99,235,0.04);outline:none;cursor:pointer;max-width:130px}
@@ -241,13 +248,13 @@ const UploadDocsModal: FC<{
               </div>
 
               {/* Column headers */}
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 130px 44px 22px', gap:6, padding:'0 8px 4px', fontSize:'0.59rem', fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.06em' }}>
+              <div className="sf-upload-headers">
                 <span>File</span><span>Loại</span><span style={{ textAlign:'center' }}>Ẩn</span><span />
               </div>
 
               <div style={{ display:'flex', flexDirection:'column', gap:4, maxHeight:280, overflowY:'auto' }}>
                 {items.map((it, idx) => (
-                  <div key={idx} style={{ display:'grid', gridTemplateColumns:'1fr 130px 44px 22px', gap:6, alignItems:'center', padding:'7px 8px', background: it.isPrivate ? 'rgba(217,119,6,0.04)' : 'rgba(37,99,235,0.03)', borderRadius:9, border:`1px solid ${it.isPrivate ? 'rgba(217,119,6,0.12)' : 'rgba(37,99,235,0.06)'}`, transition:'background .15s,border-color .15s' }}>
+                  <div key={idx} className="sf-upload-row" style={{ background: it.isPrivate ? 'rgba(217,119,6,0.04)' : 'rgba(37,99,235,0.03)', border:`1px solid ${it.isPrivate ? 'rgba(217,119,6,0.12)' : 'rgba(37,99,235,0.06)'}` }}>
                     {/* File info */}
                     <div style={{ display:'flex', alignItems:'center', gap:7, minWidth:0 }}>
                       <div style={{ flexShrink:0, width:28, height:28, borderRadius:7, background:iconBgOf(it.file.name), display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -396,7 +403,7 @@ const FileRow: FC<{
         </div>
       </div>
 
-      <div style={{ display:'flex', gap:5, flexShrink:0 }}>
+      <div className="sf-file-actions">
         {file.download_url && (
           <a href={file.download_url} target="_blank" rel="noreferrer" className="sf-btn"
             style={{ background:'rgba(37,99,235,0.07)', color:'#2563eb', textDecoration:'none' }}>
@@ -559,7 +566,7 @@ const SentTab: FC<{
                   </div>
                 )}
               </div>
-              <div style={{ display:'flex', gap:5, flexShrink:0 }}>
+              <div className="sf-file-actions">
                 {st === 'parsed' && (
                   <button onClick={() => onReview(f)} className="sf-btn" style={{ background:'rgba(124,58,237,0.09)', color:'#7c3aed' }}>
                     <Eye size={10} /> Xem & gửi

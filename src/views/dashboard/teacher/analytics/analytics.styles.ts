@@ -60,7 +60,7 @@ const CSS = `
 
   /* ── Student row ── */
   .an-student-row {
-    display:flex; align-items:center; gap:12px; padding:11px 14px;
+    display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:11px 14px;
     background:white; border:1px solid #e8edf3; border-radius:10px;
     transition:box-shadow .13s;
   }
@@ -68,6 +68,19 @@ const CSS = `
   .an-student-row.warn-red    { border-left:3px solid #dc2626; }
   .an-student-row.warn-orange { border-left:3px solid #ea580c; }
   .an-student-row.warn-yellow { border-left:3px solid #d97706; }
+
+  .an-list-header {
+    display:flex; align-items:center; gap:16px; padding:0 14px 8px;
+    font-size:11px; font-weight:700; color:#a3b1c6; letter-spacing:.4px; text-transform:uppercase;
+  }
+  .an-list-header > :nth-child(1) { width:70px; flex-shrink:0; }
+  .an-list-header > :nth-child(2) { flex:1 1 180px; min-width:0; }
+  .an-list-header > :nth-child(3) { flex:0 1 170px; min-width:130px; }
+  .an-list-header > :nth-child(4) { flex-shrink:0; width:96px; }
+  .an-list-header > :nth-child(5) { flex-shrink:0; width:110px; }
+  @media (max-width:860px) {
+    .an-list-header { display:none; }
+  }
 
   .an-sticky-header {
     background:white; border-bottom:1px solid #eef0f5;
@@ -149,6 +162,9 @@ const CSS = `
   @media (max-width:768px) {
     .an-header-inner { padding:10px 16px; }
     .an-content { padding:14px 16px; }
+  }
+  @media (max-width:640px) {
+    .an-chart-grid { grid-template-columns:1fr; }
   }
   @media (max-width:480px) {
     .an-stat-grid { grid-template-columns:1fr 1fr; gap:10px; }

@@ -77,6 +77,14 @@ const CSS = `
   .se-search{width:100%;padding:8px 12px 8px 34px;border-radius:10px;border:1.5px solid rgba(37,99,235,0.15);
     font-size:0.8rem;outline:none;box-sizing:border-box;transition:border-color .15s}
   .se-search:focus{border-color:#2563eb}
+  .se-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .se-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .se-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media (max-width:420px) {
+    .se-stats-grid{grid-template-columns:repeat(2,1fr)}
+    .se-edit-grid{grid-template-columns:1fr}
+    .se-meta-grid{grid-template-columns:1fr}
+  }
 `;
 
 // ── Helpers ──────────────────────────────────────────────
@@ -220,7 +228,7 @@ const AssignmentDetailModal: FC<{
                   <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>Tiêu đề</div>
                   <input className="se-edit-input" value={eTitle} onChange={e => setETitle(e.target.value)} placeholder="Tiêu đề bài kiểm tra" />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div className="se-edit-grid">
                   <div>
                     <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
                       <Calendar size={10} /> Ngày mở bài
@@ -261,7 +269,7 @@ const AssignmentDetailModal: FC<{
               <>
                 {/* Stats */}
                 {stats && (
-                  <div style={{ padding: '14px 16px 10px', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, flexShrink: 0 }}>
+                  <div className="se-stats-grid" style={{ padding: '14px 16px 10px', flexShrink: 0 }}>
                     {[
                       { label: 'Tổng HS',   val: stats.total,       icon: Users,       color: '#1e3a8a', bg: 'rgba(30,58,138,0.07)'  },
                       { label: 'Đã nộp',    val: stats.submitted,   icon: CheckCircle, color: '#059669', bg: 'rgba(5,150,105,0.08)'  },
@@ -364,7 +372,7 @@ const DetailView: FC<{ detail: ExamDetail; onBack: () => void }> = ({ detail, on
         </span>
       </div>
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
+        <div className="se-meta-grid" style={{ marginBottom: 16 }}>
           {metaItems.map(({ label, value }) => (
             <div key={label} style={{ background: 'white', border: '1px solid rgba(37,99,235,0.08)', borderRadius: 10, padding: '10px 12px' }}>
               <div style={{ fontSize: '0.62rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>{label}</div>

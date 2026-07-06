@@ -1,6 +1,6 @@
 import { type FC, useState } from 'react';
-import { BookOpen, Users, MapPin, Calendar, ChevronDown, FileText, ClipboardList, Info } from 'lucide-react';
-import type { ITeacherSubjectWithClasses } from '@/infra/api/interfaces/ITeacher';
+import { BookOpen, Users, MapPin, Calendar, ChevronDown, FileText, ClipboardList, Info, Sparkles, AlertTriangle } from 'lucide-react';
+import type { ITeacherSubjectWithClasses, ISubjectAnalytics } from '@/infra/api/interfaces/ITeacher';
 
 type Cls = ITeacherSubjectWithClasses['classes'][number];
 
@@ -18,6 +18,8 @@ const COLORS = [
 interface Props {
   course:     ITeacherSubjectWithClasses;
   colorIdx:   number;
+  analytics?: ISubjectAnalytics;
+  analyticsLoading?: boolean;
   onDetail:   () => void;
   onFiles:    () => void;
   onExams:    () => void;
@@ -26,17 +28,23 @@ interface Props {
   onClsExams:  (cls: Cls) => void;
 }
 
-const SubjectRow: FC<Props> = ({ course, colorIdx, onDetail, onFiles, onExams, onClsDetail, onStudents, onClsExams }) => {
+const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, onDetail, onFiles, onExams, onClsDetail, onStudents, onClsExams }) => {
   const [expanded, setExpanded] = useState(true);
   const { subject, classes } = course;
   const color = COLORS[colorIdx % COLORS.length];
 
+  const completionPct = analytics ? Math.round(analytics.assignments.completion_rate) : null;
+  const aiPct = analytics && analytics.total_students > 0
+    ? Math.round(analytics.ai_users / analytics.total_students * 100)
+    : null;
+
   return (
-    <div className="sl-card sl-subject-row" style={{ overflow:'hidden' }}>
+    <div className="sl-card sl-subject-row" style={{ overflow:'hidden', borderLeft:`4px solid ${color.accent}` }}>
 
       {/* ── Subject header (always visible) ── */}
       <div
-        style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 18px', cursor:'pointer', userSelect:'none' }}
+        className="sl-subject-header"
+        style={{ display:'flex', alignItems:'center', flexWrap:'wrap', gap:14, padding:'14px 18px', cursor:'pointer', userSelect:'none' }}
         onClick={() => setExpanded(v => !v)}
       >
         {/* Icon */}
@@ -45,8 +53,8 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, onDetail, onFiles, onExams, o
         </div>
 
         {/* Name + badges */}
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:7, flexWrap:'wrap' }}>
+        <div style={{ flex:'1 1 160px', minWidth:0 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:7, flexWrap:'wrap', marginBottom:6 }}>
             <span style={{ fontWeight:700, fontSize:'0.95rem', color:'#0f172a' }}>{subject.ten_mon}</span>
             <span style={{ background:color.light, color:color.accent, borderRadius:6, padding:'1px 8px', fontSize:'0.68rem', fontWeight:700 }}>{subject.ma_mon}</span>
             {subject.so_tc !== '0' && (
@@ -54,10 +62,36 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, onDetail, onFiles, onExams, o
             )}
             <span style={{ fontSize:'0.68rem', color:'#94a3b8' }}>{classes.length} lớp</span>
           </div>
+
+          {/* Mini metrics */}
+          {analyticsLoading ? (
+            <div style={{ height:12, width:'min(220px,70%)', borderRadius:6, background:'#eef2f7', animation:'sl-pulse 1.4s ease infinite' }} />
+          ) : analytics && (
+            <div style={{ display:'flex', alignItems:'center', gap:18, flexWrap:'wrap' }}>
+              <span style={{ display:'flex', alignItems:'center', gap:6, fontSize:'0.72rem', color:'#64748b' }}>
+                <span style={{ width:6, height:6, borderRadius:'50%', background:color.accent, flexShrink:0 }} /> {analytics.total_students} sinh viên
+              </span>
+              <span style={{ display:'flex', alignItems:'center', gap:8, fontSize:'0.72rem', color:'#64748b' }}>
+                Hoàn thành
+                <span style={{ width:80, height:6, borderRadius:6, background:'#eef2f7', overflow:'hidden', display:'inline-block' }}>
+                  <span style={{ display:'block', height:'100%', width:`${completionPct}%`, borderRadius:6, background:color.accent }} />
+                </span>
+                <b style={{ color:color.accent }}>{completionPct}%</b>
+              </span>
+              <span style={{ display:'flex', alignItems:'center', gap:6, fontSize:'0.72rem', color:'#64748b' }}>
+                <Sparkles size={11} color="#7c3aed" /> {aiPct}% dùng AI
+              </span>
+              {analytics.attention_count > 0 && (
+                <span style={{ display:'flex', alignItems:'center', gap:6, fontSize:'0.72rem', fontWeight:600, color:'#ea580c' }}>
+                  <AlertTriangle size={11} /> {analytics.attention_count} cần chú ý
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Subject action buttons */}
-        <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }} onClick={e => e.stopPropagation()}>
+        <div className="sl-subject-actions" style={{ display:'flex', alignItems:'center', flexWrap:'wrap', gap:6, flexShrink:0 }} onClick={e => e.stopPropagation()}>
           <button onClick={onDetail} className="sl-btn" style={{ background:'rgba(37,99,235,0.07)', border:'1px solid rgba(37,99,235,0.18)', color:'#2563eb' }}>
             <Info size={13} /> Chi tiết môn
           </button>
@@ -111,7 +145,7 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, onDetail, onFiles, onExams, o
               </div>
 
               {/* Class action buttons */}
-              <div style={{ display:'flex', gap:6, flexShrink:0 }}>
+              <div className="sl-class-actions" style={{ display:'flex', flexWrap:'wrap', gap:6, flexShrink:0 }}>
                 <button onClick={() => onClsDetail(cls)} className="sl-btn" style={{ background:'#f8fafc', border:'1px solid #e2e8f0', color:'#475569' }}>
                   <Info size={12} /> Chi tiết lớp
                 </button>

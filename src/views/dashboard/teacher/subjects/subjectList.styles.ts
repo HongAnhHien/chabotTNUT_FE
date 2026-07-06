@@ -83,6 +83,8 @@ const CSS = `
   @media (max-width:480px) {
     .sl-stat-card { padding:12px 10px; gap:10px; }
     .sl-header-inner { flex-direction:column; align-items:flex-start; gap:10px; }
+    .sl-subject-actions { width:100%; justify-content:flex-end; }
+    .sl-class-actions { width:100%; justify-content:flex-end; }
   }
 `;
 

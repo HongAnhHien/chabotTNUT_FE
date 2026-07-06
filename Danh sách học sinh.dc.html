@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: #cdd7e6; border-radius: 8px; border: 2px solid #f4f7fb; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</helmet>
+
+<div style="display:flex; height:100vh; overflow:hidden; font-family:'Be Vietnam Pro',sans-serif; background:#f4f7fb; color:#0f172a;">
+
+  <!-- SIDEBAR -->
+  <aside style="width:236px; flex:0 0 236px; background:#ffffff; border-right:1px solid #e6ecf4; display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; gap:11px; padding:18px 18px 16px;">
+      <div style="width:40px; height:40px; border-radius:11px; background:linear-gradient(135deg,#3b6fe0,#6d5ce7); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:15px; box-shadow:0 6px 14px rgba(59,111,224,.28);">TN</div>
+      <div>
+        <div style="font-weight:800; font-size:16px; color:#4f46e5; letter-spacing:-.2px;">TNUT Learning</div>
+        <div style="font-size:11px; color:#94a3b8;">Cổng giáo viên · Trợ lý AI</div>
+      </div>
+    </div>
+    <nav style="padding:6px 12px; flex:1;">
+      <div style="font-size:10.5px; font-weight:700; color:#b4c0d3; letter-spacing:.6px; padding:12px 10px 6px;">TỔNG QUAN</div>
+      <div style="display:flex; align-items:center; gap:10px; padding:9px 11px; border-radius:9px; color:#64748b; font-weight:500; font-size:13.5px; cursor:pointer;" style-hover="background:#f1f5fb; color:#334155;">
+        <span style="font-size:15px;">▦</span> Dashboard
+      </div>
+      <div style="font-size:10.5px; font-weight:700; color:#b4c0d3; letter-spacing:.6px; padding:14px 10px 6px;">QUẢN LÝ</div>
+      <div style="display:flex; align-items:center; gap:10px; padding:9px 11px; border-radius:9px; color:#334155; font-weight:600; font-size:13.5px; cursor:pointer;" style-hover="background:#f1f5fb;">
+        <span style="font-size:15px;">▤</span> Môn học
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; padding:9px 11px; border-radius:9px; color:#64748b; font-weight:500; font-size:13.5px; cursor:pointer;" style-hover="background:#f1f5fb; color:#334155;">
+        <span style="font-size:15px;">▧</span> Bài kiểm tra
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; padding:9px 11px; border-radius:9px; color:#64748b; font-weight:500; font-size:13.5px; cursor:pointer;" style-hover="background:#f1f5fb; color:#334155;">
+        <span style="font-size:15px;">◌</span> Chatbot AI
+      </div>
+    </nav>
+    <div style="padding:12px; border-top:1px solid #eef2f8;">
+      <div style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:11px; background:#f6f8fc;">
+        <div style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#6d5ce7,#8b5cf6); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;">TH</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Đoàn Thanh Hải</div>
+          <div style="font-size:11.5px; color:#94a3b8;">40102</div>
+        </div>
+        <span style="color:#cbd5e1;">›</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+    <!-- TOPBAR -->
+    <header style="height:60px; flex:0 0 60px; background:#ffffff; border-bottom:1px solid #e6ecf4; display:flex; align-items:center; justify-content:flex-end; gap:14px; padding:0 26px;">
+      <div style="width:38px; height:38px; border-radius:10px; border:1px solid #e6ecf4; display:flex; align-items:center; justify-content:center; color:#64748b; cursor:pointer; position:relative;" style-hover="background:#f6f8fc;">
+        <span style="font-size:16px;">◔</span>
+        <span style="position:absolute; top:8px; right:9px; width:7px; height:7px; border-radius:50%; background:#ef4444; border:1.5px solid #fff;"></span>
+      </div>
+      <button style="display:flex; align-items:center; gap:7px; padding:9px 15px; border-radius:10px; border:1px solid #fecaca; background:#fff5f5; color:#e5484d; font-weight:600; font-size:13.5px; font-family:inherit; cursor:pointer;" style-hover="background:#fee2e2;">⟶ Đăng xuất</button>
+    </header>
+
+    <!-- SCROLL AREA -->
+    <div style="flex:1; overflow-y:auto; padding:22px 26px 40px;">
+
+      <!-- Class header -->
+      <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+        <button style="display:flex; align-items:center; gap:7px; padding:9px 15px; border-radius:10px; border:1px solid #e2e8f0; background:#fff; color:#475569; font-weight:600; font-size:13.5px; font-family:inherit; cursor:pointer;" style-hover="background:#f8fafc;">← Quay lại</button>
+        <div style="width:1px; height:26px; background:#e2e8f0;"></div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#2f6fe0,#4f46e5); display:flex; align-items:center; justify-content:center; color:#fff; font-size:19px;">▤</div>
+          <div>
+            <div style="font-weight:800; font-size:19px; letter-spacing:-.3px;">K61ĐTT.K02</div>
+            <div style="font-size:12.5px; color:#94a3b8;">Sinh hoạt lớp · 180000</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex; gap:26px; border-bottom:1px solid #e6ecf4; margin-bottom:20px;">
+        <div style="padding:10px 2px; font-size:14px; font-weight:600; color:#94a3b8; cursor:pointer;">Tổng quan</div>
+        <div style="padding:10px 2px; font-size:14px; font-weight:700; color:#2563eb; border-bottom:2.5px solid #2563eb; display:flex; align-items:center; gap:8px;">Danh sách học sinh <span style="background:#e7effe; color:#2563eb; font-size:11.5px; font-weight:700; padding:2px 8px; border-radius:20px;">45</span></div>
+        <div style="padding:10px 2px; font-size:14px; font-weight:600; color:#94a3b8; cursor:pointer;">Bài kiểm tra đã giao</div>
+      </div>
+
+      <!-- Summary stat strip -->
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px;">
+        <sc-for list="{{ summary }}" as="s" hint-placeholder-count="4">
+          <div style="background:#fff; border:1px solid #eaf0f7; border-radius:14px; padding:15px 16px; display:flex; align-items:center; gap:13px; box-shadow:0 1px 2px rgba(16,24,40,.03);">
+            <div style="width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; background:{{ s.tint }}; color:{{ s.ink }};">{{ s.icon }}</div>
+            <div>
+              <div style="font-size:12px; color:#94a3b8; font-weight:500;">{{ s.label }}</div>
+              <div style="font-size:22px; font-weight:800; letter-spacing:-.5px; line-height:1.15;">{{ s.value }}</div>
+              <div style="font-size:11.5px; color:{{ s.ink }}; font-weight:600;">{{ s.sub }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- Toolbar: search + filters -->
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:240px; display:flex; align-items:center; gap:9px; background:#fff; border:1px solid #e6ecf4; border-radius:11px; padding:10px 14px;">
+          <span style="color:#94a3b8;">⌕</span>
+          <span style="color:#94a3b8; font-size:13.5px;">Tìm theo tên, MSSV, email…</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <sc-for list="{{ filters }}" as="f" hint-placeholder-count="4">
+            <div style="padding:9px 15px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid {{ f.border }}; background:{{ f.bg }}; color:{{ f.ink }};">{{ f.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- List header -->
+      <div style="display:grid; grid-template-columns:44px 1fr 200px 130px 150px 96px; align-items:center; gap:16px; padding:0 20px 8px; font-size:11px; font-weight:700; color:#a3b1c6; letter-spacing:.4px; text-transform:uppercase;">
+        <div>#</div>
+        <div>Học sinh</div>
+        <div>Tiến độ bài tập</div>
+        <div>Trợ lý AI</div>
+        <div>Trạng thái</div>
+        <div style="text-align:right;">Chi tiết</div>
+      </div>
+
+      <!-- List -->
+      <div style="background:#fff; border:1px solid #eaf0f7; border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(16,24,40,.04);">
+        <sc-for list="{{ students }}" as="st" hint-placeholder-count="12">
+          <div style="display:grid; grid-template-columns:44px 1fr 200px 130px 150px 96px; align-items:center; gap:16px; padding:13px 20px; border-bottom:1px solid #f1f5f9; cursor:pointer;" style-hover="background:#f8fbff;">
+            <div style="font-size:13px; font-weight:600; color:#cbd5e1; text-align:center;">{{ st.idx }}</div>
+            <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+              <div style="width:40px; height:40px; flex:0 0 40px; border-radius:11px; background:{{ st.avBg }}; color:{{ st.avInk }}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px;">{{ st.initial }}</div>
+              <div style="min-width:0;">
+                <div style="font-weight:700; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ st.name }}</div>
+                <div style="font-size:12px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ st.mssv }} · {{ st.email }}</div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
+                <span style="font-size:11.5px; color:#94a3b8; font-weight:500;">{{ st.doneLabel }}</span>
+                <span style="font-size:12.5px; font-weight:700; color:{{ st.barInk }};">{{ st.pct }}%</span>
+              </div>
+              <div style="height:7px; border-radius:6px; background:#eef2f7; overflow:hidden;">
+                <div style="height:100%; width:{{ st.pctW }}; border-radius:6px; background:{{ st.barColor }};"></div>
+              </div>
+            </div>
+            <div>
+              <span style="display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:20px; font-size:12px; font-weight:600; background:{{ st.aiBg }}; color:{{ st.aiInk }};">{{ st.aiIcon }} {{ st.aiText }}</span>
+            </div>
+            <div>
+              <span style="display:inline-flex; align-items:center; gap:7px; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; background:{{ st.stBg }}; color:{{ st.stInk }};"><span style="width:7px; height:7px; border-radius:50%; background:{{ st.stInk }};"></span>{{ st.status }}</span>
+            </div>
+            <div style="text-align:right; color:#c3cddb; font-size:16px;">›</div>
+          </div>
+        </sc-for>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const summary = [
+      { icon:'👥', label:'Sĩ số lớp', value:'45', sub:'K61ĐTT.K02', tint:'#eef2ff', ink:'#4f46e5' },
+      { icon:'✦', label:'Đã dùng AI', value:'28', sub:'62% sĩ số', tint:'#f1ecfe', ink:'#7c3aed' },
+      { icon:'◑', label:'Hoàn thành TB', value:'58%', sub:'+6% so với tuần trước', tint:'#e7effe', ink:'#2563eb' },
+      { icon:'⚠', label:'Cần chú ý', value:'6', sub:'chậm tiến độ', tint:'#fff2e8', ink:'#f97316' },
+    ];
+    const filters = [
+      { label:'Tất cả 45', bg:'#2563eb', ink:'#fff', border:'#2563eb' },
+      { label:'Cần chú ý 6', bg:'#fff', ink:'#64748b', border:'#e2e8f0' },
+      { label:'Đã dùng AI 28', bg:'#fff', ink:'#64748b', border:'#e2e8f0' },
+      { label:'Sắp xếp ⇅', bg:'#fff', ink:'#64748b', border:'#e2e8f0' },
+    ];
+    const avPalette = [
+      ['#e7effe','#2563eb'], ['#f1ecfe','#7c3aed'], ['#e8f7ef','#16a34a'],
+      ['#fff2e8','#f97316'], ['#fde8ef','#e5484d'], ['#e6f6f8','#0e9aa7'],
+    ];
+    const raw = [
+      ['Trần Thị Xuân Mai','K255520207211',82,'high',3],
+      ['Ngô Quang Minh','K255520207146',64,'mid',5],
+      ['Nguyễn Hoàng Minh','K255520207214',95,'high',2],
+      ['Lê Thanh Nam','K255520207216',38,'low',9],
+      ['Nguyễn Gia Nam','K255520207217',71,'high',1],
+      ['Trần Hữu Ngọc','K255520207151',88,'high',4],
+      ['Nguyễn Như Nhân','K255520207152',12,'none',12],
+      ['Trần Hồng Nhung','K255520207153',76,'mid',2],
+      ['Nguyễn Duy Phương','K255520207156',54,'low',6],
+      ['Trần Minh Quân','K255520207157',90,'high',0],
+      ['Tôn Đức Thái','K255520207161',44,'mid',7],
+      ['Nguyễn Quang Thắng','K255520207162',67,'high',3],
+      ['Phương Thị Thuỷ','K255520207163',29,'none',10],
+      ['Nguyễn Anh Tuấn','K255520207167',81,'high',2],
+    ];
+    const students = raw.map((r, i) => {
+      const [name, mssv, pct, ai] = r;
+      const initial = name.trim().split(' ').pop()[0].toUpperCase();
+      const [avBg, avInk] = avPalette[i % avPalette.length];
+      let barColor = '#16a34a', barInk = '#16a34a';
+      if (pct < 40) { barColor = '#f97316'; barInk = '#f97316'; }
+      else if (pct < 70) { barColor = '#2563eb'; barInk = '#2563eb'; }
+      const aiMap = {
+        high: { aiBg:'#f1ecfe', aiInk:'#7c3aed', aiIcon:'✦', aiText:'Tích cực' },
+        mid:  { aiBg:'#eef2ff', aiInk:'#4f46e5', aiIcon:'✦', aiText:'Vừa phải' },
+        low:  { aiBg:'#f1f5f9', aiInk:'#64748b', aiIcon:'✦', aiText:'Ít dùng' },
+        none: { aiBg:'#f8fafc', aiInk:'#94a3b8', aiIcon:'○', aiText:'Chưa dùng' },
+      };
+      let status='Bình thường', stBg='#e8f7ef', stInk='#16a34a';
+      if (pct < 30) { status='Nguy cơ'; stBg='#fde8ef'; stInk='#e5484d'; }
+      else if (pct < 55) { status='Cần chú ý'; stBg='#fff2e8'; stInk='#f97316'; }
+      return {
+        idx: i + 1, name, mssv, email: mssv.toLowerCase()+'@tnut.edu.vn', initial,
+        avBg, avInk, pct, pctW: pct+'%', barColor, barInk,
+        doneLabel: 'Bài tập', ...aiMap[ai], status, stBg, stInk,
+      };
+    });
+    return { summary, filters, students };
+  }
+}
+</script>
+</body>
+</html>

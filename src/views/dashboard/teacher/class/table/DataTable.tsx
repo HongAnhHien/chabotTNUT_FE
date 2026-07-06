@@ -41,7 +41,8 @@ function StudentCard({ student, idx }: { student: ITeacherStudent; idx: number }
   const name = student.ho_ten ?? '';
   return (
     <div
-      style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 20px', borderBottom: '1px solid rgba(37,99,235,0.06)', transition: 'background .15s' }}
+      className="cl-card-row"
+      style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 14, padding: '12px 20px', borderBottom: '1px solid rgba(37,99,235,0.06)', transition: 'background .15s' }}
       onMouseEnter={e => (e.currentTarget.style.background = 'rgba(37,99,235,0.03)')}
       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
     >
@@ -56,7 +57,7 @@ function StudentCard({ student, idx }: { student: ITeacherStudent; idx: number }
       </div>
 
       {/* Name + code */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: '1 1 160px', minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e293b' }}>{name || '—'}</span>
           <span style={{ fontSize: '0.68rem', background: 'rgba(37,99,235,0.08)', color: '#2563eb', borderRadius: 20, padding: '1px 8px', fontWeight: 700, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{student.ma_sinh_vien}</span>
@@ -68,15 +69,15 @@ function StudentCard({ student, idx }: { student: ITeacherStudent; idx: number }
       </div>
 
       {/* Contact */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-end', flexShrink: 0 }}>
+      <div className="cl-card-contact" style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-end', flexShrink: 0, minWidth: 0 }}>
         {student.dien_thoai && (
           <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', color: '#64748b' }}>
             <Phone size={10} /> {student.dien_thoai}
           </span>
         )}
         {student.e_mail && (
-          <a href={`mailto:${student.e_mail}`} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', color: '#2563eb', textDecoration: 'none' }}>
-            <Mail size={10} /> {student.e_mail}
+          <a href={`mailto:${student.e_mail}`} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', color: '#2563eb', textDecoration: 'none', minWidth: 0, wordBreak: 'break-all' }}>
+            <Mail size={10} style={{ flexShrink: 0 }} /> {student.e_mail}
           </a>
         )}
       </div>
@@ -97,7 +98,13 @@ interface Props<TData, TValue> {
   onFilteredCount?: (n: number) => void;
 }
 
-const CSS = `@keyframes sk-pulse { 0%,100%{opacity:.7} 50%{opacity:.3} }`;
+const CSS = `
+  @keyframes sk-pulse { 0%,100%{opacity:.7} 50%{opacity:.3} }
+  @media (max-width: 640px) {
+    .cl-card-row { padding: 12px 14px !important; gap: 10px !important; }
+    .cl-card-contact { flex-basis: 100%; align-items: flex-start !important; margin-top: 2px; }
+  }
+`;
 
 // ── Component ─────────────────────────────────────────
 export function DataTable<TData extends ITeacherStudent, TValue>({

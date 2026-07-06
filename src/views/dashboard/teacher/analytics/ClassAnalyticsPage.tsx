@@ -1,14 +1,15 @@
-import { type FC, useCallback, useEffect, useRef, useState } from 'react';
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
   ArrowLeft, Loader2, BookOpen, Search, X,
-  AlertTriangle, CalendarDays, Clock, ChevronDown, Mail,
+  AlertTriangle, CalendarDays, Clock, ChevronDown, ChevronsUpDown, Mail, Sparkles, Users, CheckCircle,
+  Download, Send, Check,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import TeacherApi from '@/infra/teacher/teacher_api';
 import type { IClassAnalytics, ITeacherStudent, IScheduleItem } from '@/infra/api/interfaces/ITeacher';
 import CSS from './analytics.styles';
-import ClassAnalyticsView from './ClassAnalyticsView';
+import ClassAnalyticsView, { StatCard } from './ClassAnalyticsView';
 
 // ── Constants ────────────────────────────────────────────
 const WARN_CFG = {
@@ -16,14 +17,22 @@ const WARN_CFG = {
   nguy_co:     { color:'#ea580c', bg:'rgba(234,88,12,0.09)',  cls:'warn-orange', label:'Nguy cơ' },
   nhe:         { color:'#d97706', bg:'rgba(217,119,6,0.09)',  cls:'warn-yellow', label:'Cần chú ý' },
 } as const;
+const STATUS_OK = { color:'#16a34a', bg:'rgba(22,163,74,0.09)', label:'Bình thường' };
 
-const SELECT_STYLE: React.CSSProperties = {
-  padding:'7px 28px 7px 10px', borderRadius:9, border:'1.5px solid rgba(37,99,235,0.18)',
-  fontSize:'0.78rem', color:'#1e293b', background:'white', outline:'none',
-  cursor:'pointer', appearance:'none', WebkitAppearance:'none',
-  backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-  backgroundRepeat:'no-repeat', backgroundPosition:'right 8px center',
+// NOTE: ai_usage_level isn't returned by backend yet — see docs/backend-api-requests.md
+const AI_USAGE_CFG: Record<string, { label: string; bg: string; color: string }> = {
+  high: { label:'Tích cực',  bg:'rgba(124,58,237,0.09)', color:'#7c3aed' },
+  mid:  { label:'Vừa phải',  bg:'rgba(79,70,229,0.09)',  color:'#4f46e5' },
+  low:  { label:'Ít dùng',   bg:'rgba(100,116,139,0.08)', color:'#64748b' },
+  none: { label:'Chưa dùng', bg:'rgba(148,163,184,0.08)', color:'#94a3b8' },
 };
+const AI_USAGE_UNKNOWN = { label:'Chưa có dữ liệu', bg:'#f8fafc', color:'#cbd5e1' };
+
+function progressColor(pct: number) {
+  if (pct >= 70) return '#16a34a';
+  if (pct >= 40) return '#2563eb';
+  return '#f97316';
+}
 
 const EXAM_TYPE: Record<string, string> = {
   giua_ky:         'Giữa kỳ',
@@ -42,11 +51,23 @@ function initials(name: string) {
 }
 
 // ── Student row ──────────────────────────────────────────
+const StudentListHeader: FC = () => (
+  <div className="an-list-header">
+    <div>#</div>
+    <div>Học sinh</div>
+    <div>Tiến độ bài tập</div>
+    <div>Trợ lý AI</div>
+    <div>Trạng thái</div>
+  </div>
+);
+
 const StudentRow: FC<{ student: ITeacherStudent; idx: number }> = ({ student, idx }) => {
   const w = student.warning_level ? WARN_CFG[student.warning_level] : null;
-  const pendingPct = student.total_assignments
+  const status = w ?? STATUS_OK;
+  const pct = student.total_assignments
     ? Math.round(((student.total_assignments - (student.pending_assignments ?? 0)) / student.total_assignments) * 100)
     : null;
+  const ai = student.ai_usage_level ? AI_USAGE_CFG[student.ai_usage_level] : AI_USAGE_UNKNOWN;
 
   return (
     <div className={`an-student-row ${w?.cls ?? ''}`}>
@@ -62,57 +83,107 @@ const StudentRow: FC<{ student: ITeacherStudent; idx: number }> = ({ student, id
       </div>
 
       {/* Name + info */}
-      <div style={{ flex:1, minWidth:0 }}>
+      <div style={{ flex:'1 1 180px', minWidth:0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:7, flexWrap:'wrap' }}>
           <span style={{ fontWeight:700, fontSize:'0.86rem', color:'#0f172a' }}>{student.ho_ten}</span>
           <span style={{ fontSize:'0.7rem', color:'#94a3b8' }}>{student.ma_sinh_vien}</span>
-          {w && (
-            <span style={{ fontSize:'0.64rem', fontWeight:700, color:w.color, background:w.bg, borderRadius:20, padding:'1px 7px', whiteSpace:'nowrap' }}>
-              {w.label}
-            </span>
-          )}
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:3, fontSize:'0.72rem', color:'#94a3b8' }}>
           <Mail size={10} />{student.e_mail}
         </div>
       </div>
 
-      {/* Stats */}
-      <div style={{ display:'flex', alignItems:'center', gap:10, flexShrink:0, flexWrap:'wrap' }}>
-        {student.avg_score != null && (
-          <div style={{ textAlign:'center' }}>
-            <div style={{ fontSize:'0.68rem', color:'#94a3b8', marginBottom:1 }}>Điểm TB</div>
-            <div style={{
-              fontSize:'0.82rem', fontWeight:800,
-              color: student.avg_score >= 7 ? '#16a34a' : student.avg_score >= 5 ? '#d97706' : '#dc2626',
-            }}>
-              {student.avg_score.toFixed(1)}
-            </div>
-          </div>
-        )}
-        {student.total_assignments != null && (
-          <div style={{ textAlign:'center', minWidth:60 }}>
-            <div style={{ fontSize:'0.68rem', color:'#94a3b8', marginBottom:1 }}>Hoàn thành</div>
-            <div style={{ fontSize:'0.78rem', fontWeight:700, color: (student.pending_assignments ?? 0) > 0 ? '#ea580c' : '#16a34a' }}>
-              {(student.total_assignments - (student.pending_assignments ?? 0))}/{student.total_assignments}
-            </div>
-            {pendingPct !== null && (
-              <div style={{ marginTop:3, height:3, borderRadius:2, background:'#e2e8f0', overflow:'hidden', width:60 }}>
-                <div style={{ height:'100%', borderRadius:2, width:`${pendingPct}%`, background: pendingPct >= 80 ? '#22c55e' : pendingPct >= 50 ? '#f59e0b' : '#ef4444' }} />
-              </div>
-            )}
-          </div>
-        )}
+      {/* Tiến độ bài tập */}
+      <div style={{ flex:'0 1 170px', minWidth:130 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5, gap:8 }}>
+          <span style={{ fontSize:'0.68rem', color:'#94a3b8', fontWeight:500 }}>Bài tập</span>
+          <span style={{ fontSize:'0.75rem', fontWeight:700, color: pct !== null ? progressColor(pct) : '#94a3b8' }}>
+            {pct !== null ? `${pct}%` : '—'}
+          </span>
+        </div>
+        <div style={{ height:7, borderRadius:6, background:'#eef2f7', overflow:'hidden' }}>
+          <div style={{ height:'100%', width:`${pct ?? 0}%`, borderRadius:6, background: pct !== null ? progressColor(pct) : '#e2e8f0' }} />
+        </div>
       </div>
+
+      {/* Trợ lý AI */}
+      <span style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'5px 11px', borderRadius:20, fontSize:'0.72rem', fontWeight:600, background:ai.bg, color:ai.color, flexShrink:0, whiteSpace:'nowrap' }}>
+        <Sparkles size={11} /> {ai.label}
+      </span>
+
+      {/* Trạng thái */}
+      <span style={{ display:'inline-flex', alignItems:'center', gap:7, padding:'5px 12px', borderRadius:20, fontSize:'0.72rem', fontWeight:600, background:status.bg, color:status.color, flexShrink:0, whiteSpace:'nowrap' }}>
+        <span style={{ width:7, height:7, borderRadius:'50%', background:status.color }} />{status.label}
+      </span>
     </div>
   );
 };
 
 // ── Assignment card ──────────────────────────────────────
+function daysLeftLabel(dueIso: string): { label: string; color: string } {
+  const ms = new Date(dueIso).getTime() - Date.now();
+  if (ms <= 0) return { label:'Quá hạn', color:'#dc2626' };
+  const days = Math.ceil(ms / 86_400_000);
+  return { label: days <= 1 ? 'Còn hôm nay' : `Còn ${days} ngày`, color: days <= 2 ? '#dc2626' : '#f97316' };
+}
+
 const AssignmentCard: FC<{ item: IScheduleItem; idx: number }> = ({ item, idx }) => {
   const [open, setOpen] = useState(false);
+  const [remindingAll, setRemindingAll] = useState(false);
+  const [remindingIds, setRemindingIds] = useState<Set<string>>(new Set());
+  const [remindedIds,  setRemindedIds]  = useState<Set<string>>(new Set());
+  const [exporting, setExporting] = useState(false);
+
   const pct     = item.total_students > 0 ? Math.round(item.submitted / item.total_students * 100) : 0;
   const overdue = isPast(item.due_at);
+  const notSubmitted = item.total_students - item.submitted;
+  const ringLen = 2 * Math.PI * 44;
+  const ringOff = ringLen * (1 - pct / 100);
+  const left = daysLeftLabel(item.due_at);
+
+  // Reminders/export aren't implemented on backend yet — see docs/backend-api-requests.md
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const blob = await TeacherApi.exportAssignmentRoster(item.assignment_id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${item.title}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Chưa thể xuất danh sách — tính năng đang chờ backend hỗ trợ.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleRemindAll = async () => {
+    setRemindingAll(true);
+    try {
+      const res = await TeacherApi.remindAllPending(item.assignment_id);
+      toast.success(res.message || 'Đã gửi nhắc nhở.');
+      setRemindedIds(new Set(item.pending_students.map(s => s.ma_sinh_vien)));
+    } catch {
+      toast.error('Chưa thể gửi nhắc nhở — tính năng đang chờ backend hỗ trợ.');
+    } finally {
+      setRemindingAll(false);
+    }
+  };
+
+  const handleRemindOne = async (maSinhVien: string) => {
+    setRemindingIds(prev => new Set(prev).add(maSinhVien));
+    try {
+      const res = await TeacherApi.remindStudent(item.assignment_id, maSinhVien);
+      toast.success(res.message || 'Đã gửi nhắc nhở.');
+      setRemindedIds(prev => new Set(prev).add(maSinhVien));
+    } catch {
+      toast.error('Chưa thể gửi nhắc nhở — tính năng đang chờ backend hỗ trợ.');
+    } finally {
+      setRemindingIds(prev => { const next = new Set(prev); next.delete(maSinhVien); return next; });
+    }
+  };
 
   return (
     <div style={{ border:'1px solid #e8edf3', borderRadius:12, overflow:'hidden', background:'white' }}>
@@ -156,32 +227,87 @@ const AssignmentCard: FC<{ item: IScheduleItem; idx: number }> = ({ item, idx })
           </div>
         </div>
 
-        {item.pending_count > 0 && (
-          <ChevronDown size={14} color="#94a3b8" style={{ flexShrink:0, transition:'transform .2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-        )}
+        <ChevronDown size={14} color="#94a3b8" style={{ flexShrink:0, transition:'transform .2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
       </div>
 
-      {open && item.pending_students.length > 0 && (
-        <div style={{ borderTop:'1px solid #f1f5f9', background:'#fafbfd', padding:'10px 16px', animation:'an-expand .2s ease both' }}>
-          <div style={{ fontSize:'0.68rem', fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>
-            Chưa nộp bài ({item.pending_students.length})
-          </div>
-          <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-            {item.pending_students.map(s => (
-              <div key={s.ma_sinh_vien} style={{ display:'flex', alignItems:'center', gap:10, padding:'7px 10px', background:'white', borderRadius:8, border:'1px solid #f1f5f9' }}>
-                <div style={{ width:26, height:26, borderRadius:7, background:'rgba(220,38,38,0.08)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                  <span style={{ fontSize:'0.62rem', fontWeight:800, color:'#dc2626' }}>{initials(s.ho_ten)}</span>
-                </div>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:'0.8rem', fontWeight:600, color:'#1e293b' }}>{s.ho_ten}</div>
-                  <div style={{ fontSize:'0.68rem', color:'#94a3b8' }}>{s.ma_sinh_vien}</div>
-                </div>
-                <a href={`mailto:${s.e_mail}`} style={{ fontSize:'0.7rem', color:'#2563eb', textDecoration:'none', display:'flex', alignItems:'center', gap:3 }}>
-                  <Mail size={11} />Nhắc nhở
-                </a>
+      {open && (
+        <div style={{ borderTop:'1px solid #f1f5f9', background:'#fafbfd', padding:'16px', animation:'an-expand .2s ease both', display:'flex', flexDirection:'column', gap:14 }}>
+
+          {/* Ring + summary stats */}
+          <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', gap:20 }}>
+            <div style={{ width:88, height:88, position:'relative', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width={88} height={88} viewBox="0 0 104 104" style={{ transform:'rotate(-90deg)' }}>
+                <circle cx={52} cy={52} r={44} fill="none" stroke="#e7edf6" strokeWidth={11} />
+                <circle cx={52} cy={52} r={44} fill="none" stroke="#2563eb" strokeWidth={11} strokeLinecap="round" strokeDasharray={ringLen} strokeDashoffset={ringOff} />
+              </svg>
+              <div style={{ position:'absolute', textAlign:'center' }}>
+                <div style={{ fontSize:'1.15rem', fontWeight:800, color:'#2563eb', lineHeight:1 }}>{pct}%</div>
+                <div style={{ fontSize:'0.6rem', color:'#94a3b8' }}>đã nộp</div>
               </div>
-            ))}
+            </div>
+            <div style={{ display:'flex', gap:10, flexWrap:'wrap', flex:1 }}>
+              <div className="an-stat-card" style={{ padding:'10px 14px', flex:'1 1 120px' }}>
+                <div style={{ fontSize:'0.68rem', color:'#94a3b8' }}>Đã nộp</div>
+                <div style={{ fontSize:'1.15rem', fontWeight:800, color:'#16a34a' }}>{item.submitted}</div>
+              </div>
+              <div className="an-stat-card" style={{ padding:'10px 14px', flex:'1 1 120px' }}>
+                <div style={{ fontSize:'0.68rem', color:'#94a3b8' }}>Chưa nộp</div>
+                <div style={{ fontSize:'1.15rem', fontWeight:800, color:'#dc2626' }}>{notSubmitted}</div>
+              </div>
+              <div className="an-stat-card" style={{ padding:'10px 14px', flex:'1 1 120px' }}>
+                <div style={{ fontSize:'0.68rem', color:'#94a3b8' }}>Thời hạn</div>
+                <div style={{ fontSize:'0.95rem', fontWeight:800, color:left.color }}>{left.label}</div>
+              </div>
+            </div>
           </div>
+
+          {item.pending_students.length > 0 && (
+            <>
+              {/* Bulk action bar */}
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:10, background:'white', border:'1px solid #eaf0f7', borderRadius:12, padding:'10px 14px' }}>
+                <span style={{ fontSize:'0.76rem', fontWeight:700, color:'#334155' }}>Chưa nộp bài · {item.pending_students.length} học sinh</span>
+                <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                  <button onClick={handleExport} disabled={exporting} className="an-back-btn" style={{ background:'white' }}>
+                    {exporting ? <Loader2 size={12} style={{ animation:'an-spin 1s linear infinite' }} /> : <Download size={12} />} Xuất danh sách
+                  </button>
+                  <button
+                    onClick={handleRemindAll}
+                    disabled={remindingAll}
+                    style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 14px', borderRadius:8, border:'none', background:'#2563eb', color:'white', fontSize:'0.76rem', fontWeight:600, cursor: remindingAll ? 'not-allowed' : 'pointer', opacity: remindingAll ? 0.7 : 1 }}
+                  >
+                    {remindingAll ? <Loader2 size={12} style={{ animation:'an-spin 1s linear infinite' }} /> : <Send size={12} />} Nhắc tất cả chưa nộp
+                  </button>
+                </div>
+              </div>
+
+              {/* Pending list */}
+              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                {item.pending_students.map(s => {
+                  const reminding = remindingIds.has(s.ma_sinh_vien);
+                  const reminded  = remindedIds.has(s.ma_sinh_vien);
+                  return (
+                    <div key={s.ma_sinh_vien} style={{ display:'flex', alignItems:'center', gap:10, padding:'7px 10px', background:'white', borderRadius:8, border:'1px solid #f1f5f9', flexWrap:'wrap' }}>
+                      <div style={{ width:26, height:26, borderRadius:7, background:'rgba(220,38,38,0.08)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                        <span style={{ fontSize:'0.62rem', fontWeight:800, color:'#dc2626' }}>{initials(s.ho_ten)}</span>
+                      </div>
+                      <div style={{ flex:'1 1 140px', minWidth:0 }}>
+                        <div style={{ fontSize:'0.8rem', fontWeight:600, color:'#1e293b' }}>{s.ho_ten}</div>
+                        <div style={{ fontSize:'0.68rem', color:'#94a3b8' }}>{s.ma_sinh_vien}</div>
+                      </div>
+                      <button
+                        onClick={() => handleRemindOne(s.ma_sinh_vien)}
+                        disabled={reminding || reminded}
+                        style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 11px', borderRadius:8, border:'1px solid', borderColor: reminded ? '#d6efe0' : '#c9ddfb', background: reminded ? '#f0faf4' : '#eef4ff', color: reminded ? '#16a34a' : '#2563eb', fontSize:'0.7rem', fontWeight:600, cursor: reminding || reminded ? 'default' : 'pointer', flexShrink:0 }}
+                      >
+                        {reminding ? <Loader2 size={11} style={{ animation:'an-spin 1s linear infinite' }} /> : reminded ? <Check size={11} /> : <Mail size={11} />}
+                        {reminded ? 'Đã nhắc' : 'Nhắc nhở'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -209,6 +335,7 @@ const ClassAnalyticsPage: FC = () => {
   const [search,         setSearch]         = useState('');
   const [statusFilter,   setStatusFilter]   = useState('');
   const [levelFilter,    setLevelFilter]    = useState('');
+  const [sortDir,        setSortDir]        = useState<'asc' | 'desc' | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load analytics
@@ -262,6 +389,15 @@ const ClassAnalyticsPage: FC = () => {
   };
 
   const attentionCount = data?.attention_count ?? 0;
+
+  const completionPct = (s: ITeacherStudent) =>
+    s.total_assignments ? ((s.total_assignments - (s.pending_assignments ?? 0)) / s.total_assignments) * 100 : -1;
+
+  const sortedStudents = useMemo(() => {
+    if (!sortDir) return students;
+    const sign = sortDir === 'asc' ? 1 : -1;
+    return [...students].sort((a, b) => sign * (completionPct(a) - completionPct(b)));
+  }, [students, sortDir]);
 
   return (
     <div style={{ minHeight:'100%', background:'#f4f6fb' }}>
@@ -322,12 +458,20 @@ const ClassAnalyticsPage: FC = () => {
 
             {/* Tab 1 — Student list */}
             {tab === 1 && (
-              <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
 
-                {/* Filters */}
+                {/* Summary stat strip */}
+                <div className="an-stat-grid">
+                  <StatCard icon={<Users size={15} color="#4f46e5" />} label="Sĩ số lớp" color="#4f46e5" value={data.total_students} sub={data.ten_lop} />
+                  <StatCard icon={<Sparkles size={15} color="#7c3aed" />} label="Đã dùng AI" color="#7c3aed" value={data.ai_users} sub={`${data.total_students > 0 ? Math.round(data.ai_users / data.total_students * 100) : 0}% sĩ số`} />
+                  <StatCard icon={<CheckCircle size={15} color="#2563eb" />} label="Hoàn thành TB" color="#2563eb" value={`${data.assignments.completion_rate.toFixed(0)}%`} sub={`${data.assignments.total_submitted} lượt nộp`} />
+                  <StatCard icon={<AlertTriangle size={15} color="#f97316" />} label="Cần chú ý" color="#f97316" value={attentionCount} sub={attentionCount > 0 ? 'chậm tiến độ' : 'Tốt'} />
+                </div>
+
+                {/* Toolbar: search + filter chips */}
                 <div style={{ display:'flex', gap:10, flexWrap:'wrap', alignItems:'center' }}>
                   {/* Search */}
-                  <div style={{ position:'relative', flex:1, minWidth:200 }}>
+                  <div style={{ position:'relative', flex:'1 1 220px', minWidth:200 }}>
                     <Search size={14} color="#94a3b8" style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }} />
                     <input
                       type="text"
@@ -345,29 +489,28 @@ const ClassAnalyticsPage: FC = () => {
                     )}
                   </div>
 
-                  {/* Dropdown 1 — Trạng thái */}
-                  <select
-                    value={statusFilter}
-                    onChange={e => handleStatusFilter(e.target.value)}
-                    style={{ ...SELECT_STYLE, minWidth:140, borderColor: statusFilter ? 'rgba(37,99,235,0.4)' : 'rgba(37,99,235,0.18)' }}
-                  >
-                    <option value="">Tất cả</option>
-                    <option value="attention">Cần chú ý</option>
-                  </select>
-
-                  {/* Dropdown 2 — Mức độ (chỉ hiện khi đã chọn Cần chú ý) */}
-                  {statusFilter === 'attention' && (
-                    <select
-                      value={levelFilter}
-                      onChange={e => handleLevelFilter(e.target.value)}
-                      style={{ ...SELECT_STYLE, minWidth:150, borderColor: levelFilter ? 'rgba(234,88,12,0.4)' : 'rgba(37,99,235,0.18)' }}
-                    >
-                      <option value="">Tất cả mức độ</option>
-                      <option value="nhe">Cần chú ý</option>
-                      <option value="nguy_co">Nguy cơ</option>
-                      <option value="rat_nguy_co">Rất nguy cơ</option>
-                    </select>
-                  )}
+                  {/* Filter chips */}
+                  <div className="an-chip-row">
+                    <div className={`an-chip ${statusFilter === '' ? 'active' : ''}`} onClick={() => handleStatusFilter('')}>
+                      Tất cả {studentTotal}
+                    </div>
+                    <div className={`an-chip ${statusFilter === 'attention' ? 'active red' : ''}`} onClick={() => handleStatusFilter('attention')}>
+                      Cần chú ý {attentionCount}
+                    </div>
+                    {statusFilter === 'attention' && (['nhe', 'nguy_co', 'rat_nguy_co'] as const).map(lv => (
+                      <div
+                        key={lv}
+                        className={`an-chip ${levelFilter === lv ? `active ${WARN_CFG[lv].cls === 'warn-yellow' ? 'yellow' : WARN_CFG[lv].cls === 'warn-orange' ? 'orange' : 'red'}` : ''}`}
+                        onClick={() => handleLevelFilter(levelFilter === lv ? '' : lv)}
+                      >
+                        {WARN_CFG[lv].label}
+                      </div>
+                    ))}
+                    <div className="an-chip" onClick={() => setSortDir(d => d === null ? 'asc' : d === 'asc' ? 'desc' : null)}>
+                      <ChevronsUpDown size={12} style={{ marginRight:4 }} />
+                      Sắp xếp{sortDir ? ` · ${sortDir === 'asc' ? 'Thấp→Cao' : 'Cao→Thấp'}` : ''}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Count */}
@@ -387,8 +530,11 @@ const ClassAnalyticsPage: FC = () => {
                     Không tìm thấy học sinh nào
                   </div>
                 ) : (
-                  <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
-                    {students.map((s, i) => <StudentRow key={s.ma_sinh_vien} student={s} idx={i} />)}
+                  <div>
+                    <StudentListHeader />
+                    <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
+                      {sortedStudents.map((s, i) => <StudentRow key={s.ma_sinh_vien} student={s} idx={i} />)}
+                    </div>
                   </div>
                 )}
               </div>

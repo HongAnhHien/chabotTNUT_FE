@@ -41,7 +41,7 @@ function fmtDay(iso: string) {
 function isPast(iso: string) { return new Date(iso) < new Date(); }
 
 // ── Sub-components ───────────────────────────────────────
-const StatCard: FC<{ icon: React.ReactNode; label: string; value: React.ReactNode; sub?: string; color?: string }> = ({ icon, label, value, sub, color = '#2563eb' }) => (
+export const StatCard: FC<{ icon: React.ReactNode; label: string; value: React.ReactNode; sub?: string; color?: string }> = ({ icon, label, value, sub, color = '#2563eb' }) => (
   <div className="an-stat-card">
     <div style={{ display:'flex', alignItems:'center', gap:8 }}>
       <div style={{ width:32, height:32, borderRadius:9, background:`${color}18`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>

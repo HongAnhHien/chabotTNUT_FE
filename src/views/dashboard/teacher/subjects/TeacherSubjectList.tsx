@@ -1,11 +1,12 @@
 import { type FC, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Loader2, ChevronDown, Calendar, Search, X } from 'lucide-react';
+import { Loader2, ChevronDown, Calendar, Search, X, BookOpen, Layers, Users, Target } from 'lucide-react';
 import toast from 'react-hot-toast';
 import TeacherApi from '@/infra/teacher/teacher_api';
-import type { ISemester, ITeacherSubjectWithClasses } from '@/infra/api/interfaces/ITeacher';
+import type { ISemester, ITeacherSubjectWithClasses, ISubjectAnalytics } from '@/infra/api/interfaces/ITeacher';
 import CSS from './subjectList.styles';
 import SubjectRow from './SubjectRow';
+import SubjectStatCards, { type ISubjectOverviewStat } from './SubjectStatCards';
 
 const TeacherSubjectList: FC = () => {
   const navigate = useNavigate();
@@ -20,16 +21,39 @@ const TeacherSubjectList: FC = () => {
   const [search,        setSearch]        = useState('');
   const [searchInput,   setSearchInput]   = useState('');
 
+  const [subjectAnalytics, setSubjectAnalytics] = useState<Record<string, ISubjectAnalytics>>({});
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
   const dropRef    = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Per-subject completion/AI/attention metrics aren't in the course-list response —
+  // fetch each subject's analytics in parallel. See docs/backend-api-requests.md for
+  // a proposed bulk endpoint that would remove the need for this N+1 fan-out.
+  const loadAnalytics = useCallback((list: ITeacherSubjectWithClasses[], hocKy: number) => {
+    if (!list.length) { setSubjectAnalytics({}); return; }
+    setAnalyticsLoading(true);
+    Promise.allSettled(list.map(c => TeacherApi.getSubjectAnalytics(c.subject.ma_mon, hocKy)))
+      .then(results => {
+        const map: Record<string, ISubjectAnalytics> = {};
+        results.forEach((r, i) => {
+          if (r.status === 'fulfilled') map[list[i].subject.ma_mon] = r.value.data;
+        });
+        setSubjectAnalytics(map);
+      })
+      .finally(() => setAnalyticsLoading(false));
+  }, []);
 
   const loadCourses = useCallback((hocKy: number, q?: string) => {
     setLoadingCourses(true);
     TeacherApi.getSemesterCourses(hocKy, q || undefined)
-      .then(res => setCourses(res.data))
+      .then(res => {
+        setCourses(res.data);
+        loadAnalytics(res.data, hocKy);
+      })
       .catch(() => toast.error('Không thể tải danh sách môn học.'))
       .finally(() => setLoadingCourses(false));
-  }, []);
+  }, [loadAnalytics]);
 
   const handleSearch = (val: string) => {
     setSearchInput(val);
@@ -65,6 +89,18 @@ const TeacherSubjectList: FC = () => {
   const totalClasses  = courses.reduce((s, c) => s + c.classes.length, 0);
   const totalStudents = courses.reduce((s, c) => s + c.classes.reduce((a, cl) => a + cl.sl_dk, 0), 0);
   const currentSem    = semesters.find(s => s.hoc_ky === selectedHocKy);
+
+  const analyticsList = Object.values(subjectAnalytics);
+  const avgCompletion = analyticsList.length
+    ? Math.round(analyticsList.reduce((s, a) => s + a.assignments.completion_rate, 0) / analyticsList.length)
+    : null;
+
+  const overviewStats: ISubjectOverviewStat[] = [
+    { icon:<BookOpen size={18} />, label:'Môn học',       value:courses.length,  sub:'đang giảng dạy',      tint:'#eef4ff', ink:'#2563eb' },
+    { icon:<Layers size={18} />,   label:'Lớp học phần',  value:totalClasses,    sub:'trong học kỳ',        tint:'#eef2ff', ink:'#4f46e5' },
+    { icon:<Users size={18} />,    label:'Sinh viên',     value:totalStudents,   sub:'tổng toàn bộ lớp',    tint:'#f1ecfe', ink:'#7c3aed' },
+    { icon:<Target size={18} />,   label:'Hoàn thành TB', value: avgCompletion !== null ? `${avgCompletion}%` : '—', sub:'toàn bộ môn học', tint:'#e8f7ef', ink:'#16a34a' },
+  ];
 
   return (
     <div style={{ minHeight:'100%', background:'#f4f6fb' }}>
@@ -144,6 +180,9 @@ const TeacherSubjectList: FC = () => {
       {/* ── Content ── */}
       <div className="sl-content">
 
+        {/* Overview stats */}
+        {!loadingCourses && courses.length > 0 && <SubjectStatCards stats={overviewStats} />}
+
         {/* Search */}
         <div style={{ position:'relative' }}>
           <Search size={15} color="#94a3b8" style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }} />
@@ -180,6 +219,8 @@ const TeacherSubjectList: FC = () => {
                 key={course.subject.ma_mon}
                 course={course}
                 colorIdx={idx}
+                analytics={subjectAnalytics[course.subject.ma_mon]}
+                analyticsLoading={analyticsLoading && !subjectAnalytics[course.subject.ma_mon]}
                 onDetail={()     => navigate(`/teacher/subjects/${course.subject.ma_mon}/analytics${selectedHocKy ? `?hoc_ky=${selectedHocKy}` : ''}`)}
                 onFiles={()      => navigate(`/teacher/subjects/${course.subject.ma_mon}/files`)}
                 onExams={()      => navigate(`/teacher/subjects/${course.subject.ma_mon}/exams`)}
