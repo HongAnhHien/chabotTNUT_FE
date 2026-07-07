@@ -29,6 +29,8 @@ const CSS = `
   .sd-page-content { padding:20px 24px; }
   .sd-page-header { padding:20px 24px 18px; }
 
+  .sd-exam-badge { transition:background .12s; }
+
   @media (max-width:1024px) {
     .sd-grid-4 { grid-template-columns:repeat(2,1fr); }
     .sd-grid-3 { grid-template-columns:repeat(2,1fr); }
@@ -36,6 +38,7 @@ const CSS = `
   @media (max-width:768px) {
     .sd-heatcal-row { flex-direction:column; }
     .sd-heatcal-cal { height:auto !important; }
+    .sd-exam-badge  { margin-left:0 !important; width:100%; }
   }
   @media (max-width:640px) {
     .sd-grid-4 { grid-template-columns:1fr 1fr; gap:10px; }
@@ -43,6 +46,11 @@ const CSS = `
     .sd-page-content { padding:12px 14px; }
     .sd-page-header { padding:14px 16px 12px; }
     .sd-table th, .sd-table td { padding:8px 10px; }
+    .sd-header-row  { flex-direction:column; align-items:flex-start !important; gap:10px; }
+    .sd-exam-badge  { flex-direction:column; align-items:flex-start !important; gap:6px; }
+    .sd-sem-drop       { margin-left:0 !important; width:100%; }
+    .sd-sem-drop-btn   { width:100%; justify-content:space-between; }
+    .sd-sem-drop-panel { left:0; right:0; width:auto; min-width:0; }
   }
 `;
 

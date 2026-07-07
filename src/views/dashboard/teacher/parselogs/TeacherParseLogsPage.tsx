@@ -58,6 +58,20 @@ const CSS = `
   }
   .pl-btn:hover:not(:disabled) { background:#f8fafc; }
   .pl-btn:disabled { opacity:.5;cursor:not-allowed; }
+
+  .pl-stats-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px; }
+  .pl-split-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px; }
+  .pl-table-scroll { overflow-x:auto; }
+  .pl-filter-row { display:flex;gap:10px;flex-wrap:wrap; }
+
+  @media(max-width:900px) {
+    .pl-stats-grid { grid-template-columns:repeat(2,1fr); }
+    .pl-split-grid { grid-template-columns:1fr; }
+  }
+  @media(max-width:640px) {
+    .pl-stats-grid { grid-template-columns:1fr 1fr;gap:10px; }
+    .pl-filter-row > * { flex:1 1 100%; }
+  }
 `;
 
 const TeacherParseLogsPage: FC = () => {
@@ -119,7 +133,7 @@ const TeacherParseLogsPage: FC = () => {
         </div>
 
         {/* ── Stats ─────────────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 20 }}>
+        <div className="pl-stats-grid">
           <div className="pl-card pl-stat">
             <div style={{ width: 40, height: 40, borderRadius: 10, background: '#eff5ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <FileSearch size={18} color="#2563eb" />
@@ -164,7 +178,7 @@ const TeacherParseLogsPage: FC = () => {
 
         {/* ── By service + recent errors ───────────────── */}
         {stats && (stats.by_service.length > 0 || stats.recent_errors.length > 0) && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 20 }}>
+          <div className="pl-split-grid">
             <div className="pl-card" style={{ padding: '16px 18px' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', marginBottom: 12 }}>Theo dịch vụ</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

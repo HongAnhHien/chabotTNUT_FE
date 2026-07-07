@@ -1,30 +1,81 @@
-import { type FC, useState, useMemo } from 'react';
+import { type FC, useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Clock, MapPin, FileText } from 'lucide-react';
+import StudentApi from '@/infra/student/student_api';
 import type { IStudentAssignmentListItem } from '@/infra/api/interfaces/IAssignment';
+import type { IStudentSubject } from '@/infra/api/interfaces/IStudent';
 import { fmtDate, toDs } from './dashboard.constants';
 
-type CalEvent = { type: 'open' | 'due' | 'submit'; title: string; id: string };
+type EventType = 'open' | 'due' | 'exam';
+interface ExamMeta { startTime: string; endTime: string; duration: string; room: string; method: string; examName: string }
+type CalEvent = { type: EventType; title: string; sub?: string; examMeta?: ExamMeta; onOpen: () => void };
 
-const DOT_COLOR = { open: '#2966EB', due: '#dc2626', submit: '#16a34a' };
-const EVT_LABEL = { open: 'Bắt đầu làm bài', due: 'Hạn nộp bài', submit: 'Đã nộp' };
-const EVT_BG    = { open: 'rgba(41,102,235,0.08)', due: 'rgba(220,38,38,0.07)', submit: 'rgba(22,163,74,0.07)' };
+const DOT_COLOR: Record<EventType, string> = { open: '#2966EB', due: '#dc2626', exam: '#7c3aed' };
+const EVT_LABEL: Record<EventType, string> = { open: 'Mở bài', due: 'Hạn nộp', exam: 'Lịch thi' };
+const EVT_BG:    Record<EventType, string> = { open: 'rgba(41,102,235,0.08)', due: 'rgba(220,38,38,0.07)', exam: 'rgba(124,58,237,0.07)' };
+const TYPE_ORDER: EventType[] = ['due', 'exam', 'open'];
+
+const pad2 = (n: number | string) => String(n).padStart(2, '0');
+const ddmmyyyyToDs = (s: string) => { const [d, m, y] = s.trim().split('/'); return `${y}-${pad2(m)}-${pad2(d)}`; };
+const addMinutes = (hhmm: string, minutesStr: string) => {
+  const [h, mm] = hhmm.split(':').map(Number);
+  const total = (h * 60 + mm + Number(minutesStr)) % (24 * 60);
+  return `${pad2(Math.floor(total / 60))}:${pad2(total % 60)}`;
+};
 
 const ExamCalendar: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ assignments }) => {
   const [view, setView]         = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
   const [selected, setSelected] = useState<string | null>(null);
+  const [subjects, setSubjects] = useState<(IStudentSubject & { _hocKy: number })[]>([]);
   const navigate = useNavigate();
+
+  // Lấy lịch thi ở tất cả học kỳ — giống cách trang "Lịch học" (/student/schedule) làm.
+  // Giữ lại hoc_ky nguồn để điều hướng kèm ?hk= đúng (tránh trang chi tiết tra nhầm học kỳ hiện tại).
+  useEffect(() => {
+    let cancelled = false;
+    StudentApi.getSemesters()
+      .then(semRes => {
+        const allHocKy = semRes.data.ds_hoc_ky.map(s => s.hoc_ky);
+        return Promise.all(allHocKy.map(hk =>
+          StudentApi.getSubjectsBySemester(hk)
+            .then(r => (r.data ?? []).map(s => ({ ...s, _hocKy: hk })))
+            .catch(() => [] as (IStudentSubject & { _hocKy: number })[])
+        ));
+      })
+      .then(list => { if (!cancelled) setSubjects(list.flat()); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   const eventMap = useMemo(() => {
     const map = new Map<string, CalEvent[]>();
     const push = (ds: string, ev: CalEvent) => { if (!map.has(ds)) map.set(ds, []); map.get(ds)!.push(ev); };
+
     assignments.forEach(a => {
-      push(toDs(a.available_from), { type:'open',   title: a.title, id: a.id });
-      push(toDs(a.due_at),         { type:'due',    title: a.title, id: a.id });
-      if (a.submitted_at) push(toDs(a.submitted_at), { type:'submit', title: a.title, id: a.id });
+      push(toDs(a.available_from), { type: 'open', title: a.title, sub: a.ma_mon, onOpen: () => navigate(`/student/assignments/${a.id}`) });
+      push(toDs(a.due_at),         { type: 'due',  title: a.title, sub: a.ma_mon, onOpen: () => navigate(`/student/assignments/${a.id}`) });
     });
+
+    subjects.forEach(s => {
+      if (!s.lich_thi) return;
+      const lt = s.lich_thi;
+      push(ddmmyyyyToDs(lt.ngay_thi), {
+        type: 'exam',
+        title: lt.ten_mon,
+        examMeta: {
+          startTime: lt.gio_bat_dau,
+          endTime:   addMinutes(lt.gio_bat_dau, lt.so_phut),
+          duration:  lt.so_phut,
+          room:      lt.phong_thi,
+          method:    lt.hinh_thuc_thi,
+          examName:  lt.ky_thi,
+        },
+        onOpen: () => navigate(`/student/subjects/${s.ma_mon}?hk=${s._hocKy}`),
+      });
+    });
+
     return map;
-  }, [assignments]);
+  }, [assignments, subjects, navigate]);
 
   const { y, m } = view;
   const firstDow  = new Date(y, m, 1).getDay();
@@ -35,17 +86,19 @@ const ExamCalendar: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ assig
   for (let d = 1; d <= daysInMon; d++) grid.push(d);
   while (grid.length % 7 !== 0) grid.push(null);
 
-  const todayDs      = new Date().toISOString().slice(0, 10);
-  const pad2         = (n: number) => String(n).padStart(2, '0');
-  const mkDs         = (day: number) => `${y}-${pad2(m + 1)}-${pad2(day)}`;
-  const selectedEvts = selected ? (eventMap.get(selected) ?? []) : [];
+  const todayDs = new Date().toISOString().slice(0, 10);
+  const mkDs    = (day: number) => `${y}-${pad2(m + 1)}-${pad2(day)}`;
+  const selectedEvts   = selected ? (eventMap.get(selected) ?? []) : [];
+  const selectedGroups = TYPE_ORDER
+    .map(type => ({ type, events: selectedEvts.filter(e => e.type === type) }))
+    .filter(g => g.events.length > 0);
 
   return (
     <div style={{ position:'relative', height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
 
       {/* Left drawer */}
       <div style={{
-        position:'absolute', top:0, left:0, bottom:0, width:230, zIndex:10,
+        position:'absolute', top:0, left:0, bottom:0, width:250, zIndex:10,
         background:'white', borderRight:'1.5px solid #eef0f5',
         boxShadow: selected ? '4px 0 20px rgba(0,0,0,0.07)' : 'none',
         display:'flex', flexDirection:'column',
@@ -63,21 +116,57 @@ const ExamCalendar: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ assig
           </button>
         </div>
         <div style={{ flex:1, overflowY:'auto', padding:'10px 12px' }}>
-          {selectedEvts.length === 0 ? (
+          {selectedGroups.length === 0 ? (
             <div style={{ fontSize:'0.75rem', color:'#94a3b8', textAlign:'center', padding:'24px 0' }}>Không có sự kiện</div>
           ) : (
-            <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-              {selectedEvts.map((ev, i) => (
-                <div key={i} onClick={() => navigate(`/student/assignments/${ev.id}`)}
-                  style={{ padding:'10px 12px', borderRadius:10, background:EVT_BG[ev.type], cursor:'pointer', transition:'opacity .12s' }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity='0.75'}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity='1'}
-                >
-                  <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
-                    <div style={{ width:7, height:7, borderRadius:'50%', background:DOT_COLOR[ev.type], flexShrink:0 }} />
-                    <span style={{ fontSize:'0.62rem', fontWeight:700, color:DOT_COLOR[ev.type] }}>{EVT_LABEL[ev.type]}</span>
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {selectedGroups.map(({ type, events }) => (
+                <div key={type} style={{ borderRadius:10, background:EVT_BG[type], padding:'8px 10px' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:6 }}>
+                    <div style={{ width:6, height:6, borderRadius:'50%', background:DOT_COLOR[type], flexShrink:0 }} />
+                    <span style={{ fontSize:'0.62rem', fontWeight:700, color:DOT_COLOR[type] }}>
+                      {EVT_LABEL[type]} · {events.length} {type === 'exam' ? 'môn' : 'bài'}
+                    </span>
                   </div>
-                  <div style={{ fontSize:'0.76rem', fontWeight:600, color:'#1e293b', lineHeight:1.45 }}>{ev.title}</div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:5 }}>
+                    {events.map((ev, i) => (
+                      <div key={i} onClick={ev.onOpen}
+                        style={{ padding:'8px 10px', borderRadius:8, background:'white', cursor:'pointer', transition:'opacity .12s' }}
+                        onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity='0.7'}
+                        onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity='1'}
+                      >
+                        {ev.examMeta ? (
+                          <>
+                            <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:5 }}>
+                              <div style={{ fontSize:'0.74rem', fontWeight:700, color:'#1e293b', lineHeight:1.4, flex:1 }}>{ev.title}</div>
+                              <span style={{ fontSize:'0.56rem', fontWeight:700, color:'#7c3aed', background:'rgba(124,58,237,0.1)', borderRadius:20, padding:'1px 6px', flexShrink:0, whiteSpace:'nowrap' }}>
+                                {ev.examMeta.examName}
+                              </span>
+                            </div>
+                            <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
+                              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.66rem', color:'#475569' }}>
+                                <Clock size={11} color="#94a3b8" style={{ flexShrink:0 }} />
+                                {ev.examMeta.startTime} – {ev.examMeta.endTime} <span style={{ color:'#94a3b8' }}>({ev.examMeta.duration} phút)</span>
+                              </div>
+                              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.66rem', color:'#475569' }}>
+                                <MapPin size={11} color="#94a3b8" style={{ flexShrink:0 }} />
+                                {ev.examMeta.room}
+                              </div>
+                              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.66rem', color:'#475569' }}>
+                                <FileText size={11} color="#94a3b8" style={{ flexShrink:0 }} />
+                                {ev.examMeta.method}
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div style={{ fontSize:'0.74rem', fontWeight:600, color:'#1e293b', lineHeight:1.4 }}>{ev.title}</div>
+                            {ev.sub && <div style={{ fontSize:'0.62rem', color:'#94a3b8', marginTop:2 }}>{ev.sub}</div>}
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -113,7 +202,7 @@ const ExamCalendar: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ assig
           const evts    = eventMap.get(ds) ?? [];
           const isToday = ds === todayDs;
           const isSel   = ds === selected;
-          const types   = [...new Set(evts.map(e => e.type))];
+          const typesPresent = TYPE_ORDER.filter(t => evts.some(e => e.type === t));
           return (
             <div key={i} onClick={() => setSelected(isSel ? null : ds)}
               style={{
@@ -126,7 +215,7 @@ const ExamCalendar: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ assig
             >
               <div style={{ fontSize:'0.78rem', fontWeight: isSel || isToday ? 800 : 500, color: isSel ? 'white' : isToday ? '#2966EB' : '#1e293b', lineHeight:1 }}>{day}</div>
               <div style={{ display:'flex', gap:2 }}>
-                {types.map(t => <div key={t} style={{ width:4, height:4, borderRadius:'50%', background: isSel ? 'rgba(255,255,255,0.85)' : DOT_COLOR[t] }} />)}
+                {typesPresent.map(t => <div key={t} style={{ width:4, height:4, borderRadius:'50%', background: isSel ? 'rgba(255,255,255,0.85)' : DOT_COLOR[t] }} />)}
               </div>
             </div>
           );
@@ -135,10 +224,10 @@ const ExamCalendar: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ assig
 
       {/* Legend */}
       <div style={{ display:'flex', gap:12, marginTop:8, flexShrink:0 }}>
-        {(['open','due','submit'] as const).map(t => (
+        {TYPE_ORDER.map(t => (
           <div key={t} style={{ display:'flex', alignItems:'center', gap:4 }}>
             <div style={{ width:7, height:7, borderRadius:'50%', background:DOT_COLOR[t] }} />
-            <span style={{ fontSize:'0.62rem', color:'#64748b' }}>{t === 'open' ? 'Mở bài' : t === 'due' ? 'Hạn nộp' : 'Đã nộp'}</span>
+            <span style={{ fontSize:'0.62rem', color:'#64748b' }}>{EVT_LABEL[t]}</span>
           </div>
         ))}
       </div>

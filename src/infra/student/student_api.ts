@@ -17,6 +17,12 @@ import type {
   IDashboardOverviewResponse,
   IDashboardSubjectResponse,
 } from '@/infra/api/interfaces/IDashboard';
+import type {
+  INotificationsQuery,
+  INotificationsResponse,
+  IMarkNotificationReadResponse,
+  IMarkAllNotificationsReadResponse,
+} from '@/infra/api/interfaces/INotification';
 
 class StudentApi {
   async getAssignments(): Promise<IStudentAssignmentsResponse> {
@@ -72,16 +78,39 @@ class StudentApi {
     return res.data;
   }
 
-  async getDashboardOverview(semesterFrom?: string): Promise<IDashboardOverviewResponse> {
+  async getDashboardOverview(semesterFrom?: string, hocKy?: number): Promise<IDashboardOverviewResponse> {
     const res = await axiosInstance.get<IDashboardOverviewResponse>(
-      API_ENDPOINTS.STUDENT.DASHBOARD_OVERVIEW(semesterFrom)
+      API_ENDPOINTS.STUDENT.DASHBOARD_OVERVIEW(semesterFrom, hocKy)
     );
     return res.data;
   }
 
-  async getDashboardSubject(maMon: string): Promise<IDashboardSubjectResponse> {
+  async getDashboardSubject(maMon: string, hocKy?: number): Promise<IDashboardSubjectResponse> {
     const res = await axiosInstance.get<IDashboardSubjectResponse>(
-      API_ENDPOINTS.STUDENT.DASHBOARD_SUBJECT(maMon)
+      API_ENDPOINTS.STUDENT.DASHBOARD_SUBJECT(maMon, hocKy)
+    );
+    return res.data;
+  }
+
+  // ── Notifications ─────────────────────────────────────
+  async getNotifications(query?: INotificationsQuery): Promise<INotificationsResponse> {
+    const res = await axiosInstance.get<INotificationsResponse>(
+      API_ENDPOINTS.STUDENT.NOTIFICATIONS,
+      { params: query }
+    );
+    return res.data;
+  }
+
+  async markNotificationRead(id: string): Promise<IMarkNotificationReadResponse> {
+    const res = await axiosInstance.post<IMarkNotificationReadResponse>(
+      API_ENDPOINTS.STUDENT.NOTIFICATION_READ(id)
+    );
+    return res.data;
+  }
+
+  async markAllNotificationsRead(): Promise<IMarkAllNotificationsReadResponse> {
+    const res = await axiosInstance.post<IMarkAllNotificationsReadResponse>(
+      API_ENDPOINTS.STUDENT.NOTIFICATIONS_READ_ALL
     );
     return res.data;
   }

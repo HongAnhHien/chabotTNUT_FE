@@ -47,6 +47,11 @@ export const API_ENDPOINTS = {
     PARSE_LOGS:       '/teacher/parse-logs',
     PARSE_LOGS_STATS: '/teacher/parse-logs/stats',
 
+    // Notifications
+    NOTIFICATIONS:          '/teacher/notifications',
+    NOTIFICATION_READ:      (id: string) => `/teacher/notifications/${id}/read`,
+    NOTIFICATIONS_READ_ALL: '/teacher/notifications/read-all',
+
     // Legacy aliases (kept for backward compat with existing drawers)
     SUBJECT_AI_FILES:     (s: string) => `/teacher/subjects/${s}/files/sent`,
     SUBJECT_AI_SEND:      (s: string) => `/teacher/subjects/${s}/files/send-to-api`,
@@ -78,6 +83,7 @@ export const API_ENDPOINTS = {
     REMIND:     (id: string) => `/teacher/assignments/${id}/remind`,
     REMIND_ALL: (id: string) => `/teacher/assignments/${id}/remind-all`,
     EXPORT:     (id: string) => `/teacher/assignments/${id}/export`,
+    STUDENT_DETAIL: (id: string, studentCode: string) => `/teacher/assignments/${id}/students/${encodeURIComponent(studentCode)}`,
   },
 
   STUDENT_ASSIGNMENT: {
@@ -92,8 +98,23 @@ export const API_ENDPOINTS = {
     SEMESTERS:         '/student/semesters',
     SEMESTER_SUBJECTS: (hocKy: number) => `/student/semesters/${hocKy}/subjects`,
     EXAM_STATUS:       (userId: string, maMon: string) => `/chatbot/student-exam-status?user_id=${encodeURIComponent(userId)}&ma_mon=${encodeURIComponent(maMon)}`,
-    DASHBOARD_OVERVIEW: (semesterFrom?: string) => `/student/dashboard/overview${semesterFrom ? `?semester_from=${semesterFrom}` : ''}`,
-    DASHBOARD_SUBJECT:  (maMon: string) => `/student/dashboard?ma_mon=${encodeURIComponent(maMon)}`,
+    DASHBOARD_OVERVIEW: (semesterFrom?: string, hocKy?: number) => {
+      const params = new URLSearchParams();
+      if (semesterFrom) params.set('semester_from', semesterFrom);
+      if (hocKy)        params.set('hoc_ky', String(hocKy));
+      const qs = params.toString();
+      return `/student/dashboard/overview${qs ? `?${qs}` : ''}`;
+    },
+    DASHBOARD_SUBJECT: (maMon: string, hocKy?: number) => {
+      const params = new URLSearchParams({ ma_mon: maMon });
+      if (hocKy) params.set('hoc_ky', String(hocKy));
+      return `/student/dashboard?${params.toString()}`;
+    },
+
+    // Notifications
+    NOTIFICATIONS:          '/student/notifications',
+    NOTIFICATION_READ:      (id: string) => `/student/notifications/${id}/read`,
+    NOTIFICATIONS_READ_ALL: '/student/notifications/read-all',
   },
 
   FILES: {

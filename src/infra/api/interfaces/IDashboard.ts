@@ -1,3 +1,5 @@
+import type { IExamSchedule } from './IStudent';
+
 // ── Dashboard overview (/student/dashboard/overview) ──
 export interface IDashboardOverviewExamType {
   exam_type: string;
@@ -14,6 +16,7 @@ export interface IDashboardOverviewSubject {
   avg_score_10: number;
   this_semester: { exams_created: number; submitted: number };
   by_exam_type: IDashboardOverviewExamType[];
+  lich_thi?: IExamSchedule | null; // chỉ có khi request kèm ?hoc_ky=
 }
 
 export interface IDashboardOverview {
@@ -92,6 +95,7 @@ export interface IDashboardSubjectData {
   exams: IDashboardExams;
   assignments: IDashboardAssignments;
   progress: IDashboardProgress;
+  lich_thi?: IExamSchedule | null; // chỉ có khi request kèm ?hoc_ky=
 }
 
 export interface IDashboardSubjectResponse {

@@ -1,11 +1,20 @@
-import { type FC } from 'react';
+import { type FC, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { Bell, LogOut, Menu } from 'lucide-react';
+import NotificationPanel from '@/components/common/NotificationPanel';
+import type { INotification } from '@/infra/api/interfaces/INotification';
 
 interface Props {
+  notifications?: INotification[];
   unreadCount?: number;
-  onBellClick?: () => void;
+  notifLoading?: boolean;
+  onMarkRead?: (id: string) => void;
+  onMarkAllRead?: () => void;
+  onNotificationClick?: (n: INotification) => void;
   onLogout?: () => void;
   onMenuClick?: () => void;
+  isMobile?: boolean;
+  notificationsPath?: string;
 }
 
 const CSS = `
@@ -18,13 +27,37 @@ const CSS = `
   .sv-hdr-menu:hover { background: #f1f5f9 !important; }
 `;
 
-const StudentHeader: FC<Props> = ({ unreadCount = 0, onBellClick, onLogout, onMenuClick }) => (
+const StudentHeader: FC<Props> = ({
+  notifications = [], unreadCount = 0, notifLoading = false,
+  onMarkRead, onMarkAllRead, onNotificationClick,
+  onLogout, onMenuClick, isMobile = false, notificationsPath,
+}) => {
+  const navigate = useNavigate();
+  const [panelOpen, setPanelOpen] = useState(false);
+  const bellWrapRef = useRef<HTMLDivElement>(null);
+
+  const handleBellClick = () => {
+    // Mobile: mở trang thông báo riêng thay vì dropdown panel (đỡ chật, dễ thao tác hơn)
+    if (isMobile && notificationsPath) navigate(notificationsPath);
+    else setPanelOpen(v => !v);
+  };
+
+  useEffect(() => {
+    if (!panelOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (!bellWrapRef.current?.contains(e.target as Node)) setPanelOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [panelOpen]);
+
+  return (
   <div style={{
     height: 56, background: 'white',
     borderBottom: '1px solid #f1f5f9',
     display: 'flex', alignItems: 'center',
     padding: '0 16px', gap: 10,
-    position: 'sticky', top: 0, zIndex: 20, flexShrink: 0,
+    position: 'sticky', top: 0, zIndex: 30, flexShrink: 0,
   }}>
     <style>{CSS}</style>
 
@@ -48,28 +81,41 @@ const StudentHeader: FC<Props> = ({ unreadCount = 0, onBellClick, onLogout, onMe
     <div style={{ flex: 1 }} />
 
     {/* Bell */}
-    <button
-      className="sv-hdr-bell"
-      onClick={onBellClick}
-      style={{
-        position: 'relative', width: 36, height: 36, borderRadius: 9,
-        border: '1px solid #e2e8f0', background: 'white',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: 'pointer', color: '#475569', flexShrink: 0,
-      }}
-    >
-      <Bell size={15} />
-      {unreadCount > 0 && (
-        <span style={{
-          position: 'absolute', top: -5, right: -5,
-          minWidth: 17, height: 17, borderRadius: 99,
-          background: '#ef4444', color: 'white',
-          fontSize: '0.6rem', fontWeight: 800,
+    <div ref={bellWrapRef} style={{ position: 'relative' }}>
+      <button
+        className="sv-hdr-bell"
+        onClick={handleBellClick}
+        style={{
+          position: 'relative', width: 36, height: 36, borderRadius: 9,
+          border: '1px solid #e2e8f0', background: 'white',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '0 4px', border: '2px solid white',
-        }}>{unreadCount}</span>
+          cursor: 'pointer', color: '#475569', flexShrink: 0,
+        }}
+      >
+        <Bell size={15} />
+        {unreadCount > 0 && (
+          <span style={{
+            position: 'absolute', top: -5, right: -5,
+            minWidth: 17, height: 17, borderRadius: 99,
+            background: '#ef4444', color: 'white',
+            fontSize: '0.6rem', fontWeight: 800,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '0 4px', border: '2px solid white',
+          }}>{unreadCount}</span>
+        )}
+      </button>
+
+      {panelOpen && !isMobile && (
+        <NotificationPanel
+          notifications={notifications}
+          unreadCount={unreadCount}
+          loading={notifLoading}
+          onMarkRead={id => onMarkRead?.(id)}
+          onMarkAllRead={() => onMarkAllRead?.()}
+          onItemClick={n => { onNotificationClick?.(n); setPanelOpen(false); }}
+        />
       )}
-    </button>
+    </div>
 
     {/* Logout */}
     <button
@@ -88,6 +134,7 @@ const StudentHeader: FC<Props> = ({ unreadCount = 0, onBellClick, onLogout, onMe
       <span style={{ display: onMenuClick ? 'none' : 'inline' }}>Đăng xuất</span>
     </button>
   </div>
-);
+  );
+};
 
 export default StudentHeader;

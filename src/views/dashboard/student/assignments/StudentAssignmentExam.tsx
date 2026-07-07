@@ -121,6 +121,8 @@ const StudentAssignmentExam: FC = () => {
     IStudentAssignmentDetailResponse["data"] | null
   >(null);
   const [loading, setLoading] = useState(true);
+  // Đường quay lại tab "Bài kiểm tra" của đúng môn học (fallback về danh sách môn nếu chưa xác định được)
+  const [backTo, setBackTo] = useState("/student/subjects");
   const [started, setStarted] = useState(false);
   const [starting, setStarting] = useState(false);
   const [showStartModal, setShowStartModal] = useState(false);
@@ -155,6 +157,36 @@ const StudentAssignmentExam: FC = () => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]); // eslint-disable-line
+
+  // Tra ma_mon của bài này (API chi tiết bài không trả ma_mon), rồi dò đúng học kỳ
+  // mà môn đó thực sự thuộc về (không đoán theo học kỳ hiện tại/đầu danh sách, vì
+  // môn học có thể thuộc 1 học kỳ khác — tra sai sẽ khiến trang chi tiết báo "không tìm thấy").
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    StudentApi.getAssignments()
+      .then(async (asnRes) => {
+        const maMon = (asnRes.data ?? []).find((a) => a.id === id)?.ma_mon;
+        if (!maMon || cancelled) return;
+
+        const semRes = await StudentApi.getSemesters();
+        const current = semRes.data.hoc_ky_hien_tai;
+        const hkList = current
+          ? [current, ...semRes.data.ds_hoc_ky.map((s) => s.hoc_ky).filter((hk) => hk !== current)]
+          : semRes.data.ds_hoc_ky.map((s) => s.hoc_ky);
+
+        for (const hk of hkList) {
+          const subRes = await StudentApi.getSubjectsBySemester(hk).catch(() => null);
+          if (subRes?.data?.some((s) => s.ma_mon === maMon)) {
+            if (!cancelled) setBackTo(`/student/subjects/${maMon}?tab=exams&hk=${hk}`);
+            return;
+          }
+        }
+        if (!cancelled) setBackTo(`/student/subjects/${maMon}?tab=exams`);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [id]);
 
   // Keep refs in sync so the fullscreen listener always sees fresh values
   useEffect(() => {
@@ -321,7 +353,7 @@ const StudentAssignmentExam: FC = () => {
           }}
         >
           <button
-            onClick={() => navigate("/student/assignments")}
+            onClick={() => navigate(backTo)}
             disabled={isFullscreen}
             style={{
               display: "flex",

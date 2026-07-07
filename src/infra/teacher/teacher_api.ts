@@ -35,12 +35,19 @@ import type {
   IDeleteAssignmentResponse,
   IRemindStudentResponse,
   IRemindAllResponse,
+  IAssignmentStudentDetailResponse,
 } from '@/infra/api/interfaces/IAssignment';
 import type {
   IParseLogsQuery,
   IParseLogsResponse,
   IParseLogStatsResponse,
 } from '@/infra/api/interfaces/IParseLog';
+import type {
+  INotificationsQuery,
+  INotificationsResponse,
+  IMarkNotificationReadResponse,
+  IMarkAllNotificationsReadResponse,
+} from '@/infra/api/interfaces/INotification';
 
 class TeacherApi {
   async getSemesters(): Promise<ISemestersResponse> {
@@ -300,6 +307,13 @@ class TeacherApi {
     return res.data;
   }
 
+  async getAssignmentStudentAnswers(assignmentId: string, studentCode: string): Promise<IAssignmentStudentDetailResponse> {
+    const res = await axiosInstance.get<IAssignmentStudentDetailResponse>(
+      API_ENDPOINTS.ASSIGNMENT.STUDENT_DETAIL(assignmentId, studentCode)
+    );
+    return res.data;
+  }
+
   async exportAssignmentRoster(assignmentId: string): Promise<{ blob: Blob; filename: string }> {
     const res = await axiosInstance.get(
       API_ENDPOINTS.ASSIGNMENT.EXPORT(assignmentId),
@@ -323,6 +337,29 @@ class TeacherApi {
   async getParseLogStats(): Promise<IParseLogStatsResponse> {
     const res = await axiosInstance.get<IParseLogStatsResponse>(
       API_ENDPOINTS.TEACHER.PARSE_LOGS_STATS
+    );
+    return res.data;
+  }
+
+  // ── Notifications ─────────────────────────────────────
+  async getNotifications(query?: INotificationsQuery): Promise<INotificationsResponse> {
+    const res = await axiosInstance.get<INotificationsResponse>(
+      API_ENDPOINTS.TEACHER.NOTIFICATIONS,
+      { params: query }
+    );
+    return res.data;
+  }
+
+  async markNotificationRead(id: string): Promise<IMarkNotificationReadResponse> {
+    const res = await axiosInstance.post<IMarkNotificationReadResponse>(
+      API_ENDPOINTS.TEACHER.NOTIFICATION_READ(id)
+    );
+    return res.data;
+  }
+
+  async markAllNotificationsRead(): Promise<IMarkAllNotificationsReadResponse> {
+    const res = await axiosInstance.post<IMarkAllNotificationsReadResponse>(
+      API_ENDPOINTS.TEACHER.NOTIFICATIONS_READ_ALL
     );
     return res.data;
   }

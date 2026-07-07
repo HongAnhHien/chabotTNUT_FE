@@ -1,6 +1,6 @@
 import { type FC, useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
-import { ArrowLeft, BookOpen, ClipboardList, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, BookOpen, ClipboardList, Loader2, AlertCircle, Calendar, Clock, MapPin, FileText } from "lucide-react";
 import toast from "react-hot-toast";
 import StudentApi from "@/infra/student/student_api";
 import type { IStudentSubject } from "@/infra/api/interfaces/IStudent";
@@ -9,6 +9,13 @@ import FilePreviewModal, { type PreviewState } from "@/components/common/FilePre
 import FilesTab from "./FilesTab";
 import ExamsTab from "./ExamsTab";
 import CSS from "./subjectDetail.styles";
+
+const pad2 = (n: number | string) => String(n).padStart(2, '0');
+const addMinutes = (hhmm: string, minutesStr: string) => {
+  const [h, mm] = hhmm.split(':').map(Number);
+  const total = (h * 60 + mm + Number(minutesStr)) % (24 * 60);
+  return `${pad2(Math.floor(total / 60))}:${pad2(total % 60)}`;
+};
 
 const StudentSubjectDetail: FC = () => {
   const navigate = useNavigate();
@@ -20,6 +27,8 @@ const StudentSubjectDetail: FC = () => {
   const [searchParams] = useSearchParams();
   const [tab,         setTab]         = useState<"files" | "exams">(searchParams.get("tab") === "exams" ? "exams" : "files");
   const [preview,     setPreview]     = useState<PreviewState | null>(null);
+  // Học kỳ được truyền từ trang danh sách (sinh viên đang xem học kỳ nào thì giữ nguyên khi vào chi tiết)
+  const hkParam = searchParams.get("hk");
 
   useEffect(() => {
     if (!maMon) return;
@@ -31,7 +40,8 @@ const StudentSubjectDetail: FC = () => {
           StudentApi.getSemesters(),
           StudentApi.getAssignments(),
         ]);
-        const hk = semRes.data.hoc_ky_hien_tai;
+        // Ưu tiên học kỳ được truyền qua query, fallback về học kỳ hiện tại nếu vào thẳng URL không kèm ?hk=
+        const hk = hkParam ? Number(hkParam) : semRes.data.hoc_ky_hien_tai;
         const subRes = await StudentApi.getSubjectsBySemester(hk);
         if (cancelled) return;
         const found = (subRes.data ?? []).find((s) => s.ma_mon === maMon);
@@ -45,7 +55,7 @@ const StudentSubjectDetail: FC = () => {
     };
     run().catch(() => {});
     return () => { cancelled = true; };
-  }, [maMon]);
+  }, [maMon, hkParam]);
 
   if (loading) {
     return (
@@ -95,6 +105,24 @@ const StudentSubjectDetail: FC = () => {
               </div>
             </div>
           </div>
+
+          {subject.lich_thi && (
+            <div className="ssd-exam-badge">
+              <span className="ssd-exam-badge-item" style={{ color: "#7c3aed", fontWeight: 700 }}>
+                <Calendar size={12} /> {subject.lich_thi.ky_thi}
+              </span>
+              <span className="ssd-exam-badge-item">
+                <Clock size={12} color="#94a3b8" />
+                {subject.lich_thi.ngay_thi} · {subject.lich_thi.gio_bat_dau}–{addMinutes(subject.lich_thi.gio_bat_dau, subject.lich_thi.so_phut)}
+              </span>
+              <span className="ssd-exam-badge-item">
+                <MapPin size={12} color="#94a3b8" /> {subject.lich_thi.phong_thi}
+              </span>
+              <span className="ssd-exam-badge-item">
+                <FileText size={12} color="#94a3b8" /> {subject.lich_thi.hinh_thuc_thi}
+              </span>
+            </div>
+          )}
 
           {/* Tabs */}
           <div className="ssd-tab-bar">

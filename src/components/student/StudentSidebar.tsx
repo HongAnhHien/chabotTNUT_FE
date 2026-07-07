@@ -33,9 +33,8 @@ const NAV_SECTIONS = [
     label: 'Học tập',
     items: [
       { icon: BookOpen,      label: 'Môn học',      path: '/student/subjects' },
-      // { icon: ClipboardList, label: 'Bài kiểm tra', path: '/student/assignments' },
       { icon: MessageCircle, label: 'Chatbot AI',   path: '/student/chat' },
-      { icon: CalendarDays,  label: 'Lịch học',     path: '/student/schedule',  soon: true },
+      { icon: CalendarDays,  label: 'Lịch học',     path: '/student/schedule' },
       { icon: BarChart2,     label: 'Kết quả học',  path: '/student/grades',    soon: true },
     ],
   },

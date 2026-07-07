@@ -74,17 +74,32 @@ const AssignModal: FC<Props> = ({ exam, subject, onClose, onSuccess }) => {
   };
 
   useEffect(() => {
+    let cancelled = false;
     TeacherApi.getSemesters()
       .then(async r => {
-        const hk      = r.data.hoc_ky_hien_tai;
-        const courses  = await TeacherApi.getSemesterCourses(hk);
-        const match    = courses.data.find(c => c.subject.ma_mon === subject.ma_mon);
-        const cls      = match?.classes ?? [];
-        setClasses(cls);
-        if (cls.length > 0) setActiveClassId(cls[0].id_to_hoc);
+        // Không chỉ tra học kỳ hiện tại — nếu API trả null hoặc môn không dạy ở học kỳ đó,
+        // tìm tiếp ở các học kỳ khác (ưu tiên học kỳ hiện tại trước) để không bị mất lớp/học sinh.
+        const current = r.data.hoc_ky_hien_tai;
+        const hkList = current
+          ? [current, ...r.data.ds_hoc_ky.map(s => s.hoc_ky).filter(hk => hk !== current)]
+          : r.data.ds_hoc_ky.map(s => s.hoc_ky);
+
+        for (const hk of hkList) {
+          const courses = await TeacherApi.getSemesterCourses(hk).catch(() => null);
+          const match = courses?.data.find(c => c.subject.ma_mon === subject.ma_mon);
+          if (match) {
+            if (cancelled) return;
+            const cls = match.classes ?? [];
+            setClasses(cls);
+            if (cls.length > 0) setActiveClassId(cls[0].id_to_hoc);
+            return;
+          }
+        }
+        if (!cancelled) setClasses([]);
       })
       .catch(() => {})
-      .finally(() => setLoadingClasses(false));
+      .finally(() => { if (!cancelled) setLoadingClasses(false); });
+    return () => { cancelled = true; };
   }, [subject.ma_mon]);
 
   useEffect(() => {
@@ -219,7 +234,7 @@ const AssignModal: FC<Props> = ({ exam, subject, onClose, onSuccess }) => {
             </div>
           ) : classes.length === 0 ? (
             <div style={{ padding: '12px 14px', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12, fontSize: 13, color: '#c2410c' }}>
-              Không tìm thấy lớp học cho môn này trong học kỳ hiện tại.
+              Không tìm thấy lớp học nào đang dạy môn này.
             </div>
           ) : (
             <div>

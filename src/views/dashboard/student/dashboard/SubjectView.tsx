@@ -4,9 +4,10 @@ import {
   ComposedChart, Line, Legend, ReferenceLine,
 } from 'recharts';
 import { useNavigate } from 'react-router';
-import { ArrowLeft, CheckCircle2, TrendingUp, Zap, ClipboardList, Calendar, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, TrendingUp, Zap, ClipboardList, Calendar, AlertTriangle, Clock, MapPin, FileText } from 'lucide-react';
 import type { IDashboardSubjectData } from '@/infra/api/interfaces/IDashboard';
 import type { IStudentAssignmentListItem } from '@/infra/api/interfaces/IAssignment';
+import type { IExamSchedule } from '@/infra/api/interfaces/IStudent';
 import { scoreColor, fmt1, fmtDate, levelCfg, EXAM_TYPE_COLOR, EXAM_TYPE_LABEL } from './dashboard.constants';
 import StatCard from './StatCard';
 import DonutRing from './DonutRing';
@@ -19,9 +20,17 @@ interface SubjectViewProps {
   assignments: IStudentAssignmentListItem[];
   maMon: string;
   tenMon: string;
+  lichThi?: IExamSchedule | null;
 }
 
-const SubjectView: FC<SubjectViewProps> = ({ data, assignments, maMon, tenMon }) => {
+const pad2 = (n: number | string) => String(n).padStart(2, '0');
+const addMinutes = (hhmm: string, minutesStr: string) => {
+  const [h, mm] = hhmm.split(':').map(Number);
+  const total = (h * 60 + mm + Number(minutesStr)) % (24 * 60);
+  return `${pad2(Math.floor(total / 60))}:${pad2(total % 60)}`;
+};
+
+const SubjectView: FC<SubjectViewProps> = ({ data, assignments, maMon, tenMon, lichThi }) => {
   const navigate = useNavigate();
   const { exams, chatbot, assignments: asgn, progress } = data;
   const lvl              = levelCfg(progress.level);
@@ -36,15 +45,33 @@ const SubjectView: FC<SubjectViewProps> = ({ data, assignments, maMon, tenMon })
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:18 }}>
       {/* Back + title */}
-      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+      <div className="sd-header-row" style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
         <button onClick={() => navigate('/student/dashboard')}
           style={{ width:32, height:32, borderRadius:10, border:'1.5px solid rgba(41,102,235,0.15)', background:'rgba(41,102,235,0.04)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#2966EB', flexShrink:0 }}>
           <ArrowLeft size={14} />
         </button>
-        <div>
+        <div style={{ minWidth:0 }}>
           <div style={{ fontSize:'0.65rem', color:'#94a3b8', marginBottom:1 }}>Dashboard &rsaquo; Môn học</div>
           <div style={{ fontWeight:800, fontSize:'0.95rem', color:'#0f172a' }}>{tenMon !== maMon ? tenMon : maMon}</div>
         </div>
+
+        {lichThi && (
+          <div className="sd-exam-badge" style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:14, flexWrap:'wrap', background:'rgba(124,58,237,0.06)', border:'1px solid rgba(124,58,237,0.18)', borderRadius:12, padding:'8px 14px' }}>
+            <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.68rem', fontWeight:700, color:'#7c3aed' }}>
+              <Calendar size={12} /> {lichThi.ky_thi}
+            </span>
+            <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.72rem', color:'#475569' }}>
+              <Clock size={12} color="#94a3b8" />
+              {lichThi.ngay_thi} · {lichThi.gio_bat_dau}–{addMinutes(lichThi.gio_bat_dau, lichThi.so_phut)}
+            </span>
+            <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.72rem', color:'#475569' }}>
+              <MapPin size={12} color="#94a3b8" /> {lichThi.phong_thi}
+            </span>
+            <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.72rem', color:'#475569' }}>
+              <FileText size={12} color="#94a3b8" /> {lichThi.hinh_thuc_thi}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 4 Stat cards */}

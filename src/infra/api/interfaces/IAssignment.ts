@@ -57,6 +57,8 @@ export interface IAssignmentStudentItem {
   score: number | null;
   total: number | null;
   submitted_at: string | null;
+  // Chưa có ở backend — xem docs/backend-todo.md mục "Trạng thái đã nhắc nhở"
+  last_reminded_at?: string | null;
 }
 
 export interface IAssignmentDetail {
@@ -109,6 +111,39 @@ export interface IRemindAllResponse {
   success: boolean;
   message: string;
   data?: { reminded_count: number };
+}
+
+// ── Teacher: Student answer detail (bảng câu hỏi/đáp án của 1 học sinh) ──
+export interface IAssignmentAnswerOption {
+  letter:     string;
+  text:       string;
+  is_correct: boolean;
+  is_chosen:  boolean;
+}
+
+export interface IAssignmentAnswerQuestion {
+  no:         number;
+  question:   string;
+  is_correct: boolean;
+  is_skipped?: boolean; // true nếu học sinh không chọn đáp án nào cho câu này
+  options:    IAssignmentAnswerOption[];
+}
+
+export interface IAssignmentStudentAnswers {
+  student_code:     string;
+  name:             string;
+  status:           'submitted' | 'not_started' | 'in_progress';
+  score:            number | null;
+  total:            number | null;
+  correct_count:    number | null;
+  submitted_at:     string | null;
+  duration_seconds: number | null;
+  questions:        IAssignmentAnswerQuestion[];
+}
+
+export interface IAssignmentStudentDetailResponse {
+  success: boolean;
+  data:    IAssignmentStudentAnswers;
 }
 
 // ── Student: Assignment list ───────────────────────────

@@ -19,10 +19,11 @@ const ManageLocations = lazy(() => import("@views/dashboard/admin/manage_locatio
 const StudentAspx           = lazy(() => import("@views/dashboard/student/Student_Aspx"));
 const StudentProfile        = lazy(() => import("@views/dashboard/student/profile"));
 const StudentSubjectsPage   = lazy(() => import("@views/dashboard/student/subjects/StudentSubjects"));
-const StudentAssignmentsPage = lazy(() => import("@views/dashboard/student/assignments/StudentAssignments"));
 const StudentAssignmentExam  = lazy(() => import("@views/dashboard/student/assignments/StudentAssignmentExam"));
 const StudentChatbotPage        = lazy(() => import("@views/dashboard/student/chatbot/StudentChatbot"));
 const StudentSubjectDetailPage  = lazy(() => import("@views/dashboard/student/subjects/StudentSubjectDetail"));
+const StudentSchedulePage       = lazy(() => import("@views/dashboard/student/schedule/StudentSchedule"));
+const NotificationsPage         = lazy(() => import("@views/dashboard/notifications/NotificationsPage"));
 
 // Teacher pages
 const TeacherAspx          = lazy(() => import("@views/dashboard/teacher/Teacher_Aspx"));
@@ -75,7 +76,8 @@ export const appRoutes: RouteObject[] = [
       { path: "dashboard",        element: <StudentAspx /> },
       { path: "subjects",             element: <StudentSubjectsPage /> },
       { path: "subjects/:maMon",   element: <StudentSubjectDetailPage /> },
-      { path: "assignments",      element: <StudentAssignmentsPage /> },
+      { path: "schedule",         element: <StudentSchedulePage /> },
+      { path: "notifications",    element: <NotificationsPage /> },
       { path: "profile",          element: <StudentProfile /> },
       { path: "chat",             element: <StudentChatbotPage /> },
       { path: "chat/:sessionId",  element: <StudentChatbotPage /> },
@@ -111,6 +113,7 @@ export const appRoutes: RouteObject[] = [
       { path: "assignments",         element: <TeacherAssignmentsPage /> },
       { path: "assignments/:id",     element: <TeacherAssignmentDetail /> },
       { path: "parse-logs",          element: <TeacherParseLogsPage /> },
+      { path: "notifications",       element: <NotificationsPage /> },
       { path: "exams/:id",           element: <TeacherExamView /> },
       { path: "subjects/:maMon/files",       element: <TeacherSubjectFiles /> },
       { path: "subjects/:maMon/exams",       element: <TeacherSubjectExams /> },

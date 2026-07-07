@@ -1,5 +1,5 @@
 import { type FC, useEffect, useRef, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import {
   GraduationCap, ChevronDown, Calendar,
   Loader2, ClipboardList, BookOpen, User, MapPin, FileText,
@@ -67,6 +67,9 @@ const CSS = `
     .ss-page-title  { font-size: 0.95rem; }
     .ss-page-subtitle { font-size: 0.68rem; }
     .ss-header-row  { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .ss-sem-drop      { width: 100%; }
+    .ss-sem-drop-btn  { width: 100%; justify-content: space-between; }
+    .ss-sem-drop-panel{ left: 0; right: 0; width: auto; min-width: 0; }
   }
 `;
 
@@ -98,7 +101,8 @@ const SubjectCard: FC<{
   subject: IStudentSubject;
   delay: number;
   assignments: IStudentAssignmentListItem[];
-}> = ({ subject, delay, assignments }) => {
+  hocKy: number | null;
+}> = ({ subject, delay, assignments, hocKy }) => {
   const navigate = useNavigate();
   const files    = subject.files ?? [];
   const hasFiles = files.length > 0;
@@ -108,7 +112,7 @@ const SubjectCard: FC<{
 
   const handleAssignClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/student/subjects/${subject.ma_mon}?tab=exams`);
+    navigate(`/student/subjects/${subject.ma_mon}?tab=exams${hocKy ? `&hk=${hocKy}` : ''}`);
   };
 
   return (
@@ -156,10 +160,19 @@ const SubjectCard: FC<{
           )}
         </div>
 
+        {subject.lich_thi && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.68rem', fontWeight: 600, color: '#b45309', background: 'rgba(217,119,6,0.08)', border: '1px solid rgba(217,119,6,0.18)', borderRadius: 10, padding: '6px 10px', marginBottom: 12 }}>
+            <Calendar size={11} style={{ flexShrink: 0 }} />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              Thi {subject.lich_thi.ky_thi.toLowerCase()}: {subject.lich_thi.ngay_thi} · {subject.lich_thi.gio_bat_dau} · {subject.lich_thi.phong_thi}
+            </span>
+          </div>
+        )}
+
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             className="ss-action-btn"
-            onClick={() => navigate(`/student/subjects/${subject.ma_mon}`)}
+            onClick={() => navigate(`/student/subjects/${subject.ma_mon}${hocKy ? `?hk=${hocKy}` : ''}`)}
             style={{ background: 'rgba(37,99,235,0.05)', color: '#2563eb', border: '1.5px solid rgba(37,99,235,0.15)' }}
           >
             <BookOpen size={13} />
@@ -183,6 +196,7 @@ const SubjectCard: FC<{
 
 // ── Main page ─────────────────────────────────────────
 const StudentSubjects: FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [semesters,   setSemesters]  = useState<IStudentSemester[]>([]);
   const [selectedHk,  setSelectedHk] = useState<number | null>(null);
   const [loadingSem,  setLoadingSem] = useState(true);
@@ -208,16 +222,29 @@ const StudentSubjects: FC = () => {
     Promise.all([StudentApi.getSemesters(), StudentApi.getAssignments()])
       .then(([semRes, asnRes]) => {
         const semList = semRes.data.ds_hoc_ky;
+        const current = semRes.data.hoc_ky_hien_tai;
+        // Ưu tiên học kỳ còn lưu trong URL (vd quay lại từ trang chi tiết),
+        // sau đó mới đến học kỳ hiện tại, cuối cùng fallback học kỳ đầu danh sách
+        const hkFromUrl = Number(searchParams.get('hk')) || null;
+        const initialHk = (hkFromUrl && semList.some(s => s.hoc_ky === hkFromUrl))
+          ? hkFromUrl
+          : current ?? semList[0]?.hoc_ky ?? null;
+
         setSemesters(semList);
-        setSelectedHk(semRes.data.hoc_ky_hien_tai);
-        loadSubjects(semRes.data.hoc_ky_hien_tai);
+        setSelectedHk(initialHk);
+        if (initialHk) loadSubjects(initialHk);
         setAssignments(asnRes.data ?? []);
       })
       .catch(() => toast.error('Không thể tải dữ liệu.'))
       .finally(() => setLoadingSem(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadSubjects]);
 
-  const handleSelectSem = (hk: number) => { setSelectedHk(hk); loadSubjects(hk); };
+  const handleSelectSem = (hk: number) => {
+    setSelectedHk(hk);
+    loadSubjects(hk);
+    setSearchParams(prev => { const next = new URLSearchParams(prev); next.set('hk', String(hk)); return next; }, { replace: true });
+  };
 
   const currentSem = semesters.find(s => s.hoc_ky === selectedHk);
 
@@ -251,22 +278,23 @@ const StudentSubjects: FC = () => {
 
             {loadingSem ? (
               <Loader2 size={14} color="#94a3b8" style={{ animation: 'ss-spin 1s linear infinite', flexShrink: 0 }} />
-            ) : currentSem && (
-              <div ref={semDropRef} style={{ position: 'relative', flexShrink: 0 }}>
+            ) : semesters.length > 0 && (
+              <div ref={semDropRef} className="ss-sem-drop" style={{ position: 'relative', flexShrink: 0 }}>
                 <button
+                  className="ss-sem-drop-btn"
                   onClick={() => setSemDropOpen(v => !v)}
                   style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 13px', borderRadius: 20, background: 'white', border: '1.5px solid rgba(37,99,235,0.18)', cursor: 'pointer', transition: 'all .15s', boxShadow: semDropOpen ? '0 0 0 3px rgba(37,99,235,0.1)' : 'none' }}
                 >
                   <Calendar size={12} color="#2563eb" />
-                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1e293b', whiteSpace: 'nowrap' }}>{currentSem.ten_hoc_ky}</span>
-                  {currentSem.is_current && (
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1e293b', whiteSpace: 'nowrap' }}>{currentSem?.ten_hoc_ky ?? 'Chọn học kỳ'}</span>
+                  {currentSem?.is_current && (
                     <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#059669', background: 'rgba(5,150,105,0.1)', borderRadius: 20, padding: '2px 7px', whiteSpace: 'nowrap' }}>Hiện tại</span>
                   )}
                   <ChevronDown size={13} color="#64748b" style={{ transition: 'transform .2s', transform: semDropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                 </button>
 
                 {semDropOpen && (
-                  <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 50, background: 'white', borderRadius: 14, boxShadow: '0 8px 30px rgba(30,58,138,0.15)', border: '1px solid rgba(37,99,235,0.1)', minWidth: 230, overflow: 'hidden', animation: 'ss-fade .15s ease' }}>
+                  <div className="ss-sem-drop-panel" style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 50, background: 'white', borderRadius: 14, boxShadow: '0 8px 30px rgba(30,58,138,0.15)', border: '1px solid rgba(37,99,235,0.1)', minWidth: 230, overflow: 'hidden', animation: 'ss-fade .15s ease' }}>
                     <div style={{ padding: '8px 14px 6px', borderBottom: '1px solid rgba(37,99,235,0.07)' }}>
                       <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Chọn học kỳ</span>
                     </div>
@@ -311,6 +339,7 @@ const StudentSubjects: FC = () => {
                 subject={s}
                 delay={i * 0.04}
                 assignments={assignments.filter(a => a.ma_mon === s.ma_mon)}
+                hocKy={selectedHk}
               />
             ))}
           </div>

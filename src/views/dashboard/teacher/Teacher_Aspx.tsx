@@ -15,7 +15,29 @@ import iconAI      from '@/assets/icon/icon_TNUT_AI.png';
 import iconExam    from '@/assets/icon/icon_exam.png';
 import type { ISemester, ITeacherSubjectWithClasses, ISubjectFile, IFileType, IAiFile } from '@/infra/api/interfaces/ITeacher';
 import type { ISavedExam, IExamQuestion, IExamChapter } from '@/infra/api/interfaces/IChat';
+import type { NotificationType } from '@/infra/api/interfaces/INotification';
+import { useNotifications } from '@/hooks/useNotifications';
 import AssignModal from './assignments/AssignModal';
+
+const NOTIF_META: Record<NotificationType, { tag: string; color: string }> = {
+  assignment_assigned:         { tag: 'Bài mới',      color: '#2563eb' },
+  assignment_reminder:         { tag: 'Nhắc nhở',     color: '#b45309' },
+  assignment_due_soon:         { tag: 'Sắp hết hạn',  color: '#dc2626' },
+  assignment_due_soon_teacher: { tag: 'Sắp hết hạn',  color: '#dc2626' },
+  exam_schedule_reminder:      { tag: 'Lịch thi',     color: '#7c3aed' },
+};
+
+const notifTimeAgo = (iso: string) => {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(diffMs / 60000);
+  if (min < 1)  return 'Vừa xong';
+  if (min < 60) return `${min} phút trước`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24)  return `${hr} giờ trước`;
+  const day = Math.floor(hr / 24);
+  if (day < 7)  return `${day} ngày trước`;
+  return new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(iso));
+};
 
 // ── CSS ──────────────────────────────────────────────
 const CSS = `
@@ -136,14 +158,6 @@ const CSS = `
     .t-cls-row-top { flex-wrap:wrap; gap:3px; }
   }
 `;
-
-// ── Static notifications ──────────────────────────────
-const NOTIFICATIONS = [
-  { id: 1, tag: 'Thông báo', color: '#2563eb', date: '17/06/2026', title: 'Kế hoạch thi kết thúc học phần HK3 năm 2025–2026', unread: true },
-  { id: 2, tag: 'Học vụ',   color: '#059669', date: '15/06/2026', title: 'Nhập điểm quá trình học kỳ 3 trước ngày 20/06/2026', unread: true },
-  { id: 3, tag: 'Sự kiện',  color: '#7c3aed', date: '10/06/2026', title: 'Hội nghị tổng kết năm học 2025–2026', unread: false },
-  { id: 4, tag: 'Thông báo',color: '#2563eb', date: '05/06/2026', title: 'Lịch họp Hội đồng khoa học tháng 6', unread: false },
-];
 
 // ── Status badge ──────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
@@ -1207,6 +1221,7 @@ const TeacherAspx: FC = () => {
   const [searchParams] = useSearchParams();
   const notifRef     = useRef<HTMLDivElement>(null);
   const user         = useAuthStore(s => s.user);
+  const { notifications, unreadCount, loading: notifLoading, markRead, markAllRead } = useNotifications('teacher');
   const [semesters, setSemesters]         = useState<ISemester[]>([]);
   const [currentHocKy, setCurrentHocKy]  = useState<number | null>(null);
   const [selectedHocKy, setSelectedHocKy]= useState<number | null>(null);
@@ -1259,7 +1274,6 @@ const TeacherAspx: FC = () => {
   const totalStudents = courses.reduce((s, c) => s + c.classes.reduce((a, cl) => a + cl.sl_dk, 0), 0);
   // const selectedSem   = semesters.find(s => s.hoc_ky === selectedHocKy);
   const visibleSems   = showAllSem ? semesters : semesters.slice(0, 6);
-  const unread        = NOTIFICATIONS.filter(n => n.unread).length;
 
   return (
     <div style={{ minHeight: '100%', background: 'linear-gradient(160deg,#eef4ff,#e0eaff)', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif" }}>
@@ -1293,21 +1307,31 @@ const TeacherAspx: FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <Bell size={15} color="#2563eb" />
                 <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#1e3a8a' }}>Thông báo</span>
-                {unread > 0 && <span style={{ background: '#2563eb', color: 'white', borderRadius: 20, padding: '1px 7px', fontSize: '0.67rem', fontWeight: 700 }}>{unread}</span>}
+                {unreadCount > 0 && <span style={{ background: '#2563eb', color: 'white', borderRadius: 20, padding: '1px 7px', fontSize: '0.67rem', fontWeight: 700 }}>{unreadCount}</span>}
               </div>
-              <span style={{ fontSize: '0.72rem', color: '#2563eb', cursor: 'pointer', fontWeight: 600 }}>Xem tất cả</span>
+              {unreadCount > 0 && (
+                <span onClick={() => markAllRead()} style={{ fontSize: '0.72rem', color: '#2563eb', cursor: 'pointer', fontWeight: 600 }}>Đọc tất cả</span>
+              )}
             </div>
             <div style={{ padding: '4px 12px 8px' }}>
-              {NOTIFICATIONS.map(n => (
-                <div key={n.id} className="t-notif">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                    <span style={{ background: `${n.color}18`, color: n.color, border: `1px solid ${n.color}30`, borderRadius: 20, padding: '1px 7px', fontSize: '0.62rem', fontWeight: 700 }}>{n.tag}</span>
-                    <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{n.date}</span>
-                    {n.unread && <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', background: '#2563eb', flexShrink: 0 }} />}
+              {notifLoading ? (
+                <div style={{ padding: '18px 0', textAlign: 'center', color: '#94a3b8', fontSize: '0.78rem' }}>Đang tải...</div>
+              ) : notifications.length === 0 ? (
+                <div style={{ padding: '18px 0', textAlign: 'center', color: '#94a3b8', fontSize: '0.78rem' }}>Không có thông báo nào.</div>
+              ) : notifications.slice(0, 6).map(n => {
+                const meta = NOTIF_META[n.type] ?? { tag: 'Thông báo', color: '#2563eb' };
+                const unread = !n.read_at;
+                return (
+                  <div key={n.id} className="t-notif" onClick={() => unread && markRead(n.id)} style={{ cursor: unread ? 'pointer' : 'default' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                      <span style={{ background: `${meta.color}18`, color: meta.color, border: `1px solid ${meta.color}30`, borderRadius: 20, padding: '1px 7px', fontSize: '0.62rem', fontWeight: 700 }}>{meta.tag}</span>
+                      <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{notifTimeAgo(n.created_at)}</span>
+                      {unread && <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', background: '#2563eb', flexShrink: 0 }} />}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#1e293b', lineHeight: 1.45, fontWeight: unread ? 600 : 400 }}>{n.title}</div>
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: '#1e293b', lineHeight: 1.45, fontWeight: n.unread ? 600 : 400 }}>{n.title}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

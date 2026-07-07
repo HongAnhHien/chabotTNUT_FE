@@ -27,6 +27,19 @@ export interface IStudentSubjectFile {
   download_url?: string | null;
 }
 
+// ── Lịch thi (portal) ───────────────────────────────────
+export interface IExamSchedule {
+  id_nhom_thi:   string;
+  ma_mon:        string;
+  ten_mon:       string;
+  ngay_thi:      string; // dd/MM/yyyy
+  gio_bat_dau:   string; // HH:mm
+  so_phut:       string;
+  phong_thi:     string;
+  hinh_thuc_thi: string;
+  ky_thi:        string;
+}
+
 // ── Student subject ────────────────────────────────────
 export interface IStudentSubject {
   ma_mon: string;
@@ -36,6 +49,7 @@ export interface IStudentSubject {
   gv?: string | null;
   phong?: string | null;
   files: IStudentSubjectFile[];
+  lich_thi?: IExamSchedule | null;
 }
 
 // ── Response (old /student/subjects — wrapped) ─────────

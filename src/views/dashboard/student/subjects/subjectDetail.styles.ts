@@ -14,6 +14,13 @@ const CSS = `
   .ssd-meta { display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:4px; align-items:center; }
   .ssd-meta span { font-size:0.68rem; }
 
+  .ssd-exam-badge {
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    margin-top:10px; padding:8px 14px; border-radius:12px;
+    background:rgba(124,58,237,0.06); border:1px solid rgba(124,58,237,0.18);
+  }
+  .ssd-exam-badge-item { display:inline-flex; align-items:center; gap:5px; font-size:0.72rem; color:#475569; }
+
   .ssd-file-card { background:white; border-radius:14px; border:1px solid rgba(30,58,138,0.07); padding:14px 16px; display:flex; align-items:center; gap:12px; transition:box-shadow .18s,transform .18s; animation:ssd-fade .25s ease both; min-width:0; overflow:hidden; }
   .ssd-file-card:hover { box-shadow:0 4px 18px rgba(30,58,138,0.1); transform:translateY(-1px); }
   .ssd-file-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:10px; }
@@ -57,6 +64,7 @@ const CSS = `
     .ssd-search-wrap  { width:100%; flex:none; }
     .ssd-meta         { gap:4px 8px; }
     .ssd-meta span    { font-size:0.63rem; }
+    .ssd-exam-badge   { flex-direction:column; align-items:flex-start; gap:6px; padding:10px 12px; }
   }
 `;
 

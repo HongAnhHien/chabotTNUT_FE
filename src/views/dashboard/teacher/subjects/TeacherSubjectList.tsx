@@ -44,10 +44,15 @@ const TeacherSubjectList: FC = () => {
   useEffect(() => {
     TeacherApi.getSemesters()
       .then(res => {
-        setSemesters(res.data.ds_hoc_ky);
-        setCurrentHocKy(res.data.hoc_ky_hien_tai);
-        setSelectedHocKy(res.data.hoc_ky_hien_tai);
-        loadCourses(res.data.hoc_ky_hien_tai);
+        const list    = res.data.ds_hoc_ky;
+        const current = res.data.hoc_ky_hien_tai;
+        // Không có học kỳ hiện tại (API trả null) → fallback chọn học kỳ đầu tiên trong danh sách
+        const initialHocKy = current ?? list[0]?.hoc_ky ?? null;
+
+        setSemesters(list);
+        setCurrentHocKy(current);
+        setSelectedHocKy(initialHocKy);
+        if (initialHocKy) loadCourses(initialHocKy);
       })
       .catch(() => toast.error('Không thể tải danh sách học kỳ.'))
       .finally(() => setLoadingSem(false));
@@ -100,7 +105,7 @@ const TeacherSubjectList: FC = () => {
           {/* ── Semester dropdown ── */}
           {loadingSem ? (
             <Loader2 size={14} color="#94a3b8" style={{ animation:'sl-spin 1s linear infinite', flexShrink:0 }} />
-          ) : currentSem && (
+          ) : semesters.length > 0 && (
             <div ref={dropRef} style={{ position:'relative', flexShrink:0 }}>
               <button
                 className="sl-drop-btn"
@@ -109,9 +114,9 @@ const TeacherSubjectList: FC = () => {
               >
                 <Calendar size={12} color="#2563eb" />
                 <span style={{ fontSize:'0.78rem', fontWeight:700, color:'#1e293b', whiteSpace:'nowrap' }}>
-                  {currentSem.ten_hoc_ky}
+                  {currentSem?.ten_hoc_ky ?? 'Chọn học kỳ'}
                 </span>
-                {currentSem.hoc_ky === currentHocKy && (
+                {currentSem && currentSem.hoc_ky === currentHocKy && (
                   <span style={{ fontSize:'0.58rem', fontWeight:700, color:'#059669', background:'rgba(5,150,105,0.1)', borderRadius:20, padding:'2px 7px', whiteSpace:'nowrap' }}>
                     Hiện tại
                   </span>

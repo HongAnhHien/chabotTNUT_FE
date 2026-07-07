@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react';
+import { type FC, useEffect, useState } from 'react';
 import { ChevronLeft, Users, CheckCircle, Clock, AlertCircle, Search, User, UserPlus, Loader2, Save, Settings, X, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import TeacherApi from '@/infra/teacher/teacher_api';
@@ -23,14 +23,22 @@ interface Props {
 const AssignmentView: FC<Props> = ({ detail, loading, onBack, onAssignMore, onUpdated }) => {
   const [rosterFilter, setRosterFilter] = useState<RosterFilter>('all');
   const [search, setSearch]             = useState('');
-  const [eFrom, setEFrom]               = useState(() => toInput(detail?.available_from));
-  const [eDue, setEDue]                 = useState(() => toInput(detail?.due_at));
-  const [eStatus, setEStatus]           = useState<'published' | 'closed'>(() =>
-    (detail?.status as 'published' | 'closed') ?? 'published');
+  const [eFrom, setEFrom]               = useState('');
+  const [eDue, setEDue]                 = useState('');
+  const [eStatus, setEStatus]           = useState<'published' | 'closed'>('published');
   const [saving, setSaving]             = useState(false);
   const [sidebarOpen, setSidebarOpen]       = useState(false);
   const [dropdownOpen, setDropdownOpen]     = useState(false);
   const [closingSidebar, setClosingSidebar] = useState(false);
+
+  // detail đến sau (async) trong khi component không unmount — đồng bộ lại form
+  // mỗi khi detail thay đổi (load xong, hoặc chuyển sang xem bài giao khác).
+  useEffect(() => {
+    if (!detail) return;
+    setEFrom(toInput(detail.available_from));
+    setEDue(toInput(detail.due_at));
+    setEStatus((detail.status as 'published' | 'closed') ?? 'published');
+  }, [detail?.id, detail?.available_from, detail?.due_at, detail?.status]);
 
   const handleCloseSidebar = () => {
     setClosingSidebar(true);

@@ -1,51 +1,31 @@
-import { type FC, useEffect, useState } from 'react';
+import { type FC, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
-  Loader2, Users, CheckCircle, Clock, AlertCircle,
-  Trash2, XCircle, BookOpen, User, Pencil, Save, X, Calendar,
+  Loader2, Search, ChevronLeft, Trash2, Bell, UserPlus,
+  Pencil, Save, Eye, Check, Settings, X, ChevronDown,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import TeacherApi from '@/infra/teacher/teacher_api';
 import type { IAssignmentDetail, IAssignmentStudentItem } from '@/infra/api/interfaces/IAssignment';
+import CSS from './assignments.styles';
+import StudentAnswerView from './StudentAnswerView';
+import { fmtDt, toInput, toApiDate, initials, statusPill, studentStatusMeta, scoreColor } from './helpers';
 
-const CSS = `
-  @keyframes tad-fade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes tad-spin { to{transform:rotate(360deg)} }
-  .tad-row { display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:11px; border:1px solid rgba(37,99,235,0.07); background:white; animation:tad-fade .3s ease both; }
-  .tad-stat { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px 12px; border-radius:14px; flex:1; }
-  .tad-input {
-    width:100%; padding:8px 11px; border-radius:10px; border:1.5px solid rgba(37,99,235,0.18);
-    font-size:0.82rem; color:#1e293b; background:white; outline:none; box-sizing:border-box;
-    transition:border-color .15s;
-  }
-  .tad-input:focus { border-color:#2563eb; }
-  .tad-label { font-size:0.65rem; font-weight:700; color:#1e3a8a; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:5px; display:flex; align-items:center; gap:4px; }
-`;
+type RosterTab = 'all' | 'submitted' | 'in_progress' | 'not_started';
+type SortKey   = 'name' | 'status' | 'score' | 'time';
 
-const fmtDt = (s?: string | null) => {
-  if (!s) return '—';
-  return new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(s.replace(' ', 'T')));
-};
+const STATUS_RANK: Record<IAssignmentStudentItem['status'], number> = { submitted: 0, in_progress: 1, not_started: 2 };
 
-// date string "YYYY-MM-DD HH:mm:ss" → datetime-local input value (local, no timezone shift)
-const toInput = (s?: string | null) => {
-  if (!s) return '';
-  return s.slice(0, 16).replace(' ', 'T');
-};
+const ROSTER_TABS: { key: RosterTab; label: string }[] = [
+  { key: 'all',          label: 'Tất cả' },
+  { key: 'submitted',    label: 'Đã nộp' },
+  { key: 'in_progress',  label: 'Đang làm' },
+  { key: 'not_started',  label: 'Chưa làm' },
+];
 
-// datetime-local value → API format "YYYY-MM-DD HH:mm:ss"
-const toApiDate = (dt: string) => dt ? dt.replace('T', ' ') + ':00' : '';
-
-const studentStatusBadge = (status: IAssignmentStudentItem['status']) => {
-  if (status === 'submitted')   return { label: 'Đã nộp',   bg: 'rgba(5,150,105,0.1)',   color: '#059669' };
-  if (status === 'in_progress') return { label: 'Đang làm', bg: 'rgba(37,99,235,0.08)',  color: '#2563eb' };
-  return                               { label: 'Chưa làm', bg: 'rgba(100,116,139,0.08)', color: '#64748b' };
-};
-
-// ── Edit panel ────────────────────────────────────────
+// ── Edit form (left rail) ──────────────────────────────
 interface EditState {
   title: string;
-  instructions: string;
   available_from: string;
   due_at: string;
   status: 'published' | 'closed';
@@ -53,20 +33,17 @@ interface EditState {
 
 const EditPanel: FC<{
   detail: IAssignmentDetail;
-  onCancel: () => void;
   onSaved: (updated: Partial<IAssignmentDetail>) => void;
-}> = ({ detail, onCancel, onSaved }) => {
+}> = ({ detail, onSaved }) => {
   const [form, setForm] = useState<EditState>({
     title:          detail.title ?? '',
-    instructions:   detail.instructions ?? '',
     available_from: toInput(detail.available_from),
     due_at:         toInput(detail.due_at),
     status:         (detail.status as 'published' | 'closed') ?? 'published',
   });
   const [saving, setSaving] = useState(false);
 
-  const set = <K extends keyof EditState>(k: K, v: EditState[K]) =>
-    setForm(p => ({ ...p, [k]: v }));
+  const set = <K extends keyof EditState>(k: K, v: EditState[K]) => setForm(p => ({ ...p, [k]: v }));
 
   const handleSave = async () => {
     if (!form.available_from) { toast.error('Chưa nhập ngày mở bài.'); return; }
@@ -79,16 +56,14 @@ const EditPanel: FC<{
     try {
       const r = await TeacherApi.updateAssignment(detail.id, {
         title:          form.title.trim() || undefined,
-        instructions:   form.instructions.trim() || null,
         available_from: toApiDate(form.available_from),
         due_at:         toApiDate(form.due_at),
         status:         form.status,
       });
       if (r.success) {
-        toast.success('Đã cập nhật bài giao.');
+        toast.success('Đã lưu thay đổi bài giao.');
         onSaved({
           title:          form.title.trim(),
-          instructions:   form.instructions.trim() || null,
           available_from: toApiDate(form.available_from),
           due_at:         toApiDate(form.due_at),
           status:         form.status,
@@ -98,75 +73,45 @@ const EditPanel: FC<{
       }
     } catch (e: unknown) {
       const data = (e as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } })?.response?.data;
-      const detail = data?.errors ? Object.values(data.errors).flat()[0] : data?.message;
-      toast.error(detail ?? 'Cập nhật thất bại. Vui lòng thử lại.', { duration: 5000 });
+      const msg = data?.errors ? Object.values(data.errors).flat()[0] : data?.message;
+      toast.error(msg ?? 'Cập nhật thất bại. Vui lòng thử lại.', { duration: 5000 });
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div style={{ background: 'white', borderRadius: 14, border: '1.5px solid rgba(37,99,235,0.15)', padding: '18px 18px 14px', display: 'flex', flexDirection: 'column', gap: 14, animation: 'tad-fade .2s ease both' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <Pencil size={14} color="#2563eb" />
-          <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#1e293b' }}>Chỉnh sửa bài giao</span>
-        </div>
-        <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 4 }}>
-          <X size={16} />
+    <div className="as-rail-card">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <Pencil size={16} color="#2563eb" />
+        <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>Chỉnh sửa bài giao</div>
+      </div>
+
+      <label className="as-field-label">Tiêu đề</label>
+      <input className="as-input" value={form.title} onChange={e => set('title', e.target.value)} />
+
+      <label className="as-field-label">Ngày mở bài</label>
+      <input type="datetime-local" className="as-input" value={form.available_from} onChange={e => set('available_from', e.target.value)} />
+
+      <label className="as-field-label">Hạn nộp</label>
+      <input type="datetime-local" className="as-input" value={form.due_at} onChange={e => set('due_at', e.target.value)} />
+
+      <label className="as-field-label" style={{ marginBottom: 8 }}>Trạng thái</label>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, marginBottom: 14 }}>
+        <button className="as-seg" onClick={() => set('status', 'published')}
+          style={{ borderColor: form.status === 'published' ? '#16a34a' : '#e7ecf3', background: form.status === 'published' ? '#f0fdf4' : '#fff', color: form.status === 'published' ? '#15803d' : '#64748b' }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#16a34a' }} />Đang mở
+        </button>
+        <button className="as-seg" onClick={() => set('status', 'closed')}
+          style={{ borderColor: form.status === 'closed' ? '#dc2626' : '#e7ecf3', background: form.status === 'closed' ? '#fef2f2' : '#fff', color: form.status === 'closed' ? '#dc2626' : '#64748b' }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#dc2626' }} />Đã đóng
         </button>
       </div>
 
-      {/* Tiêu đề */}
-      <div>
-        <div className="tad-label">Tiêu đề</div>
-        <input className="tad-input" value={form.title} onChange={e => set('title', e.target.value)} placeholder="Tiêu đề bài kiểm tra" />
-      </div>
-
-      {/* Ngày giờ */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div>
-          <div className="tad-label"><Calendar size={10} /> Ngày mở bài</div>
-          <input type="datetime-local" className="tad-input" value={form.available_from} onChange={e => set('available_from', e.target.value)} />
-        </div>
-        <div>
-          <div className="tad-label"><Calendar size={10} /> Hạn nộp</div>
-          <input type="datetime-local" className="tad-input" value={form.due_at} onChange={e => set('due_at', e.target.value)} />
-        </div>
-      </div>
-
-      {/* Trạng thái */}
-      <div>
-        <div className="tad-label">Trạng thái</div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {(['published', 'closed'] as const).map(s => (
-            <button key={s} onClick={() => set('status', s)}
-              style={{ flex: 1, padding: '8px 0', borderRadius: 10, fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', border: `2px solid ${form.status === s ? (s === 'published' ? '#059669' : '#64748b') : 'rgba(37,99,235,0.12)'}`, background: form.status === s ? (s === 'published' ? 'rgba(5,150,105,0.08)' : 'rgba(100,116,139,0.08)') : 'white', color: form.status === s ? (s === 'published' ? '#059669' : '#64748b') : '#94a3b8', transition: 'all .15s' }}
-            >
-              {s === 'published' ? '🟢 Đang mở' : '⛔ Đã đóng'}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Hướng dẫn */}
-      <div>
-        <div className="tad-label">Hướng dẫn <span style={{ fontWeight: 400, color: '#94a3b8', textTransform: 'none', letterSpacing: 0 }}>(tuỳ chọn)</span></div>
-        <textarea className="tad-input" rows={3} value={form.instructions} onChange={e => set('instructions', e.target.value)}
-          placeholder="Lưu ý cho học sinh khi làm bài..." style={{ resize: 'none' }} />
-      </div>
-
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
-        <button onClick={onCancel} disabled={saving}
-          style={{ flex: 1, padding: '9px 0', borderRadius: 10, background: 'rgba(100,116,139,0.07)', border: '1px solid rgba(100,116,139,0.15)', color: '#64748b', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
-          Hủy
-        </button>
-        <button onClick={handleSave} disabled={saving}
-          style={{ flex: 2, padding: '9px 0', borderRadius: 10, background: saving ? 'rgba(37,99,235,0.3)' : 'linear-gradient(135deg,#1e3a8a,#2563eb)', border: 'none', color: 'white', fontSize: '0.82rem', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
-          {saving ? <><Loader2 size={13} style={{ animation: 'tad-spin 1s linear infinite' }} /> Đang lưu...</> : <><Save size={13} /> Lưu thay đổi</>}
-        </button>
-      </div>
+      <button className="as-btn primary" style={{ width: '100%', justifyContent: 'center' }} onClick={handleSave} disabled={saving}>
+        {saving ? <Loader2 size={16} style={{ animation: 'as-spin 1s linear infinite' }} /> : <Save size={16} />}
+        {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+      </button>
     </div>
   );
 };
@@ -178,12 +123,33 @@ const TeacherAssignmentDetail: FC = () => {
   const [detail,    setDetail]  = useState<IAssignmentDetail | null>(null);
   const [loading,   setLoading] = useState(true);
   const [deleting,  setDeleting] = useState(false);
-  const [editing,   setEditing] = useState(false);
+  const [remindingAll, setRemindingAll] = useState(false);
+  const [remindingCode, setRemindingCode] = useState<string | null>(null);
+  const [remindedCodes, setRemindedCodes] = useState<Set<string>>(new Set());
+
+  const [selectedStudent, setSelectedStudent] = useState<IAssignmentStudentItem | null>(null);
+  const [rosterTab, setRosterTab] = useState<RosterTab>('all');
+  const [rosterDropdownOpen, setRosterDropdownOpen] = useState(false);
+  const [search,    setSearch]    = useState('');
+  const [sortKey,   setSortKey]   = useState<SortKey>('name');
+  const [sortDir,   setSortDir]   = useState<1 | -1>(1);
+
+  const [sidebarOpen,    setSidebarOpen]    = useState(false);
+  const [closingSidebar, setClosingSidebar] = useState(false);
+  const handleCloseSidebar = () => {
+    setClosingSidebar(true);
+    setTimeout(() => { setSidebarOpen(false); setClosingSidebar(false); }, 240);
+  };
 
   useEffect(() => {
     if (!id) return;
     TeacherApi.getAssignmentDetail(id)
-      .then(r => setDetail(r.data))
+      .then(r => {
+        setDetail(r.data);
+        // Khôi phục trạng thái "đã nhắc" từ backend nếu có (xem docs/backend-todo.md)
+        const reminded = r.data.students.filter(s => s.last_reminded_at).map(s => s.student_code);
+        if (reminded.length) setRemindedCodes(new Set(reminded));
+      })
       .catch(() => toast.error('Không thể tải chi tiết bài giao.'))
       .finally(() => setLoading(false));
   }, [id]);
@@ -194,12 +160,8 @@ const TeacherAssignmentDetail: FC = () => {
     setDeleting(true);
     try {
       const r = await TeacherApi.deleteAssignment(id);
-      if (r.success) {
-        toast.success('Đã xóa bài giao.');
-        navigate('/teacher/assignments');
-      } else {
-        toast.error(r.message ?? 'Xóa thất bại.');
-      }
+      if (r.success) { toast.success('Đã xóa bài giao.'); navigate('/teacher/assignments'); }
+      else toast.error(r.message ?? 'Xóa thất bại.');
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
       toast.error(msg ?? 'Xóa thất bại. Vui lòng thử lại.');
@@ -208,137 +170,295 @@ const TeacherAssignmentDetail: FC = () => {
     }
   };
 
+  const handleRemindAll = async () => {
+    if (!id || !detail) return;
+    setRemindingAll(true);
+    try {
+      const r = await TeacherApi.remindAllPending(id);
+      toast.success(r.message || 'Đã gửi nhắc nhở.');
+      setRemindedCodes(prev => {
+        const next = new Set(prev);
+        detail.students.filter(s => s.status === 'not_started').forEach(s => next.add(s.student_code));
+        return next;
+      });
+    } catch { toast.error('Không thể gửi nhắc nhở.'); }
+    finally { setRemindingAll(false); }
+  };
+
+  const handleRemindOne = async (studentCode: string, name: string) => {
+    if (!id) return;
+    setRemindingCode(studentCode);
+    try {
+      const r = await TeacherApi.remindStudent(id, studentCode);
+      toast.success(r.message || `Đã nhắc nhở ${name}.`);
+      setRemindedCodes(prev => new Set(prev).add(studentCode));
+    } catch { toast.error('Không thể gửi nhắc nhở.'); }
+    finally { setRemindingCode(null); }
+  };
+
+  const roster = useMemo(() => {
+    if (!detail) return [];
+    let rows = detail.students;
+    if (rosterTab !== 'all') rows = rows.filter(s => s.status === rosterTab);
+    const q = search.trim().toLowerCase();
+    if (q) rows = rows.filter(s => s.name.toLowerCase().includes(q) || s.student_code.toLowerCase().includes(q));
+    return rows.slice().sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === 'name')   cmp = a.name.localeCompare(b.name);
+      if (sortKey === 'status') cmp = STATUS_RANK[a.status] - STATUS_RANK[b.status];
+      if (sortKey === 'score')  cmp = (a.score ?? -1) - (b.score ?? -1);
+      if (sortKey === 'time')   cmp = (a.submitted_at ?? '').localeCompare(b.submitted_at ?? '');
+      return cmp * sortDir;
+    });
+  }, [detail, rosterTab, search, sortKey, sortDir]);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) setSortDir(d => (d === 1 ? -1 : 1));
+    else { setSortKey(key); setSortDir(1); }
+  };
+  const arrow = (key: SortKey) => sortKey === key ? (sortDir === 1 ? '↑' : '↓') : '';
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100%', background: 'linear-gradient(160deg,#eef4ff 0%,#e0eaff 40%,#f0f9ff 100%)' }}>
+        <style>{CSS}</style>
+        <div style={{ textAlign: 'center', padding: '5rem' }}>
+          <Loader2 size={28} color="#2563eb" style={{ animation: 'as-spin 1s linear infinite', margin: '0 auto 10px', display: 'block' }} />
+          <div style={{ fontSize: 13, color: '#94a3b8' }}>Đang tải...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!detail) {
+    return (
+      <div style={{ minHeight: '100%', background: 'linear-gradient(160deg,#eef4ff 0%,#e0eaff 40%,#f0f9ff 100%)' }}>
+        <style>{CSS}</style>
+        <div style={{ textAlign: 'center', padding: '5rem', color: '#94a3b8' }}>Không tìm thấy bài giao.</div>
+      </div>
+    );
+  }
+
+  const total = detail.stats.total;
+  const done  = detail.stats.submitted;
+  const doing = detail.stats.in_progress;
+  const todo  = detail.stats.not_started;
+  const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
+  const pill  = statusPill(detail.status);
+  const notStartedStudents = detail.students.filter(s => s.status === 'not_started');
+  const allTodoReminded = todo > 0 && notStartedStudents.every(s => remindedCodes.has(s.student_code));
+
+  const sidebarContent = (
+    <>
+      <div className="as-rail-card">
+        <div className="as-rail-label">Thao tác nhanh</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+          <button className="as-btn outline-amber" style={{ width: '100%' }} onClick={handleRemindAll} disabled={remindingAll || todo === 0 || allTodoReminded}>
+            {remindingAll ? <Loader2 size={16} style={{ animation: 'as-spin 1s linear infinite' }} /> : <Bell size={16} />}
+            {allTodoReminded ? 'Đã nhắc toàn bộ' : `Nhắc ${todo} HS chưa làm`}
+          </button>
+          <button className="as-btn outline-blue" style={{ width: '100%' }} onClick={() => navigate(`/teacher/subjects/${detail.ma_mon}/exams`)}>
+            <UserPlus size={16} /> Giao thêm học sinh
+          </button>
+          <button className="as-btn outline-red" style={{ width: '100%' }} onClick={handleDelete} disabled={deleting}>
+            {deleting ? <Loader2 size={16} style={{ animation: 'as-spin 1s linear infinite' }} /> : <Trash2 size={16} />}
+            Xóa bài giao
+          </button>
+        </div>
+      </div>
+
+      <EditPanel detail={detail} onSaved={updated => setDetail(p => p ? { ...p, ...updated } : p)} />
+    </>
+  );
+
   return (
-    <div style={{ minHeight: '100%', background: 'linear-gradient(135deg,#f0f4ff 0%,#e8f0fe 50%,#f5f3ff 100%)' }}>
+    <div style={{ minHeight: '100%', background: 'linear-gradient(160deg,#eef4ff 0%,#e0eaff 40%,#f0f9ff 100%)', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif" }}>
       <style>{CSS}</style>
 
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '5rem' }}>
-          <Loader2 size={28} color="#2563eb" style={{ animation: 'tad-spin 1s linear infinite', margin: '0 auto 10px', display: 'block' }} />
-          <div style={{ fontSize: '0.82rem', color: '#94a3b8' }}>Đang tải...</div>
-        </div>
-      ) : !detail ? (
-        <div style={{ textAlign: 'center', padding: '5rem', color: '#94a3b8' }}>Không tìm thấy bài giao.</div>
-      ) : (
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="as-list-content">
+        {selectedStudent ? (
+          <StudentAnswerView
+            assignmentId={detail.id}
+            examTitle={detail.title}
+            studentCode={selectedStudent.student_code}
+            studentName={selectedStudent.name}
+            onBack={() => setSelectedStudent(null)}
+          />
+        ) : (
+          <>
+            <button className="as-back-link" onClick={() => navigate('/teacher/assignments')}>
+              <ChevronLeft size={14} /> Bài kiểm tra đã giao
+            </button>
 
-          {/* Action bar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{detail.title ?? '—'}</div>
-              <div style={{ fontSize: '0.72rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                <BookOpen size={11} /> {detail.ma_mon}
-                <span>·</span>
-                <span style={{ color: detail.status === 'published' ? '#059669' : '#94a3b8' }}>
-                  {detail.status === 'published' ? 'Đang mở' : 'Đã đóng'}
+            {/* Summary card */}
+            <div className="as-summary-card">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, letterSpacing: '-.3px', color: '#0f172a' }}>{detail.title}</h1>
+                <span style={{ fontFamily: 'monospace', fontSize: 12.5, fontWeight: 600, color: '#2563eb', background: '#eff5ff', padding: '3px 9px', borderRadius: 8 }}>{detail.ma_mon}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, padding: '4px 11px', borderRadius: 999, background: pill.background, color: pill.color }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor' }} />{pill.label}
                 </span>
+                <span style={{ fontSize: 13, color: '#64748b' }}>{total} học sinh · Hạn {fmtDt(detail.due_at)}</span>
               </div>
-            </div>
-            <button onClick={() => setEditing(v => !v)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: editing ? 'rgba(37,99,235,0.12)' : 'rgba(37,99,235,0.07)', border: `1px solid ${editing ? 'rgba(37,99,235,0.3)' : 'rgba(37,99,235,0.15)'}`, color: '#2563eb', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
-              <Pencil size={12} /> {editing ? 'Hủy sửa' : 'Chỉnh sửa'}
-            </button>
-            {detail.status === 'published' && !editing && (
-              <button
-                onClick={async () => {
-                  if (!id || !confirm('Đóng bài giao? Học sinh sẽ không thể nộp thêm.')) return;
-                  try {
-                    const r = await TeacherApi.updateAssignment(id, { status: 'closed' });
-                    if (r.success) { toast.success('Đã đóng bài giao.'); setDetail(p => p ? { ...p, status: 'closed' } : p); }
-                    else toast.error(r.message ?? 'Thất bại.');
-                  } catch { toast.error('Thất bại. Vui lòng thử lại.'); }
-                }}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', color: '#d97706', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
-                <XCircle size={12} /> Đóng bài
-              </button>
-            )}
-            <button onClick={handleDelete} disabled={deleting}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(220,38,38,0.07)', border: '1px solid rgba(220,38,38,0.2)', color: '#dc2626', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
-              {deleting ? <Loader2 size={12} style={{ animation: 'tad-spin 1s linear infinite' }} /> : <Trash2 size={12} />} Xóa
-            </button>
-          </div>
 
-          {/* Edit panel */}
-          {editing && (
-            <EditPanel
-              detail={detail}
-              onCancel={() => setEditing(false)}
-              onSaved={updated => {
-                setDetail(p => p ? { ...p, ...updated } : p);
-                setEditing(false);
-              }}
-            />
-          )}
-
-          {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-            {[
-              { label: 'Tổng HS',   value: detail.stats.total,       icon: Users,       bg: 'rgba(30,58,138,0.06)',   color: '#1e3a8a' },
-              { label: 'Đã nộp',    value: detail.stats.submitted,   icon: CheckCircle, bg: 'rgba(5,150,105,0.07)',   color: '#059669' },
-              { label: 'Đang làm',  value: detail.stats.in_progress, icon: Clock,       bg: 'rgba(37,99,235,0.07)',   color: '#2563eb' },
-              { label: 'Chưa làm',  value: detail.stats.not_started, icon: AlertCircle, bg: 'rgba(100,116,139,0.07)', color: '#64748b' },
-            ].map(({ label, value, icon: Icon, bg, color }) => (
-              <div key={label} className="tad-stat" style={{ background: bg, border: `1px solid ${color}22` }}>
-                <Icon size={20} color={color} style={{ marginBottom: 6 }} />
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color, lineHeight: 1 }}>{value}</div>
-                <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600, marginTop: 4 }}>{label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Info card */}
-          <div style={{ background: 'white', borderRadius: 14, border: '1px solid rgba(37,99,235,0.08)', padding: '14px 16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            {[
-              { label: 'Ngày mở bài', value: fmtDt(detail.available_from) },
-              { label: 'Hạn nộp',     value: fmtDt(detail.due_at) },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700, marginBottom: 3 }}>{label}</div>
-                <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1e293b' }}>{value}</div>
-              </div>
-            ))}
-            {detail.instructions && (
-              <div style={{ gridColumn: '1/-1' }}>
-                <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700, marginBottom: 3 }}>Hướng dẫn</div>
-                <div style={{ fontSize: '0.82rem', color: '#334155', lineHeight: 1.5 }}>{detail.instructions}</div>
-              </div>
-            )}
-          </div>
-
-          {/* Student list */}
-          <div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: 10, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              Danh sách học sinh ({detail.students.length})
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {detail.students.map((s, idx) => {
-                const b = studentStatusBadge(s.status);
-                const pct = s.score !== null && s.total ? (s.score / s.total) * 100 : null;
-                return (
-                  <div key={s.student_code} className="tad-row" style={{ animationDelay: `${idx * 0.02}s` }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(37,99,235,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <User size={15} color="#2563eb" />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</div>
-                      <div style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: 1 }}>{s.student_code}</div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                      {s.status === 'submitted' && s.score !== null && s.total !== null && (
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '1rem', fontWeight: 800, color: pct !== null && pct >= 50 ? '#059669' : '#dc2626', lineHeight: 1 }}>{s.score}/{s.total}</div>
-                          <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: 1 }}>{fmtDt(s.submitted_at)}</div>
-                        </div>
-                      )}
-                      <span style={{ fontSize: '0.68rem', fontWeight: 700, borderRadius: 20, padding: '3px 9px', background: b.bg, color: b.color }}>{b.label}</span>
-                    </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 16, flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: 260 }}>
+                  <div style={{ display: 'flex', height: 11, borderRadius: 999, overflow: 'hidden', background: '#eef2f7' }}>
+                    <div style={{ width: `${total ? (done / total) * 100 : 0}%`, background: '#16a34a' }} />
+                    <div style={{ width: `${total ? (doing / total) * 100 : 0}%`, background: '#2563eb' }} />
+                    <div style={{ width: `${total ? (todo / total) * 100 : 0}%`, background: '#cbd5e1' }} />
                   </div>
-                );
-              })}
+                </div>
+                <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 9, height: 9, borderRadius: 3, background: '#16a34a' }} /><span style={{ fontSize: 13, color: '#475569' }}><b style={{ color: '#15803d' }}>{done}</b> đã nộp</span></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 9, height: 9, borderRadius: 3, background: '#2563eb' }} /><span style={{ fontSize: 13, color: '#475569' }}><b style={{ color: '#1d4ed8' }}>{doing}</b> đang làm</span></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 9, height: 9, borderRadius: 3, background: '#cbd5e1' }} /><span style={{ fontSize: 13, color: '#475569' }}><b>{todo}</b> chưa làm</span></div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#2563eb' }}>{pct}%</div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+
+            <div className="as-detail-grid">
+              {/* Left rail — sticky on desktop, hidden on mobile (see drawer below) */}
+              <div className="as-rail">
+                {sidebarContent}
+              </div>
+
+              {/* Gradebook */}
+              <div className="as-gradebook-card">
+                <div className="as-gb-toolbar">
+                  <div className="as-gb-search-wrap">
+                    <Search size={15} color="#94a3b8" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+                    <input className="as-gb-search" placeholder="Tìm học sinh..." value={search} onChange={e => setSearch(e.target.value)} />
+                  </div>
+
+                  <div
+                    className="as-gb-dropdown"
+                    onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setRosterDropdownOpen(false); }}
+                    tabIndex={-1}
+                  >
+                    <button
+                      className="as-gb-dropdown-trigger"
+                      aria-expanded={rosterDropdownOpen}
+                      onClick={() => setRosterDropdownOpen(o => !o)}
+                    >
+                      <span>{ROSTER_TABS.find(t => t.key === rosterTab)?.label ?? 'Tất cả'}</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 11, fontWeight: 800, padding: '1px 8px', borderRadius: 999, background: '#eff5ff', color: '#2563eb' }}>
+                          {roster.length}
+                        </span>
+                        <ChevronDown size={14} color="#94a3b8" style={{ transition: 'transform .15s', transform: rosterDropdownOpen ? 'rotate(180deg)' : 'none' }} />
+                      </span>
+                    </button>
+                    {rosterDropdownOpen && (
+                      <div className="as-gb-dropdown-menu">
+                        {ROSTER_TABS.map(t => {
+                          const count = t.key === 'all' ? total : t.key === 'submitted' ? done : t.key === 'in_progress' ? doing : todo;
+                          return (
+                            <div
+                              key={t.key}
+                              className={`as-gb-dropdown-item ${rosterTab === t.key ? 'active' : ''}`}
+                              onMouseDown={() => { setRosterTab(t.key); setRosterDropdownOpen(false); }}
+                            >
+                              <span>{t.label}</span>
+                              <span style={{ fontSize: 11, fontWeight: 800, padding: '1px 8px', borderRadius: 999, background: rosterTab === t.key ? '#dbeafe' : '#f1f5f9', color: rosterTab === t.key ? '#1d4ed8' : '#64748b' }}>
+                                {count}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="as-gb-thead">
+                  <div data-sort onClick={() => toggleSort('name')}>Học sinh {arrow('name')}</div>
+                  <div data-sort onClick={() => toggleSort('status')}>Trạng thái {arrow('status')}</div>
+                  <div data-sort onClick={() => toggleSort('score')}>Điểm {arrow('score')}</div>
+                  <div data-sort onClick={() => toggleSort('time')}>Nộp lúc {arrow('time')}</div>
+                  <div style={{ textAlign: 'right' }}>Thao tác</div>
+                </div>
+
+                <div>
+                  {roster.length === 0 ? (
+                    <div style={{ padding: 44, textAlign: 'center', color: '#94a3b8', fontSize: 13.5 }}>Không có học sinh phù hợp bộ lọc.</div>
+                  ) : roster.map(s => {
+                    const meta = studentStatusMeta[s.status];
+                    return (
+                      <div key={s.student_code} className="as-gb-row">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
+                          <span style={{ width: 34, height: 34, borderRadius: 9, background: '#eff5ff', color: '#2563eb', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{initials(s.name)}</span>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 13.5, fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
+                            <div style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' }}>{s.student_code}</div>
+                          </div>
+                        </div>
+                        <div>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, padding: '4px 11px', borderRadius: 999, background: meta.bg, color: meta.color, whiteSpace: 'nowrap' }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor' }} />{meta.label}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: scoreColor(s.score, s.total) }}>{s.score ?? '—'}</div>
+                        <div style={{ fontSize: 12.5, color: '#64748b' }}>{s.submitted_at ? fmtDt(s.submitted_at) : '—'}</div>
+                        <div className="as-gb-actions">
+                          {s.status === 'submitted' && (
+                            <button className="as-btn outline-blue" style={{ height: 32, padding: '0 12px', fontSize: 12 }} onClick={() => setSelectedStudent(s)}>
+                              <Eye size={13} /> Xem
+                            </button>
+                          )}
+                          {s.status === 'not_started' && (
+                            remindedCodes.has(s.student_code) ? (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, padding: '4px 11px', borderRadius: 999, background: '#ecfdf3', color: '#15803d', whiteSpace: 'nowrap' }}>
+                                <Check size={12} /> Đã nhắc
+                              </span>
+                            ) : (
+                              <button className="as-btn outline-amber" style={{ height: 32, padding: '0 12px', fontSize: 12 }}
+                                onClick={() => handleRemindOne(s.student_code, s.name)} disabled={remindingCode === s.student_code}>
+                                {remindingCode === s.student_code ? <Loader2 size={13} style={{ animation: 'as-spin 1s linear infinite' }} /> : <Bell size={13} />} Nhắc
+                              </button>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* FAB — mobile only */}
+            <button className="as-rail-fab" onClick={() => setSidebarOpen(true)}>
+              <Settings size={17} /> Cài đặt
+            </button>
+
+            {/* Sidebar drawer — mobile */}
+            {sidebarOpen && (
+              <>
+                <div
+                  className="as-drawer-overlay"
+                  onClick={handleCloseSidebar}
+                  style={{ animation: `${closingSidebar ? 'as-overlay-out' : 'as-overlay'} .22s ease forwards` }}
+                />
+                <div
+                  className="as-drawer-panel"
+                  style={{ animation: `${closingSidebar ? 'as-drawer-out' : 'as-drawer-in'} .24s cubic-bezier(.2,.8,.2,1) forwards` }}
+                >
+                  <div className="as-drawer-head">
+                    <span style={{ fontSize: 15, fontWeight: 800, color: '#0f172a' }}>Cài đặt bài giao</span>
+                    <button className="as-drawer-close" onClick={handleCloseSidebar}>
+                      <X size={15} />
+                    </button>
+                  </div>
+                  <div className="as-drawer-body">
+                    {sidebarContent}
+                  </div>
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };
