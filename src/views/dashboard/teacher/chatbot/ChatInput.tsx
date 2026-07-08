@@ -39,15 +39,20 @@ const ChatInput = ({
   const canSend = !!text.trim() && !isLoading && !disabled;
 
   return (
-    <div style={{ borderTop: '1px solid #eef0f5', background: 'white', padding: '10px 16px 14px' }}>
+    <div style={{ borderTop: '1px solid #eef0f5', background: 'white', padding: '10px 0 14px' }}>
+      <style>{`
+        .tai-suggest-scroll { scrollbar-width: none; }
+        .tai-suggest-scroll::-webkit-scrollbar { display: none; }
+      `}</style>
       {/* Suggestion chips */}
       {suggestions && suggestions.length > 0 && (
-        <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10, maxWidth: 860, margin: '0 auto 10px' }}>
+        <div className="tai-suggest-scroll" style={{ display: 'flex', gap: 7, flexWrap: 'nowrap', overflowX: 'auto', marginBottom: 10, maxWidth: 860, margin: '0 auto 10px', padding: '0 16px' }}>
           {suggestions.map(s => (
             <button
               key={s}
               onClick={() => { setText(s); taRef.current?.focus(); }}
               style={{
+                flexShrink: 0,
                 padding: '5px 12px', borderRadius: 20, border: '1px solid #e2e8f0',
                 background: '#f8fafc', color: '#475569', fontSize: '0.75rem', fontWeight: 500,
                 cursor: 'pointer', transition: 'all .15s', whiteSpace: 'nowrap',
@@ -62,7 +67,7 @@ const ChatInput = ({
       )}
 
       {/* Input row */}
-      <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+      <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'flex-end', gap: 8, padding: '0 16px' }}>
         <div style={{ flex: 1, position: 'relative' }}>
           <textarea
             ref={taRef}

@@ -53,65 +53,55 @@ export interface IUserProfile extends IUser {
 }
 
 // Admin user list item (API trả về _id từ MongoDB)
+export type IAdminUserRole = 'student' | 'teacher' | 'admin';
+
 export interface IAdminUser {
   _id: string;
   username: string;
   name: string;
-  email?: string;
-  role: 'admin' | 'user';
-  avatar: string | null;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  email: string | null;
+  role: IAdminUserRole;
+  is_blocked: boolean;
+  blocked_at: string | null;
+  blocked_reason: string | null;
+  login_count: number;
+  last_login_at: string | null;
+  first_login_at: string | null;
+  created_at: string;
 }
 
-export interface IPagination {
-  page: number;
-  limit: number;
+export interface IAdminUsersMeta {
   total: number;
-  totalPages: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
 }
 
 export interface IGetUsersResponse {
   success: boolean;
-  data: { users: IAdminUser[]; pagination: IPagination };
+  data: IAdminUser[];
+  meta: IAdminUsersMeta;
 }
 
 export interface IGetUserByIdResponse {
   success: boolean;
-  data: { user: IAdminUser };
+  data: IAdminUser;
 }
 
-export interface ICreateUserRequest {
-  username: string;
-  name: string;
-  email: string;
-  password: string;
-  role?: 'admin' | 'user';
+export interface IBlockUserRequest {
+  reason?: string;
 }
 
-export interface IUpdateUserRequest {
-  username?: string;
-  name?: string;
-  email?: string;
-  role?: 'admin' | 'user';
-}
-
-export interface IAdminUserMutationResponse {
+export interface IBlockUserResponse {
   success: boolean;
   message: string;
-  data: { user: IAdminUser };
+  data: { username: string; is_blocked: boolean; blocked_at: string | null; blocked_reason: string | null };
 }
 
-export interface IToggleActiveResponse {
+export interface IUnblockUserResponse {
   success: boolean;
   message: string;
-  data: { isActive: boolean };
-}
-
-export interface IDeleteUserResponse {
-  success: boolean;
-  message: string;
+  data: { username: string; is_blocked: boolean; blocked_at: null; blocked_reason: null };
 }
 
 // ── Request types ─────────────────────────────────────

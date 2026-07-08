@@ -1,5 +1,5 @@
 import { type FC, useEffect, useRef, useState } from 'react';
-import { FolderOpen, Search, X, Download, Send, Pencil, Trash2, Loader2, MoreHorizontal } from 'lucide-react';
+import { FolderOpen, Search, X, Download, Send, Pencil, Trash2, Loader2, MoreHorizontal, SlidersHorizontal, ChevronDown, Check } from 'lucide-react';
 import type { ISubjectFile, IFileType } from '@/infra/api/interfaces/ITeacher';
 import { TYPE_ORDER, TYPE_LABEL, STATUS_FILTER_LABELS } from '../constants';
 import { fmtSize, fmtDate, isAiOk } from '../helpers';
@@ -130,6 +130,46 @@ const DropItem: FC<{ icon: React.ReactNode; label: string; onClick: () => void; 
   </button>
 );
 
+// ── Status filter dropdown ──────────────────────────────────────
+const StatusDropdown: FC<{ value: StatusF; onChange: (v: StatusF) => void }> = ({ value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="tdf-status-dd">
+      <button type="button" className={`tdf-status-trigger${open ? ' open' : ''}`} onClick={() => setOpen(o => !o)}>
+        <SlidersHorizontal size={14} className="tdf-status-icon" />
+        <span className="tdf-status-label">{STATUS_FILTER_LABELS[value]}</span>
+        <ChevronDown size={14} className="tdf-status-chevron" />
+      </button>
+      {open && (
+        <div className="tdf-status-menu">
+          {(Object.keys(STATUS_FILTER_LABELS) as StatusF[]).map(id => (
+            <button
+              key={id}
+              type="button"
+              className={`tdf-status-item${value === id ? ' on' : ''}`}
+              onClick={() => { onChange(id); setOpen(false); }}
+            >
+              <span>{STATUS_FILTER_LABELS[id]}</span>
+              {value === id && <Check size={14} />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ── Skeleton ──────────────────────────────────────────────────
 const Skeleton = () => (
   <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
@@ -150,8 +190,8 @@ const FileListView: FC<Props> = ({
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
       {/* Search + filters */}
-      <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-        <div style={{ flex:'1 1 220px', position:'relative' }}>
+      <div className="tdf-searchbar-row">
+        <div className="tdf-search-box">
           <Search size={15} color="#94a3b8" style={{ position:'absolute', left:13, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }} />
           <input
             value={search}
@@ -167,13 +207,7 @@ const FileListView: FC<Props> = ({
             </button>
           )}
         </div>
-        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-          {(Object.keys(STATUS_FILTER_LABELS) as StatusF[]).map(id => (
-            <button key={id} className={`tdf-chip ${statusFilter === id ? 'on' : 'off'}`} onClick={() => onStatusFilter(id)}>
-              {STATUS_FILTER_LABELS[id]}
-            </button>
-          ))}
-        </div>
+        <StatusDropdown value={statusFilter} onChange={onStatusFilter} />
       </div>
 
       {/* Layout A: folder nav + table */}

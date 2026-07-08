@@ -47,7 +47,6 @@ const StudentLayout: FC = () => {
         userCode={user?.username}
         userInitials={initials}
         userAvatar={user?.avatar}
-        onLogout={handleLogout}
         collapsed={collapsed}
         onToggle={() => setCollapsed(v => !v)}
         isMobile={isMobile}

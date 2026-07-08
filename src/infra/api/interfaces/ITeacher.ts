@@ -90,7 +90,7 @@ export interface IStudentsResponse {
 // ── Subject files ──────────────────────────────────────
 export type IFileType = 'de_cuong' | 'ly_thuyet' | 'ma_tran_cau_hoi' | 'ngan_hang_cau_hoi' | 'khac';
 export type IFileExternalStatus =
-  | 'pending' | 'parsed' | 'send_queued' | 'sending' | 'success' | 'failed' | null;
+  | 'pending' | 'processing' | 'parsed' | 'send_queued' | 'sending' | 'success' | 'failed' | null;
 
 export interface ISubjectFile {
   id: string;

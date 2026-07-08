@@ -45,11 +45,11 @@ const StudentAnswerView: FC<Props> = ({ assignmentId, examTitle, studentCode, st
         {data && data.questions.length > 0 && (
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <div style={{ textAlign: 'center', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 13, padding: '11px 18px' }}>
-              <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1, color: scoreColorTen(data.score) }}>{data.score?.toFixed(1) ?? '—'}</div>
+              <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1, color: scoreColorTen(data.score_10) }}>{data.score_10?.toFixed(1) ?? '—'}</div>
               <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>Điểm</div>
             </div>
             <div style={{ textAlign: 'center', background: '#fff', border: '1px solid #eef2f7', borderRadius: 13, padding: '11px 18px' }}>
-              <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1, color: '#0f172a' }}>{data.correct_count ?? '—'}/{data.questions.length}</div>
+              <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1, color: '#0f172a' }}>{data.correct_count ?? data.score ?? '—'}/{data.total ?? data.questions.length}</div>
               <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>Câu đúng</div>
             </div>
             <div style={{ textAlign: 'center', background: '#fff', border: '1px solid #eef2f7', borderRadius: 13, padding: '11px 18px' }}>

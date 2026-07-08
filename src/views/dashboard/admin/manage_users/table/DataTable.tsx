@@ -4,39 +4,37 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Pencil, PowerOff, Power, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Ban, CheckCircle2, Loader2 } from 'lucide-react';
 import { DataTableToolbar } from './data-table-toolbar';
 import type { IAdminUser } from '@/infra/api/interfaces/IUser';
-import { getAvatarUrl } from '@/hooks/useUser';
 import { useManageUsersStore } from '../stores/user_store';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const ROLE_CFG: Record<string, { label: string; className: string }> = {
-  admin: { label: 'Admin', className: 'bg-[#2F6B3F]/10 text-[#2F6B3F] border-[#2F6B3F]/20' },
-  user:  { label: 'User',  className: 'bg-[#6B8E23]/10 text-[#6B8E23] border-[#6B8E23]/20' },
+  admin:   { label: 'Admin',     className: 'bg-[#2F6B3F]/10 text-[#2F6B3F] border-[#2F6B3F]/20' },
+  teacher: { label: 'Giáo viên', className: 'bg-[#6B8E23]/10 text-[#6B8E23] border-[#6B8E23]/20' },
+  student: { label: 'Sinh viên', className: 'bg-blue-500/10 text-blue-700 border-blue-500/20' },
 };
 
-const ACTIVE_CFG = {
-  true:  { label: 'Hoạt động',    className: 'bg-emerald-100 text-emerald-700 border-0' },
-  false: { label: 'Vô hiệu hóa', className: 'bg-rose-100 text-rose-700 border-0' },
+const BLOCKED_CFG = {
+  false: { label: 'Hoạt động', className: 'bg-emerald-100 text-emerald-700 border-0' },
+  true:  { label: 'Đã chặn',   className: 'bg-rose-100 text-rose-700 border-0' },
 };
 
 // ── Mobile card ───────────────────────────────────────────────────────────────
 function UserMobileCard({ user }: { user: IAdminUser }) {
-  const { openDialog, toggleActiveUser } = useManageUsersStore();
-  const roleCfg   = ROLE_CFG[user.role] ?? ROLE_CFG['user'];
-  const activeCfg = user.isActive ? ACTIVE_CFG['true'] : ACTIVE_CFG['false'];
+  const { openDialog, unblockUser, isMutating } = useManageUsersStore();
+  const roleCfg    = ROLE_CFG[user.role] ?? ROLE_CFG['student'];
+  const blockedCfg = user.is_blocked ? BLOCKED_CFG['true'] : BLOCKED_CFG['false'];
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
       {/* Avatar */}
       <Avatar size="sm" className="shrink-0">
-        <AvatarImage src={getAvatarUrl(user.avatar ?? undefined)} />
         <AvatarFallback className="text-xs font-semibold bg-[#2F6B3F]/10 text-[#2F6B3F]">
           {user.name.slice(0, 2).toUpperCase()}
         </AvatarFallback>
@@ -50,8 +48,8 @@ function UserMobileCard({ user }: { user: IAdminUser }) {
           <Badge variant="outline" className={`text-[10px] px-1.5 py-0 h-4 ${roleCfg.className}`}>
             {roleCfg.label}
           </Badge>
-          <Badge className={`text-[10px] px-1.5 py-0 h-4 ${activeCfg.className}`}>
-            {activeCfg.label}
+          <Badge className={`text-[10px] px-1.5 py-0 h-4 ${blockedCfg.className}`}>
+            {blockedCfg.label}
           </Badge>
         </div>
       </div>
@@ -65,24 +63,19 @@ function UserMobileCard({ user }: { user: IAdminUser }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
-          <DropdownMenuItem onClick={() => openDialog('edit', user)}>
-            <Pencil className="mr-2 h-4 w-4" />Chỉnh sửa
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => toggleActiveUser(user._id)}>
-            {user.isActive ? (
-              <><PowerOff className="mr-2 h-4 w-4 text-amber-500" /><span className="text-amber-600">Vô hiệu hóa</span></>
-            ) : (
-              <><Power className="mr-2 h-4 w-4 text-emerald-500" /><span className="text-emerald-600">Kích hoạt</span></>
-            )}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => openDialog('delete', user)}
-            className="text-red-600 focus:text-red-600 focus:bg-red-50"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />Xóa tài khoản
-          </DropdownMenuItem>
+          {user.is_blocked ? (
+            <DropdownMenuItem onClick={() => unblockUser(user._id)} disabled={isMutating}>
+              {isMutating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-500" />}
+              <span className="text-emerald-600">Bỏ chặn</span>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              onClick={() => openDialog('block', user)}
+              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+            >
+              <Ban className="mr-2 h-4 w-4" />Chặn tài khoản
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
@@ -109,7 +102,7 @@ export function DataTable<TData, TValue>({
   searchTerm, onSearchChange, role, onRoleChange, status, onStatusChange,
 }: Props<TData, TValue>) {
 
-  const MOBILE_HIDDEN = ['email', 'createdAt'];
+  const MOBILE_HIDDEN = ['email', 'login_count', 'last_login_at', 'created_at'];
   const getVisibility = (mobile: boolean) =>
     mobile ? Object.fromEntries(MOBILE_HIDDEN.map((id) => [id, false])) : {};
 

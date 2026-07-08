@@ -22,6 +22,49 @@ const CSS = `
   .tdf-chip.off { border-color:#e7ecf3; background:#fff; color:#64748b; font-weight:600; }
   .tdf-chip.off:hover { border-color:#c5d8f5; background:#f8fbff; }
 
+  /* ── Search bar + status dropdown ─────────────────── */
+  @keyframes tdf-dd-in { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+
+  .tdf-searchbar-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .tdf-search-box { flex:1 1 220px; min-width:0; position:relative; }
+
+  .tdf-status-dd { position:relative; flex-shrink:0; width:196px; }
+  .tdf-status-trigger {
+    width:100%; height:42px; display:flex; align-items:center; gap:8px;
+    padding:0 12px; border-radius:12px; border:1px solid #e7ecf3; background:#fff;
+    font-family:inherit; font-size:13.5px; font-weight:600; color:#334155; cursor:pointer;
+    transition:border-color .13s, background .13s, color .13s; box-sizing:border-box;
+  }
+  .tdf-status-trigger:hover { border-color:#c5d8f5; background:#f8fbff; }
+  .tdf-status-trigger.open { border-color:#93c5fd; background:#eff5ff; color:#2563eb; }
+  .tdf-status-trigger .tdf-status-icon { color:#94a3b8; flex-shrink:0; }
+  .tdf-status-trigger.open .tdf-status-icon { color:#2563eb; }
+  .tdf-status-trigger .tdf-status-label { flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .tdf-status-trigger .tdf-status-chevron { flex-shrink:0; color:#94a3b8; transition:transform .15s; }
+  .tdf-status-trigger.open .tdf-status-chevron { transform:rotate(180deg); color:#2563eb; }
+
+  .tdf-status-menu {
+    position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:30;
+    background:#fff; border:1px solid #e7ecf3; border-radius:12px;
+    box-shadow:0 8px 28px rgba(15,23,42,.14); padding:5px;
+    animation:tdf-dd-in .14s ease both;
+  }
+  .tdf-status-item {
+    width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:8px 11px; border-radius:8px; border:none; background:transparent;
+    font-family:inherit; font-size:13px; font-weight:600; color:#334155; cursor:pointer;
+    text-align:left; transition:background .1s;
+  }
+  .tdf-status-item:hover { background:#f8fafc; }
+  .tdf-status-item.on { color:#2563eb; background:#eff5ff; }
+  .tdf-status-item svg { color:#2563eb; flex-shrink:0; }
+
+  @media(max-width:640px) {
+    .tdf-searchbar-row { flex-direction:column; align-items:stretch; }
+    .tdf-search-box { flex:none; width:100%; }
+    .tdf-status-dd { width:100%; }
+  }
+
   .tdf-folder-item { display:flex; align-items:center; gap:10px; padding:9px 11px; border-radius:10px; cursor:pointer; font-size:13.5px; transition:background .13s; }
   .tdf-folder-item.on  { background:#eff5ff; color:#1d4ed8; font-weight:700; }
   .tdf-folder-item.off { color:#475569; font-weight:500; }
@@ -100,6 +143,15 @@ const CSS = `
   /* ── Upload modal file item ───────────────────────── */
   .tdf-upload-item { border:1px solid #eef2f7; border-radius:13px; padding:11px 14px; display:flex; align-items:center; gap:12px; }
 
+  /* ── Train tab (hàng đợi huấn luyện AI) ───────────── */
+  .tdf-train-toolbar { display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+  .tdf-train-refresh { margin-left:auto; }
+
+  .tdf-train-row { background:#fff; border:1px solid #e7ecf3; border-radius:14px; padding:14px 17px; display:flex; align-items:center; gap:14px; }
+  .tdf-train-head { display:flex; align-items:center; gap:14px; flex:1; min-width:0; }
+  .tdf-train-info { flex:1; min-width:0; }
+  .tdf-train-actions { display:flex; gap:8px; align-items:center; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end; }
+
   /* ═══════════════════════════════════════════════════
      BREAKPOINTS
      ═══════════════════════════════════════════════════ */
@@ -112,10 +164,10 @@ const CSS = `
     .tdf-stats-grid { grid-template-columns:repeat(2,1fr); }
   }
 
-  /* ≤ 768px  reduce padding */
+  /* ≤ 768px  reduce padding, hide stats band */
   @media(max-width:768px) {
     .tdf-band-pad    { padding:14px 18px; }
-    .tdf-stats-pad   { padding:14px 18px; }
+    .tdf-stats-pad   { display:none; }
     .tdf-content-pad { padding:14px 18px 40px; }
   }
 
@@ -129,6 +181,19 @@ const CSS = `
   @media(max-width:640px) {
     .tdf-page-sub     { display:none; }
     .tdf-layout-right { margin-left:0; }
+  }
+
+  /* ≤ 640px  train tab: stack info/actions, wrap actions */
+  @media(max-width:640px) {
+    .tdf-train-row     { flex-direction:column; align-items:stretch; gap:10px; padding:12px 14px; }
+    .tdf-train-head    { width:100%; }
+    .tdf-train-actions { width:100%; justify-content:flex-start; }
+  }
+
+  /* ≤ 420px  train tab toolbar wraps, refresh button full width */
+  @media(max-width:420px) {
+    .tdf-train-toolbar { gap:8px; }
+    .tdf-train-refresh { margin-left:0; width:100%; justify-content:center; }
   }
 
   /* ≤ 600px  compact stat cards */

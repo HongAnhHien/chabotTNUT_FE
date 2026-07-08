@@ -14,13 +14,26 @@ export const API_ENDPOINTS = {
     CHANGE_PASSWORD: '/me/password',
   },
 
-  USERS: {
-    LIST:         '/users',
-    DETAIL:       (id: string) => `/users/${id}`,
-    CREATE:       '/users',
-    UPDATE:       (id: string) => `/users/${id}`,
-    TOGGLE_ACTIVE:(id: string) => `/users/${id}/active`,
-    DELETE:       (id: string) => `/users/${id}`,
+  ADMIN: {
+    // Users
+    USERS_LIST:    '/admin/users',
+    USERS_DETAIL:  (id: string) => `/admin/users/${id}`,
+    USER_BLOCK:    (id: string) => `/admin/users/${id}/block`,
+    USER_UNBLOCK:  (id: string) => `/admin/users/${id}/unblock`,
+
+    // Parse logs
+    PARSE_LOGS:       '/admin/parse-logs',
+    PARSE_LOGS_STATS: '/admin/parse-logs/stats',
+
+    // LlamaParse API key (chỉ 1 key duy nhất, không có {id})
+    LLAMA_PARSE_KEY:             '/admin/api-settings/llama-parse',
+    LLAMA_PARSE_KEY_CHECK_USAGE: '/admin/api-settings/llama-parse/check-usage',
+    LLAMA_PARSE_KEY_REVEAL:      '/admin/api-settings/llama-parse/reveal',
+
+    // Notifications — chưa có ở backend, xem docs/backend-todo.md
+    NOTIFICATIONS:          '/admin/notifications',
+    NOTIFICATION_READ:      (id: string) => `/admin/notifications/${id}/read`,
+    NOTIFICATIONS_READ_ALL: '/admin/notifications/read-all',
   },
 
   TEACHER: {
@@ -43,10 +56,6 @@ export const API_ENDPOINTS = {
     FILE_CANCEL_SEND:     (f: string) => `/teacher/files/${f}/cancel-send`,
     FILES_RESEND:         '/teacher/files/resend',
 
-    // Parse logs
-    PARSE_LOGS:       '/teacher/parse-logs',
-    PARSE_LOGS_STATS: '/teacher/parse-logs/stats',
-
     // Notifications
     NOTIFICATIONS:          '/teacher/notifications',
     NOTIFICATION_READ:      (id: string) => `/teacher/notifications/${id}/read`,
@@ -63,6 +72,7 @@ export const API_ENDPOINTS = {
     SESSION:         '/chat/session',
     SESSIONS:        '/chat/sessions',
     SESSION_HISTORY: (id: string) => `/chat/sessions/${id}/history`,
+    SESSION_DELETE:  (id: string) => `/chat/sessions/${id}`,
     EXAM:            (examId: string) => `/chat/exam/${examId}`,
     STREAM:          '/chat/stream',
   },
@@ -119,19 +129,5 @@ export const API_ENDPOINTS = {
 
   FILES: {
     DOWNLOAD: (fileId: string) => `/files/${fileId}/download`,
-  },
-
-  // GeoRisk legacy — sẽ xóa sau khi refactor
-  LOCATIONS: {
-    STATISTICS:  '/private/locations/statistics',
-    MAP:         '/private/locations/map',
-    LIST:        '/private/locations',
-    DETAIL:      (id: string) => `/private/locations/${id}`,
-    CREATE:      '/private/locations',
-    UPDATE:      (id: string) => `/private/locations/${id}`,
-    DELETE:      (id: string) => `/private/locations/${id}`,
-    DELETE_MANY: '/private/locations',
-    BACKUP:      '/private/locations/backup',
-    IMPORT:      '/private/locations/import',
   },
 } as const;

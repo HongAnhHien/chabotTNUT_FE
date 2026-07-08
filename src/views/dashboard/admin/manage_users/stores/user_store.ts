@@ -1,38 +1,36 @@
 import { create } from 'zustand';
-import type { IAdminUser, IPagination, ICreateUserRequest, IUpdateUserRequest } from '@/infra/api/interfaces/IUser';
+import type { IAdminUser, IAdminUsersMeta, IBlockUserRequest } from '@/infra/api/interfaces/IUser';
 import type { IApiError } from '@/helper/IError';
 import type { IGetUsersParams } from '@/infra/user/user_api';
 import UserApi from '@/infra/user/user_api';
 import { handleApiError } from '@/helper/error_handler';
 import toast from 'react-hot-toast';
 
-type DialogMode = 'create' | 'edit' | 'delete' | null;
+type DialogMode = 'block' | null;
 
 interface ManageUsersState {
   users:       IAdminUser[];
-  pagination:  IPagination;
+  meta:        IAdminUsersMeta;
   selected:    IAdminUser | null;
   dialogMode:  DialogMode;
   isLoading:   boolean;
   isMutating:  boolean;
   error:       IApiError | null;
 
-  fetchUsers:       (params?: IGetUsersParams) => Promise<void>;
-  fetchUserById:    (id: string) => Promise<void>;
-  createUser:       (data: ICreateUserRequest) => Promise<boolean>;
-  updateUser:       (id: string, data: IUpdateUserRequest) => Promise<boolean>;
-  toggleActiveUser: (id: string) => Promise<boolean>;
-  deleteUser:       (id: string) => Promise<boolean>;
-  openDialog:       (mode: DialogMode, user?: IAdminUser) => void;
-  closeDialog:      () => void;
-  clearError:       () => void;
+  fetchUsers:    (params?: IGetUsersParams) => Promise<void>;
+  fetchUserById: (id: string) => Promise<void>;
+  blockUser:     (id: string, data?: IBlockUserRequest) => Promise<boolean>;
+  unblockUser:   (id: string) => Promise<boolean>;
+  openDialog:    (mode: DialogMode, user?: IAdminUser) => void;
+  closeDialog:   () => void;
+  clearError:    () => void;
 }
 
-const DEFAULT_PAGINATION: IPagination = { page: 1, limit: 10, total: 0, totalPages: 1 };
+const DEFAULT_META: IAdminUsersMeta = { total: 0, per_page: 20, current_page: 1, last_page: 1 };
 
-export const useManageUsersStore = create<ManageUsersState>()((set, get) => ({
+export const useManageUsersStore = create<ManageUsersState>()((set) => ({
   users:      [],
-  pagination: DEFAULT_PAGINATION,
+  meta:       DEFAULT_META,
   selected:   null,
   dialogMode: null,
   isLoading:  false,
@@ -43,7 +41,7 @@ export const useManageUsersStore = create<ManageUsersState>()((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       const res = await UserApi.getUsers(params);
-      set({ users: res.data.users, pagination: res.data.pagination, isLoading: false });
+      set({ users: res.data, meta: res.meta, isLoading: false });
     } catch (error) {
       set({ isLoading: false, error: handleApiError(error, false) });
     }
@@ -53,33 +51,20 @@ export const useManageUsersStore = create<ManageUsersState>()((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       const res = await UserApi.getUserById(id);
-      set({ selected: res.data.user, isLoading: false });
+      set({ selected: res.data, isLoading: false });
     } catch (error) {
       set({ isLoading: false, error: handleApiError(error, false) });
     }
   },
 
-  createUser: async (data) => {
+  blockUser: async (id, data) => {
     try {
       set({ isMutating: true, error: null });
-      const res = await UserApi.createUser(data);
-      toast.success(res.message);
-      set({ isMutating: false });
-      await get().fetchUsers();
-      return true;
-    } catch (error) {
-      set({ isMutating: false, error: handleApiError(error, false) });
-      return false;
-    }
-  },
-
-  updateUser: async (id, data) => {
-    try {
-      set({ isMutating: true, error: null });
-      const res = await UserApi.updateUser(id, data);
-      // Cập nhật trực tiếp trong list, không cần refetch
+      const res = await UserApi.blockUser(id, data);
       set((s) => ({
-        users: s.users.map((u) => u._id === id ? { ...u, ...res.data.user } : u),
+        users: s.users.map((u) => u._id === id
+          ? { ...u, is_blocked: res.data.is_blocked, blocked_at: res.data.blocked_at, blocked_reason: res.data.blocked_reason }
+          : u),
         isMutating: false,
       }));
       toast.success(res.message);
@@ -90,34 +75,14 @@ export const useManageUsersStore = create<ManageUsersState>()((set, get) => ({
     }
   },
 
-  toggleActiveUser: async (id) => {
+  unblockUser: async (id) => {
     try {
-      set({ isMutating: true });
-      const res = await UserApi.toggleActiveUser(id);
+      set({ isMutating: true, error: null });
+      const res = await UserApi.unblockUser(id);
       set((s) => ({
-        users: s.users.map((u) =>
-          u._id === id
-            // ưu tiên giá trị từ API, fallback flip giá trị hiện tại
-            ? { ...u, isActive: res.data?.isActive ?? !u.isActive }
-            : u
-        ),
-        isMutating: false,
-      }));
-      toast.success(res.message);
-      return true;
-    } catch (error) {
-      set({ isMutating: false, error: handleApiError(error, false) });
-      return false;
-    }
-  },
-
-  deleteUser: async (id) => {
-    try {
-      set({ isMutating: true });
-      const res = await UserApi.deleteUser(id);
-      set((s) => ({
-        users: s.users.filter((u) => u._id !== id),
-        pagination: { ...s.pagination, total: s.pagination.total - 1 },
+        users: s.users.map((u) => u._id === id
+          ? { ...u, is_blocked: false, blocked_at: null, blocked_reason: null }
+          : u),
         isMutating: false,
       }));
       toast.success(res.message);

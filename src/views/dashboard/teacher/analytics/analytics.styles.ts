@@ -60,6 +60,45 @@ const CSS = `
   .an-chip.active.orange { background:rgba(234,88,12,0.08); border-color:rgba(234,88,12,0.3); color:#ea580c; }
   .an-chip.active.red    { background:rgba(220,38,38,0.08); border-color:rgba(220,38,38,0.3); color:#dc2626; }
 
+  /* ── Toolbar: search + custom dropdown filters ── */
+  .an-toolbar-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .an-search-box { position:relative; flex:1 1 220px; min-width:200px; }
+
+  .an-dd { position:relative; flex-shrink:0; width:180px; }
+  .an-dd-trigger {
+    width:100%; height:38px; display:flex; align-items:center; gap:7px;
+    padding:0 12px; border-radius:10px; border:1.5px solid rgba(37,99,235,0.18); background:#fff;
+    font-family:inherit; font-size:0.78rem; font-weight:600; color:#334155; cursor:pointer;
+    transition:border-color .15s, background .15s, color .15s; box-sizing:border-box;
+  }
+  .an-dd-trigger:hover { border-color:rgba(37,99,235,0.35); background:#f8fbff; }
+  .an-dd-trigger.open { border-color:rgba(37,99,235,0.5); background:#eff5ff; color:#2563eb; }
+  .an-dd-trigger .an-dd-label { flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .an-dd-trigger .an-dd-chevron { flex-shrink:0; color:#94a3b8; transition:transform .15s; }
+  .an-dd-trigger.open .an-dd-chevron { transform:rotate(180deg); color:#2563eb; }
+
+  .an-dd-menu {
+    position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:30;
+    background:#fff; border:1px solid #e2e8f0; border-radius:12px;
+    box-shadow:0 8px 28px rgba(15,23,42,.14); padding:5px;
+    animation:an-expand .14s ease both;
+  }
+  .an-dd-item {
+    width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:8px 11px; border-radius:8px; border:none; background:transparent;
+    font-family:inherit; font-size:0.76rem; font-weight:600; color:#334155; cursor:pointer;
+    text-align:left; transition:background .1s;
+  }
+  .an-dd-item:hover { background:#f8fafc; }
+  .an-dd-item.on { color:#2563eb; background:#eff5ff; }
+  .an-dd-item svg { color:#2563eb; flex-shrink:0; }
+
+  @media(max-width:640px) {
+    .an-toolbar-row { flex-direction:column; align-items:stretch; }
+    .an-search-box { flex:none; width:100%; }
+    .an-dd { width:100%; }
+  }
+
   /* ── Student row ── */
   .an-student-row {
     display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:11px 14px;

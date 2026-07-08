@@ -107,7 +107,7 @@ const TeacherSubjectFiles: FC = () => {
       TeacherApi.getSubjectFiles(maMon)
         .then(r => applyFileList(r.data))
         .catch(() => {});
-    }, 20_000);
+    }, 5_000);
   }, [maMon, applyFileList]);
 
   const stopPoll = useCallback(() => {
@@ -262,7 +262,7 @@ const TeacherSubjectFiles: FC = () => {
     if (activeFolder !== 'all' && f.type !== activeFolder) return false;
     if (statusFilter === 'sent'    && !(f.external_status === 'success' || f.external_status === 'send_queued' || f.external_status === 'sending')) return false;
     if (statusFilter === 'review'  && f.external_status !== 'parsed') return false;
-    if (statusFilter === 'parsing' && f.external_status !== 'pending') return false;
+    if (statusFilter === 'parsing' && !(f.external_status === 'pending' || f.external_status === 'processing')) return false;
     if (statusFilter === 'hidden'  && !f.is_private) return false;
     return true;
   });

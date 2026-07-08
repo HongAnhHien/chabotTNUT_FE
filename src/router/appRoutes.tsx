@@ -4,7 +4,7 @@ import { Navigate, type RouteObject } from "react-router";
 import ProtectedRoute from "./protect_router";
 
 const BlankLayout   = lazy(() => import("@core/layouts/BlankLayout"));
-const VerticalLayout = lazy(() => import("@layouts/VerticalLayout"));
+const AdminLayoutPage = lazy(() => import("@layouts/AdminLayoutPage"));
 const StudentLayout  = lazy(() => import("@/layouts/StudentLayout"));
 const TeacherLayout  = lazy(() => import("@/layouts/TeacherLayout"));
 
@@ -13,7 +13,8 @@ const ErrorPage = lazy(() => import("@views/misc/Error"));
 // Admin
 const Dashboard       = lazy(() => import("@views/dashboard/Dashboard"));
 const ManageUsers     = lazy(() => import("@views/dashboard/admin/manage_users"));
-const ManageLocations = lazy(() => import("@views/dashboard/admin/manage_locations"));
+const AdminParseLogsPage = lazy(() => import("@views/dashboard/admin/parselogs/AdminParseLogsPage"));
+const AdminApiKeyPage    = lazy(() => import("@views/dashboard/admin/apisettings/AdminApiKeyPage"));
 
 // Student pages
 const StudentAspx           = lazy(() => import("@views/dashboard/student/Student_Aspx"));
@@ -38,7 +39,6 @@ const TeacherExamView      = lazy(() => import("@views/dashboard/teacher/exams/T
 const TeacherSubjectFiles  = lazy(() => import("@views/dashboard/teacher/subjects/TeacherSubjectFiles"));
 const TeacherSubjectExams  = lazy(() => import("@views/dashboard/teacher/subjects/exams"));
 const ClassStudentsPage    = lazy(() => import("@views/dashboard/teacher/class"));
-const TeacherParseLogsPage = lazy(() => import("@views/dashboard/teacher/parselogs/TeacherParseLogsPage"));
 
 export const appRoutes: RouteObject[] = [
   // Landing
@@ -49,7 +49,7 @@ export const appRoutes: RouteObject[] = [
     path: "/admin",
     element: (
       <ProtectedRoute allowedRoles={["admin"]}>
-        <VerticalLayout userRole="admin" />
+        <AdminLayoutPage />
       </ProtectedRoute>
     ),
     children: [
@@ -58,7 +58,8 @@ export const appRoutes: RouteObject[] = [
         children: [
           { index: true, element: <Dashboard /> },
           { path: "manage-users", element: <ManageUsers /> },
-          { path: "manage-locations", element: <ManageLocations /> },
+          { path: "parse-logs", element: <AdminParseLogsPage /> },
+          { path: "api-settings", element: <AdminApiKeyPage /> },
         ],
       },
     ],
@@ -112,7 +113,6 @@ export const appRoutes: RouteObject[] = [
       { path: "chat/:sessionId",     element: <TeacherChatPage /> },
       { path: "assignments",         element: <TeacherAssignmentsPage /> },
       { path: "assignments/:id",     element: <TeacherAssignmentDetail /> },
-      { path: "parse-logs",          element: <TeacherParseLogsPage /> },
       { path: "notifications",       element: <NotificationsPage /> },
       { path: "exams/:id",           element: <TeacherExamView /> },
       { path: "subjects/:maMon/files",       element: <TeacherSubjectFiles /> },

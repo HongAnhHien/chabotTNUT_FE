@@ -56,15 +56,6 @@ const FullLayout: FC<FullLayoutProps> = ({
     });
   };
 
-  // ** Handler functions
-  const handleNotificationClick = () => {
-    console.log('Notifications clicked');
-  };
-
-  const handleSettingsClick = () => {
-    console.log('Settings clicked');
-  };
-
   return (
     <>
       <CoreFullLayout
@@ -77,13 +68,7 @@ const FullLayout: FC<FullLayoutProps> = ({
             currentPath={currentPath}
           />
         }
-        navbar={
-          <Navbar
-            notificationCount={3}
-            onNotificationClick={handleNotificationClick}
-            onSettingsClick={handleSettingsClick}
-          />
-        }
+        navbar={<Navbar />}
         footer={
           <Footer
             companyName={companyName}

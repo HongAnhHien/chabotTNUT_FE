@@ -14,10 +14,11 @@ export const TYPE_LABEL: Record<IFileType, string> = {
 
 export const FILE_TYPES = TYPE_ORDER.map(v => ({ value: v, label: TYPE_LABEL[v] }));
 
-export const POLLING_STATUSES: IFileExternalStatus[] = ['pending', 'send_queued', 'sending'];
+export const POLLING_STATUSES: IFileExternalStatus[] = ['pending', 'processing', 'send_queued', 'sending'];
 
 export const STATUS_CFG: Record<string, { label: string; bg: string; color: string }> = {
-  pending:     { label:'Đang parse',  bg:'#fff7ed', color:'#d97706' },
+  pending:     { label:'Chờ parse',   bg:'#fff7ed', color:'#d97706' },
+  processing:  { label:'Đang parse',  bg:'#eef2ff', color:'#4338ca' },
   parsed:      { label:'Cần review',  bg:'#fef3f2', color:'#dc2626' },
   send_queued: { label:'Chờ gửi AI', bg:'#eef2ff', color:'#4f46e5' },
   sending:     { label:'Đang gửi...', bg:'#eff5ff', color:'#2563eb' },

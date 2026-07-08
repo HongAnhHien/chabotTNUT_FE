@@ -133,11 +133,12 @@ export interface IAssignmentStudentAnswers {
   student_code:     string;
   name:             string;
   status:           'submitted' | 'not_started' | 'in_progress';
-  score:            number | null;
+  score:            number | null; // số câu đúng thô (thang `total`, KHÔNG phải thang 10)
   total:            number | null;
-  correct_count:    number | null;
+  score_10:         number | null; // điểm đã quy đổi thang 10 — dùng để hiển thị/tô màu điểm
+  correct_count?:   number | null; // alias cũ của `score`, giữ để tương thích ngược
   submitted_at:     string | null;
-  duration_seconds: number | null;
+  duration_seconds?: number | null;
   questions:        IAssignmentAnswerQuestion[];
 }
 

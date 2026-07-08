@@ -28,12 +28,21 @@ export interface IChatHistoryMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp?: string;
+  intent?: string;
+  exam_id?: string;
+  // Nếu backend hỗ trợ: id đề đã lưu — cho biết đề này đã được xác nhận trước đó
+  saved_exam_id?: string;
 }
 
 export interface ISessionHistoryResponse {
   success: boolean;
   session: IChatSession | null;
   messages: IChatHistoryMessage[] | null;
+}
+
+export interface IDeleteSessionResponse {
+  success: boolean;
+  message?: string;
 }
 
 // ── SSE streaming ──────────────────────────────────────

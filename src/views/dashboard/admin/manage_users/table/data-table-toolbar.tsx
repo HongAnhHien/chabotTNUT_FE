@@ -45,7 +45,8 @@ export function DataTableToolbar<TData>({
           <SelectContent>
             <SelectItem value="all">Tất cả</SelectItem>
             <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="user">User</SelectItem>
+            <SelectItem value="teacher">Giáo viên</SelectItem>
+            <SelectItem value="student">Sinh viên</SelectItem>
           </SelectContent>
         </Select>
 
@@ -56,8 +57,8 @@ export function DataTableToolbar<TData>({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả</SelectItem>
-            <SelectItem value="true">Hoạt động</SelectItem>
-            <SelectItem value="false">Vô hiệu hóa</SelectItem>
+            <SelectItem value="false">Hoạt động</SelectItem>
+            <SelectItem value="true">Đã chặn</SelectItem>
           </SelectContent>
         </Select>
       </div>

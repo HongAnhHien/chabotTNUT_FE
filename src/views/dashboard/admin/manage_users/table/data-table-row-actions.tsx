@@ -1,9 +1,8 @@
 import type { Row } from '@tanstack/react-table';
-import { MoreHorizontal, Pencil, PowerOff, Power, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Ban, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { IAdminUser } from '@/infra/api/interfaces/IUser';
 import { useManageUsersStore } from '../stores/user_store';
@@ -13,7 +12,7 @@ interface Props {
 }
 
 export function DataTableRowActions({ row }: Props) {
-  const { openDialog, toggleActiveUser } = useManageUsersStore();
+  const { openDialog, unblockUser, isMutating } = useManageUsersStore();
   const user = row.original;
 
   return (
@@ -25,26 +24,20 @@ export function DataTableRowActions({ row }: Props) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={() => openDialog('edit', user)}>
-          <Pencil className="mr-2 h-4 w-4" />
-          Chỉnh sửa
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => toggleActiveUser(user._id)}>
-          {user.isActive ? (
-            <><PowerOff className="mr-2 h-4 w-4 text-amber-500" /><span className="text-amber-600">Vô hiệu hóa</span></>
-          ) : (
-            <><Power className="mr-2 h-4 w-4 text-emerald-500" /><span className="text-emerald-600">Kích hoạt</span></>
-          )}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => openDialog('delete', user)}
-          className="text-red-600 focus:text-red-600 focus:bg-red-50"
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Xóa tài khoản
-        </DropdownMenuItem>
+        {user.is_blocked ? (
+          <DropdownMenuItem onClick={() => unblockUser(user._id)} disabled={isMutating}>
+            {isMutating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-500" />}
+            <span className="text-emerald-600">Bỏ chặn</span>
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem
+            onClick={() => openDialog('block', user)}
+            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+          >
+            <Ban className="mr-2 h-4 w-4" />
+            Chặn tài khoản
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

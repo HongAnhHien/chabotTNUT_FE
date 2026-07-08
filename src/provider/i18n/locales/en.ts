@@ -17,7 +17,8 @@ const en = {
   nav: {
     dashboard: "Dashboard",
     users: "Account Management",
-    locations: "Location Management",
+    parseLogs: "Parse Logs",
+    apiSettings: "LlamaParse API Key",
     userList: "List",
     userSystem: "System",
     userSocial: "Social",

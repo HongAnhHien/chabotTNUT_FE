@@ -9,19 +9,17 @@ import type {
   IUploadAvatarResponse,
   IGetUsersResponse,
   IGetUserByIdResponse,
-  ICreateUserRequest,
-  IUpdateUserRequest,
-  IAdminUserMutationResponse,
-  IToggleActiveResponse,
-  IDeleteUserResponse,
+  IBlockUserRequest,
+  IBlockUserResponse,
+  IUnblockUserResponse,
 } from '@/infra/api/interfaces/IUser';
 
 export interface IGetUsersParams {
   page?: number;
-  limit?: number;
+  per_page?: number;
   search?: string;
   role?: string;
-  isActive?: string;
+  blocked?: boolean;
 }
 
 class UserApi {
@@ -51,32 +49,22 @@ class UserApi {
 
   // ── Admin: User Management ────────────────────────────
   async getUsers(params?: IGetUsersParams): Promise<IGetUsersResponse> {
-    const res = await axiosInstance.get<IGetUsersResponse>(API_ENDPOINTS.USERS.LIST, { params });
+    const res = await axiosInstance.get<IGetUsersResponse>(API_ENDPOINTS.ADMIN.USERS_LIST, { params });
     return res.data;
   }
 
   async getUserById(id: string): Promise<IGetUserByIdResponse> {
-    const res = await axiosInstance.get<IGetUserByIdResponse>(API_ENDPOINTS.USERS.DETAIL(id));
+    const res = await axiosInstance.get<IGetUserByIdResponse>(API_ENDPOINTS.ADMIN.USERS_DETAIL(id));
     return res.data;
   }
 
-  async createUser(data: ICreateUserRequest): Promise<IAdminUserMutationResponse> {
-    const res = await axiosInstance.post<IAdminUserMutationResponse>(API_ENDPOINTS.USERS.CREATE, data);
+  async blockUser(id: string, data?: IBlockUserRequest): Promise<IBlockUserResponse> {
+    const res = await axiosInstance.post<IBlockUserResponse>(API_ENDPOINTS.ADMIN.USER_BLOCK(id), data);
     return res.data;
   }
 
-  async updateUser(id: string, data: IUpdateUserRequest): Promise<IAdminUserMutationResponse> {
-    const res = await axiosInstance.put<IAdminUserMutationResponse>(API_ENDPOINTS.USERS.UPDATE(id), data);
-    return res.data;
-  }
-
-  async toggleActiveUser(id: string): Promise<IToggleActiveResponse> {
-    const res = await axiosInstance.patch<IToggleActiveResponse>(API_ENDPOINTS.USERS.TOGGLE_ACTIVE(id));
-    return res.data;
-  }
-
-  async deleteUser(id: string): Promise<IDeleteUserResponse> {
-    const res = await axiosInstance.delete<IDeleteUserResponse>(API_ENDPOINTS.USERS.DELETE(id));
+  async unblockUser(id: string): Promise<IUnblockUserResponse> {
+    const res = await axiosInstance.post<IUnblockUserResponse>(API_ENDPOINTS.ADMIN.USER_UNBLOCK(id));
     return res.data;
   }
 }

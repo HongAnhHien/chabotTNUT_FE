@@ -38,11 +38,6 @@ import type {
   IAssignmentStudentDetailResponse,
 } from '@/infra/api/interfaces/IAssignment';
 import type {
-  IParseLogsQuery,
-  IParseLogsResponse,
-  IParseLogStatsResponse,
-} from '@/infra/api/interfaces/IParseLog';
-import type {
   INotificationsQuery,
   INotificationsResponse,
   IMarkNotificationReadResponse,
@@ -323,22 +318,6 @@ class TeacherApi {
     const match = disposition?.match(/filename="?([^";]+)"?/);
     const filename = match?.[1] ?? `ket-qua-bai-giao-${assignmentId}.xlsx`;
     return { blob: res.data, filename };
-  }
-
-  // ── Parse logs ────────────────────────────────────────────
-  async getParseLogs(query?: IParseLogsQuery): Promise<IParseLogsResponse> {
-    const res = await axiosInstance.get<IParseLogsResponse>(
-      API_ENDPOINTS.TEACHER.PARSE_LOGS,
-      { params: query }
-    );
-    return res.data;
-  }
-
-  async getParseLogStats(): Promise<IParseLogStatsResponse> {
-    const res = await axiosInstance.get<IParseLogStatsResponse>(
-      API_ENDPOINTS.TEACHER.PARSE_LOGS_STATS
-    );
-    return res.data;
   }
 
   // ── Notifications ─────────────────────────────────────

@@ -1,7 +1,7 @@
 import { type FC, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import {
-  LayoutDashboard, BookOpen, ClipboardList, MessageCircle,
+  LayoutDashboard, Users, FileSearch, KeyRound,
   ChevronLeft, ChevronRight,
   ChevronRight as ArrowRight, X,
 } from 'lucide-react';
@@ -25,34 +25,39 @@ const NAV_SECTIONS = [
   {
     label: 'Tổng quan',
     items: [
-      { icon: LayoutDashboard, label: 'Dashboard',    path: '#' },
+      { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
     ],
   },
   {
     label: 'Quản lý',
     items: [
-      { icon: BookOpen,      label: 'Môn học',      path: '/teacher/subjects' },
-      { icon: ClipboardList, label: 'Bài kiểm tra', path: '/teacher/assignments' },
-      { icon: MessageCircle, label: 'Chatbot AI',   path: '/teacher/chat' },
+      { icon: Users, label: 'Tài khoản', path: '/admin/dashboard/manage-users' },
+    ],
+  },
+  {
+    label: 'Dữ liệu & AI',
+    items: [
+      { icon: FileSearch, label: 'Nhật ký xử lý', path: '/admin/dashboard/parse-logs' },
+      { icon: KeyRound,   label: 'API key LlamaParse', path: '/admin/dashboard/api-settings' },
     ],
   },
 ];
 
-const ACCENT    = '#7c3aed';
-const ACCENT_BG = 'rgba(124,58,237,0.07)';
+const ACCENT    = '#2F6B3F';
+const ACCENT_BG = 'rgba(47,107,63,0.08)';
 
 const CSS = `
-  .tv3-item { position:relative; transition:background .14s,color .14s; }
-  .tv3-item:hover:not([data-active="true"]) { background:#faf7ff !important; color:#1e293b !important; }
-  .tv3-toggle { transition:background .14s; }
-  .tv3-toggle:hover { background:#f5f3ff !important; }
-  .tv3-profile-card { transition:background .14s; }
-  .tv3-profile-card:hover { background:#f5f0ff !important; }
-  .tv3-close { transition:background .14s; }
-  .tv3-close:hover { background:#f5f3ff !important; }
+  .av3-item { position:relative; transition:background .14s,color .14s; }
+  .av3-item:hover:not([data-active="true"]) { background:#f4f8f5 !important; color:#1e293b !important; }
+  .av3-toggle { transition:background .14s; }
+  .av3-toggle:hover { background:#eef4ef !important; }
+  .av3-profile-card { transition:background .14s; }
+  .av3-profile-card:hover { background:#eef6f0 !important; }
+  .av3-close { transition:background .14s; }
+  .av3-close:hover { background:#eef4ef !important; }
 `;
 
-const TeacherSidebar: FC<Props> = ({
+const AdminSidebar: FC<Props> = ({
   userName, userCode, userInitials, userAvatar,
   collapsed = false, onToggle,
   isMobile = false, mobileOpen = false, onMobileClose,
@@ -67,7 +72,7 @@ const TeacherSidebar: FC<Props> = ({
 
   const avatar = userAvatar
     ? <img src={userAvatar} alt={userName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
-    : <span style={{ fontSize: '0.7rem', fontWeight: 800, letterSpacing: '-0.02em' }}>{userInitials ?? 'GV'}</span>;
+    : <span style={{ fontSize: '0.7rem', fontWeight: 800, letterSpacing: '-0.02em' }}>{userInitials ?? 'AD'}</span>;
 
   const sidebarStyle: React.CSSProperties = isMobile ? {
     position: 'fixed', left: 0, top: 0,
@@ -111,15 +116,15 @@ const TeacherSidebar: FC<Props> = ({
             <>
               <img src={logoTNUT} alt="TNUT" style={{ height: 44, width: 'auto', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '1rem', fontWeight: 800, color: '#4c1d95', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1e4429', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                   TNUT Learning
                 </div>
                 <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: 2, whiteSpace: 'nowrap' }}>
-                  Cổng giáo viên · Trợ lý AI
+                  Cổng quản trị
                 </div>
               </div>
               {isMobile && (
-                <button className="tv3-close" onClick={onMobileClose} style={{
+                <button className="av3-close" onClick={onMobileClose} style={{
                   width: 32, height: 32, borderRadius: 8, border: 'none',
                   background: 'transparent', color: '#64748b',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -149,23 +154,22 @@ const TeacherSidebar: FC<Props> = ({
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {items.map(({ icon: Icon, label: itemLabel, path, soon }: { icon: React.ElementType; label: string; path: string; soon?: boolean }) => {
-                  const isActive = !soon && (pathname === path ||
-                    (path !== '/teacher/dashboard' && pathname.startsWith(path)));
+                {items.map(({ icon: Icon, label: itemLabel, path }) => {
+                  const isActive = pathname === path ||
+                    (path !== '/admin/dashboard' && pathname.startsWith(path));
                   return (
-                    <button key={path} className={soon ? '' : 'tv3-item'} data-active={isActive}
-                      onClick={soon ? undefined : () => navigate(path)}
+                    <button key={path} className="av3-item" data-active={isActive}
+                      onClick={() => navigate(path)}
                       title={!showExpanded ? itemLabel : undefined}
                       style={{
                         width: '100%', display: 'flex', alignItems: 'center',
                         justifyContent: showExpanded ? 'flex-start' : 'center',
                         gap: 10, padding: showExpanded ? '8px 10px' : '10px 0',
                         borderRadius: 9, border: 'none',
-                        cursor: soon ? 'default' : 'pointer',
+                        cursor: 'pointer',
                         background: isActive ? ACCENT_BG : 'transparent',
-                        color: isActive ? ACCENT : soon ? '#c1cbd6' : '#64748b',
+                        color: isActive ? ACCENT : '#64748b',
                         fontSize: '0.8rem', fontWeight: isActive ? 600 : 400,
-                        opacity: soon ? 0.7 : 1,
                       }}>
                       {isActive && showExpanded && (
                         <div style={{
@@ -175,13 +179,6 @@ const TeacherSidebar: FC<Props> = ({
                       )}
                       <Icon size={17} strokeWidth={isActive ? 2.2 : 1.6} style={{ flexShrink: 0 }} />
                       {showExpanded && <span style={{ flex: 1, textAlign: 'left' }}>{itemLabel}</span>}
-                      {showExpanded && soon && (
-                        <span style={{
-                          fontSize: '0.52rem', fontWeight: 700, flexShrink: 0,
-                          color: '#f59e0b', background: 'rgba(245,158,11,0.1)',
-                          padding: '2px 5px', borderRadius: 4, letterSpacing: '0.04em',
-                        }}>Sắp ra</span>
-                      )}
                       {showExpanded && isActive && (
                         <div style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENT, opacity: 0.6 }} />
                       )}
@@ -196,7 +193,7 @@ const TeacherSidebar: FC<Props> = ({
         {/* ── Collapse toggle — desktop only ───────── */}
         {!isMobile && onToggle && (
           <div style={{ padding: collapsed ? '6px 8px' : '6px 10px', borderTop: '1px solid #f0f4f8', flexShrink: 0 }}>
-            <button className="tv3-toggle" onClick={onToggle}
+            <button className="av3-toggle" onClick={onToggle}
               title={collapsed ? 'Mở rộng' : 'Thu gọn'}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center',
@@ -213,27 +210,27 @@ const TeacherSidebar: FC<Props> = ({
         {/* ── User footer ─────────────────────────── */}
         <div style={{
           padding: showExpanded ? '10px 12px' : '10px 8px',
-          borderTop: '1px solid #f0f4f8', flexShrink: 0, background: '#fdfbff',
+          borderTop: '1px solid #f0f4f8', flexShrink: 0, background: '#fafcfa',
         }}>
           {showExpanded ? (
             <div>
-              <button className="tv3-profile-card" onClick={() => navigate('/teacher/profile')}
+              <button className="av3-profile-card" onClick={() => navigate('/me/profile')}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                   padding: '9px 8px', borderRadius: 10, background: '#fff',
-                  border: '1px solid #ede9fe', marginBottom: 8, cursor: 'pointer', textAlign: 'left',
+                  border: '1px solid #e2ebe4', marginBottom: 8, cursor: 'pointer', textAlign: 'left',
                 }}>
                 <div style={{
                   width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                  background: 'linear-gradient(135deg,#5b21b6,#8b5cf6)',
+                  background: 'linear-gradient(135deg,#2F6B3F,#3d7a50)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', overflow: 'hidden', boxShadow: '0 2px 6px rgba(124,58,237,0.22)',
+                  color: 'white', overflow: 'hidden', boxShadow: '0 2px 6px rgba(47,107,63,0.22)',
                 }}>{avatar}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
                     fontSize: '0.8rem', fontWeight: 700, color: '#1e293b',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                  }}>{userName ?? 'Giáo viên'}</div>
+                  }}>{userName ?? 'Quản trị viên'}</div>
                   {userCode && <div style={{ marginTop: 2 }}><span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#64748b' }}>{userCode}</span></div>}
                 </div>
                 <ArrowRight size={13} color="#cbd5e1" style={{ flexShrink: 0 }} />
@@ -241,10 +238,10 @@ const TeacherSidebar: FC<Props> = ({
             </div>
           ) : (
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div onClick={() => navigate('/teacher/profile')} title={userName ?? 'Giáo viên'}
+              <div onClick={() => navigate('/me/profile')} title={userName ?? 'Quản trị viên'}
                 style={{
                   width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                  background: 'linear-gradient(135deg,#5b21b6,#8b5cf6)',
+                  background: 'linear-gradient(135deg,#2F6B3F,#3d7a50)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'white', overflow: 'hidden', cursor: 'pointer',
                 }}>{avatar}</div>
@@ -256,4 +253,4 @@ const TeacherSidebar: FC<Props> = ({
   );
 };
 
-export default TeacherSidebar;
+export default AdminSidebar;

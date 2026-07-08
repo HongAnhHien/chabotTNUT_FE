@@ -1,8 +1,8 @@
-import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type FC, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import {
   ArrowLeft, Loader2, BookOpen, Search, X,
-  AlertTriangle, CalendarDays, Clock, ChevronDown, ChevronsUpDown, Mail, Sparkles, Users, CheckCircle,
+  AlertTriangle, CalendarDays, Clock, ChevronDown, Mail, Sparkles, Users, CheckCircle,
   Download, Send, Check,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -312,6 +312,53 @@ const AssignmentCard: FC<{ item: IScheduleItem; idx: number }> = ({ item, idx })
   );
 };
 
+// ── Custom filter dropdown ────────────────────────────────
+interface DropdownOption { value: string; label: string }
+
+const FilterDropdown: FC<{
+  value: string;
+  options: DropdownOption[];
+  onChange: (v: string) => void;
+}> = ({ value, options, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const current = options.find(o => o.value === value);
+
+  return (
+    <div ref={ref} className="an-dd">
+      <button type="button" className={`an-dd-trigger${open ? ' open' : ''}`} onClick={() => setOpen(o => !o)}>
+        <span className="an-dd-label">{current?.label ?? ''}</span>
+        <ChevronDown size={14} className="an-dd-chevron" />
+      </button>
+      {open && (
+        <div className="an-dd-menu">
+          {options.map(o => (
+            <button
+              key={o.value}
+              type="button"
+              className={`an-dd-item${value === o.value ? ' on' : ''}`}
+              onClick={() => { onChange(o.value); setOpen(false); }}
+            >
+              <span>{o.label}</span>
+              {value === o.value && <Check size={13} />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ── Page ─────────────────────────────────────────────────
 const ClassAnalyticsPage: FC = () => {
   const { idToHoc } = useParams<{ idToHoc: string }>();
@@ -337,7 +384,6 @@ const ClassAnalyticsPage: FC = () => {
   const [search,         setSearch]         = useState('');
   const [statusFilter,   setStatusFilter]   = useState('');
   const [levelFilter,    setLevelFilter]    = useState('');
-  const [sortDir,        setSortDir]        = useState<'asc' | 'desc' | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load analytics
@@ -391,15 +437,6 @@ const ClassAnalyticsPage: FC = () => {
   };
 
   const attentionCount = data?.attention_count ?? 0;
-
-  const completionPct = (s: ITeacherStudent) =>
-    s.total_assignments ? ((s.total_assignments - (s.pending_assignments ?? 0)) / s.total_assignments) * 100 : -1;
-
-  const sortedStudents = useMemo(() => {
-    if (!sortDir) return students;
-    const sign = sortDir === 'asc' ? 1 : -1;
-    return [...students].sort((a, b) => sign * (completionPct(a) - completionPct(b)));
-  }, [students, sortDir]);
 
   return (
     <div style={{ minHeight:'100%', background:'#f4f6fb' }}>
@@ -470,10 +507,10 @@ const ClassAnalyticsPage: FC = () => {
                   <StatCard icon={<AlertTriangle size={15} color="#f97316" />} label="Cần chú ý" color="#f97316" value={attentionCount} sub={attentionCount > 0 ? 'chậm tiến độ' : 'Tốt'} />
                 </div>
 
-                {/* Toolbar: search + filter chips */}
-                <div style={{ display:'flex', gap:10, flexWrap:'wrap', alignItems:'center' }}>
+                {/* Toolbar: search + custom dropdowns */}
+                <div className="an-toolbar-row">
                   {/* Search */}
-                  <div style={{ position:'relative', flex:'1 1 220px', minWidth:200 }}>
+                  <div className="an-search-box">
                     <Search size={14} color="#94a3b8" style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }} />
                     <input
                       type="text"
@@ -491,28 +528,29 @@ const ClassAnalyticsPage: FC = () => {
                     )}
                   </div>
 
-                  {/* Filter chips */}
-                  <div className="an-chip-row">
-                    <div className={`an-chip ${statusFilter === '' ? 'active' : ''}`} onClick={() => handleStatusFilter('')}>
-                      Tất cả {studentTotal}
-                    </div>
-                    <div className={`an-chip ${statusFilter === 'attention' ? 'active red' : ''}`} onClick={() => handleStatusFilter('attention')}>
-                      Cần chú ý {attentionCount}
-                    </div>
-                    {statusFilter === 'attention' && (['nhe', 'nguy_co', 'rat_nguy_co'] as const).map(lv => (
-                      <div
-                        key={lv}
-                        className={`an-chip ${levelFilter === lv ? `active ${WARN_CFG[lv].cls === 'warn-yellow' ? 'yellow' : WARN_CFG[lv].cls === 'warn-orange' ? 'orange' : 'red'}` : ''}`}
-                        onClick={() => handleLevelFilter(levelFilter === lv ? '' : lv)}
-                      >
-                        {WARN_CFG[lv].label}
-                      </div>
-                    ))}
-                    <div className="an-chip" onClick={() => setSortDir(d => d === null ? 'asc' : d === 'asc' ? 'desc' : null)}>
-                      <ChevronsUpDown size={12} style={{ marginRight:4 }} />
-                      Sắp xếp{sortDir ? ` · ${sortDir === 'asc' ? 'Thấp→Cao' : 'Cao→Thấp'}` : ''}
-                    </div>
-                  </div>
+                  {/* Trạng thái */}
+                  <FilterDropdown
+                    value={statusFilter === '' ? 'all' : 'attention'}
+                    options={[
+                      { value:'all',       label:`Tất cả (${studentTotal})` },
+                      { value:'attention', label:`Cần chú ý (${attentionCount})` },
+                    ]}
+                    onChange={v => handleStatusFilter(v === 'all' ? '' : 'attention')}
+                  />
+
+                  {/* Mức độ — chỉ hiện khi đang lọc "Cần chú ý" */}
+                  {statusFilter === 'attention' && (
+                    <FilterDropdown
+                      value={levelFilter || 'all'}
+                      options={[
+                        { value:'all', label:'Tất cả mức độ' },
+                        { value:'nhe', label: WARN_CFG.nhe.label },
+                        { value:'nguy_co', label: WARN_CFG.nguy_co.label },
+                        { value:'rat_nguy_co', label: WARN_CFG.rat_nguy_co.label },
+                      ]}
+                      onChange={v => handleLevelFilter(v === 'all' ? '' : v)}
+                    />
+                  )}
                 </div>
 
                 {/* Count */}
@@ -535,7 +573,7 @@ const ClassAnalyticsPage: FC = () => {
                   <div>
                     <StudentListHeader />
                     <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
-                      {sortedStudents.map((s, i) => <StudentRow key={s.ma_sinh_vien} student={s} idx={i} />)}
+                      {students.map((s, i) => <StudentRow key={s.ma_sinh_vien} student={s} idx={i} />)}
                     </div>
                   </div>
                 )}

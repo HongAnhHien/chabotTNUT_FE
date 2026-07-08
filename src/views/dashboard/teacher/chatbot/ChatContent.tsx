@@ -1,9 +1,11 @@
 import { type FC, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { Bot, ArrowDown, Copy, Check, Trash2, CheckCircle, Eye, ChevronDown, ChevronUp, ExternalLink, X, Loader2, Hash, Clock, BookOpen } from 'lucide-react';
+import { ArrowDown, Copy, Check, Trash2, CheckCircle, Eye, ChevronDown, ChevronUp, ExternalLink, X, Loader2, Hash, Clock, BookOpen } from 'lucide-react';
+import logoTNUT from '@/assets/logo_tnut/logo_tnut.png';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
+import remarkGfm from 'remark-gfm';
 import 'katex/dist/katex.min.css';
 import katex from 'katex';
 import ChatApi from '@/infra/chat/chat_api';
@@ -112,10 +114,15 @@ const ExamModal: FC<{ examId: string; onClose: () => void }> = ({ examId, onClos
 
   const questions = exam?.questions ?? [];
   const chapters  = exam?.chapters  ?? [];
-  const grouped = chapters.length > 0
+  const groups = chapters.length > 0
     ? chapters.map(ch => ({ chapter: ch, qs: questions.filter(q => q.chapter_id === ch.id) }))
     : [{ chapter: null as IExamChapter | null, qs: questions }];
-  let globalIdx = 1;
+  const grouped = groups.reduce<Array<{ chapter: IExamChapter | null; qs: IExamQuestion[]; startIdx: number }>>((acc, g) => {
+    const prev = acc[acc.length - 1];
+    const startIdx = prev ? prev.startIdx + prev.qs.length : 1;
+    acc.push({ ...g, startIdx });
+    return acc;
+  }, []);
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
@@ -149,9 +156,7 @@ const ExamModal: FC<{ examId: string; onClose: () => void }> = ({ examId, onClos
           </div>
         ) : (
           <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {grouped.map(({ chapter, qs }) => {
-              const startIdx = globalIdx;
-              globalIdx += qs.length;
+            {grouped.map(({ chapter, qs, startIdx }) => {
               return (
                 <div key={chapter?.id ?? 'nc'}>
                   {chapter && (
@@ -178,6 +183,7 @@ interface Props {
   messages: ChatMessage[];
   isStreaming?: boolean;
   role?: 'teacher' | 'student';
+  sessionId?: string;
   onExamDismiss: (msgId: string) => void;
   onExamConfirm: (msgId: string) => void;
   onExamPreview: (msgId: string) => void;
@@ -190,7 +196,7 @@ const EXAM_API_RE = /^GET \/api\/exam\/([a-zA-Z0-9_-]+)$/;
 const cleanContent = (s: string) =>
   s.replace(/ API:/g, ':').replace(/ API\b/g, '');
 
-const ChatContent = ({ messages, isStreaming = false, role = 'teacher', onExamDismiss, onExamConfirm, onExamPreview }: Props) => {
+const ChatContent = ({ messages, isStreaming = false, role = 'teacher', sessionId, onExamDismiss, onExamConfirm, onExamPreview }: Props) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const viewingExamId = searchParams.get('exam');
   const setViewingExamId = (id: string | null) =>
@@ -234,21 +240,30 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', onExamDi
   const toggleExpand = (id: string) =>
     setExpandedIds(prev => {
       const s = new Set(prev);
-      s.has(id) ? s.delete(id) : s.add(id);
+      if (s.has(id)) s.delete(id); else s.add(id);
       return s;
     });
+
+  const prevSessionRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       const c = containerRef.current;
       if (!c) return;
+      // Đổi phiên chat (chọn session khác / vừa reload trang) — nhảy thẳng đến tin nhắn mới nhất, không cần animation
+      const sessionChanged = prevSessionRef.current !== sessionId;
+      prevSessionRef.current = sessionId;
+      if (sessionChanged) {
+        bottomRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
+        return;
+      }
       const nearBottom = c.scrollHeight - c.scrollTop - c.clientHeight < 120;
       if (nearBottom || messages.length <= 1 || isStreaming) {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
       }
     }, 60);
     return () => clearTimeout(timer);
-  }, [messages, isStreaming]);
+  }, [messages, isStreaming, sessionId]);
 
   const handleScroll = () => {
     const c = containerRef.current;
@@ -273,13 +288,17 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', onExamDi
         .chat-bubble-bot strong { color:#1e293b; }
         .chat-bubble-bot code { background:rgba(37,99,235,0.08); color:#2563eb; padding:1px 6px; border-radius:5px; font-size:0.82em; }
         .chat-bubble-bot h1,.chat-bubble-bot h2,.chat-bubble-bot h3 { font-size:0.9rem; font-weight:700; color:#1e293b; margin:8px 0 4px; }
+        .chat-bubble-bot table { border-collapse:collapse; width:100%; margin:8px 0; font-size:0.8rem; display:block; overflow-x:auto; white-space:nowrap; }
+        .chat-bubble-bot th,.chat-bubble-bot td { border:1px solid rgba(37,99,235,0.15); padding:6px 10px; text-align:center; }
+        .chat-bubble-bot thead th { background:rgba(37,99,235,0.08); color:#1e3a8a; font-weight:700; }
+        .chat-bubble-bot tbody tr:nth-child(even) { background:rgba(37,99,235,0.03); }
       `}</style>
       <div ref={containerRef} onScroll={handleScroll} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
         <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
           {messages.length === 0 && !isStreaming ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
-              <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,rgba(30,58,138,0.1),rgba(37,99,235,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                <Bot size={32} color="#2563eb" />
+              <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', marginBottom: 16, boxShadow: '0 2px 12px rgba(37,99,235,0.2)' }}>
+                <img src={logoTNUT} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b', marginBottom: 6 }}>Xin chào!</div>
               <div style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', maxWidth: 360 }}>
@@ -295,8 +314,8 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', onExamDi
                     const expanded = expandedIds.has(msg.id);
                     return (
                       <div key={msg.id} style={{ display: 'flex', gap: 10 }}>
-                        <div style={{ flexShrink: 0, width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#6d28d9,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2, animation: 'pulse 1.5s ease infinite', boxShadow: '0 2px 8px rgba(109,40,217,0.3)' }}>
-                          <Bot size={16} color="white" />
+                        <div style={{ flexShrink: 0, width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', marginTop: 2, animation: 'pulse 1.5s ease infinite', boxShadow: '0 2px 8px rgba(109,40,217,0.3)' }}>
+                          <img src={logoTNUT} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxWidth: '80%' }}>
                           {/* Typing indicator row */}
@@ -329,8 +348,8 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', onExamDi
                           {/* Live streaming text (expandable) */}
                           {expanded && msg.content && (
                             <div style={{ padding: '10px 14px', borderRadius: '4px 16px 16px 16px', background: 'white', border: '1px solid rgba(37,99,235,0.08)', boxShadow: '0 1px 6px rgba(0,0,0,0.05)', fontSize: '0.875rem', lineHeight: 1.6, color: '#1e293b' }}>
-                              <div className="prose prose-sm max-w-none" style={{ fontSize: '0.875rem' }}>
-                                <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={mdComponents}>
+                              <div className="chat-bubble-bot prose prose-sm max-w-none" style={{ fontSize: '0.875rem' }}>
+                                <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]} components={mdComponents}>
                                   {cleanContent(msg.content)}
                                 </ReactMarkdown>
                               </div>
@@ -346,8 +365,8 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', onExamDi
                   <div key={msg.id}>
                     <div style={{ display: 'flex', gap: 10, justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                       {msg.role === 'assistant' && (
-                        <div style={{ flexShrink: 0, width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#6d28d9,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2, boxShadow: '0 2px 8px rgba(109,40,217,0.25)' }}>
-                          <Bot size={16} color="white" />
+                        <div style={{ flexShrink: 0, width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', marginTop: 2, boxShadow: '0 2px 8px rgba(109,40,217,0.25)' }}>
+                          <img src={logoTNUT} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
                       )}
 
@@ -364,7 +383,7 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', onExamDi
                         }}>
                           {msg.role === 'assistant' ? (
                             <div className="chat-bubble-bot prose prose-sm max-w-none" style={{ fontSize: '0.875rem' }}>
-                              <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={mdComponents}>
+                              <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]} components={mdComponents}>
                                 {cleanContent(msg.content)}
                               </ReactMarkdown>
                             </div>
@@ -463,14 +482,20 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', onExamDi
         <ExamModal examId={viewingExamId} onClose={() => setViewingExamId(null)} />
       )}
 
-      {/* Scroll to bottom */}
+      {/* Jump to current (scroll to bottom) */}
       {showScroll && (
         <div style={{ position: 'absolute', bottom: 16, left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
           <button
-            onClick={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })}
-            style={{ pointerEvents: 'auto', width: 32, height: 32, borderRadius: '50%', background: 'white', border: '1px solid rgba(30,58,138,0.2)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb' }}
+            onClick={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })}
+            title="Nhảy đến hiện tại"
+            style={{
+              pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 6,
+              padding: '7px 14px', borderRadius: 20, background: 'white',
+              border: '1px solid rgba(30,58,138,0.2)', boxShadow: '0 2px 10px rgba(0,0,0,0.12)',
+              cursor: 'pointer', color: '#2563eb', fontSize: '0.75rem', fontWeight: 700,
+            }}
           >
-            <ArrowDown size={14} />
+            <ArrowDown size={14} /> Đến hiện tại
           </button>
         </div>
       )}

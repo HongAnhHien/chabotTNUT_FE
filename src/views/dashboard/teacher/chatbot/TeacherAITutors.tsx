@@ -1,6 +1,6 @@
-import { type FC, useCallback, useEffect, useState } from 'react';
+import { type FC, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ArrowLeft, BookOpen, X, RotateCcw, CheckCircle, Loader2, ClipboardList, Menu } from 'lucide-react';
+import { BookOpen, X, RotateCcw, CheckCircle, Loader2, ClipboardList, Menu, ChevronUp, ChevronDown, GripVertical, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import ChatHistory from './ChatHistory';
@@ -11,17 +11,18 @@ import type { ChatMessage } from './types';
 
 import ChatApi from '@/infra/chat/chat_api';
 import TeacherApi from '@/infra/teacher/teacher_api';
-import type { IChatSession, IExamDetail, IExamQuestion as IQ } from '@/infra/api/interfaces/IChat';
-import type { ITeacherSubjectWithClasses } from '@/infra/api/interfaces/ITeacher';
-import { Button } from '@/components/ui/button';
+import type { IChatSession, IExamDetail, IExamQuestion as IQ, IChatHistoryMessage } from '@/infra/api/interfaces/IChat';
+import type { ITeacherSubjectWithClasses, ISemester } from '@/infra/api/interfaces/ITeacher';
 
 // ── CSS ───────────────────────────────────────────────
 const CSS = `
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes blink { 50% { opacity:0 } }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-@keyframes slideInLeft { from { transform: translateX(-100%); opacity:0 } to { transform: translateX(0); opacity:1 } }
+@keyframes slideInRight { from { transform: translateX(100%); opacity:0 } to { transform: translateX(0); opacity:1 } }
+@keyframes slideOutRight { from { transform: translateX(0); opacity:1 } to { transform: translateX(100%); opacity:0 } }
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes fadeOut { from{opacity:1} to{opacity:0} }
 .tai-nav-btn { display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:transparent;color:#64748b;cursor:pointer;transition:background .15s,color .15s; }
 .tai-nav-btn:hover { background:rgba(0,0,0,0.05);color:#0f172a; }
 .tai-nav-logout { display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:transparent;color:#64748b;font-size:.78rem;font-weight:500;cursor:pointer;transition:background .15s,color .15s; }
@@ -34,9 +35,11 @@ const CSS = `
 .tai-sidebar {
   flex-shrink:0; width:240px; height:100%;
   position:absolute; left:-240px; z-index:45;
-  transition:left .22s cubic-bezier(.34,1.2,.64,1);
+  transition:left .22s cubic-bezier(.34,1.2,.64,1), width .2s ease;
 }
 .tai-sidebar.open { left:0; }
+.tai-sidebar.collapsed { width:96px; left:-96px; }
+.tai-sidebar.collapsed.open { left:0; }
 .tai-hamburger {
   display:flex; align-items:center; justify-content:center;
   width:34px; height:34px; border-radius:8px; flex-shrink:0;
@@ -59,19 +62,16 @@ interface EditableQ {
 }
 
 interface ExamPreviewProps {
-  exam: IExamDetail;
+  exam: IExamDetail | null;
+  loading: boolean;
+  closing: boolean;
   sessionId: string;
   subjectId: string;
   onClose: () => void;
   onConfirmed: () => void;
 }
 
-const OPTION_COLORS: Record<string, { bg: string; color: string }> = {
-  A: { bg: 'rgba(37,99,235,0.07)',  color: '#2563eb' },
-  B: { bg: 'rgba(124,58,237,0.07)', color: '#7c3aed' },
-  C: { bg: 'rgba(5,150,105,0.07)',  color: '#059669' },
-  D: { bg: 'rgba(217,119,6,0.07)',  color: '#d97706' },
-};
+const TIME_LIMIT_OPTIONS = [15, 30] as const;
 
 const toEditable = (qs: IQ[]): EditableQ[] =>
   qs.map(q => ({
@@ -82,25 +82,81 @@ const toEditable = (qs: IQ[]): EditableQ[] =>
     answer: q.answer,
   }));
 
-const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, sessionId, subjectId, onClose, onConfirmed }) => {
-  const [timeLimit,  setTimeLimit]  = useState<string>(String(exam.time_limit ?? ''));
-  const [editableQs, setEditableQs] = useState<EditableQ[]>(toEditable(exam.questions ?? []));
+const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, loading, closing, sessionId, subjectId, onClose, onConfirmed }) => {
+  const [timeLimit,  setTimeLimit]  = useState<15 | 30>(exam?.time_limit === 15 ? 15 : 30);
+  const [editableQs, setEditableQs] = useState<EditableQ[]>(toEditable(exam?.questions ?? []));
   const [confirming, setConfirming] = useState(false);
 
+  // Dữ liệu đề đến sau (drawer đã mở sẵn trong lúc chờ) — đồng bộ lại state chỉnh sửa ngay trong render
+  // khi `exam` đổi từ null sang dữ liệu thật, thay vì dùng effect (tránh set-state-in-effect).
+  const [syncedExam, setSyncedExam] = useState(exam);
+  if (exam !== syncedExam) {
+    setSyncedExam(exam);
+    if (exam) {
+      setTimeLimit(exam.time_limit === 15 ? 15 : 30);
+      setEditableQs(toEditable(exam.questions ?? []));
+    }
+  }
+
   const reset = () => {
-    setTimeLimit(String(exam.time_limit ?? ''));
+    if (!exam) return;
+    setTimeLimit(exam.time_limit === 15 ? 15 : 30);
     setEditableQs(toEditable(exam.questions ?? []));
   };
 
+  // Di chuyển nội dung 1 đáp án tới vị trí bất kỳ (kéo-thả hoặc nút mũi tên) —
+  // nhãn A/B/C/D giữ nguyên vị trí cố định, chỉ nội dung + đáp án đúng đi theo.
+  const reorderOption = (qIndex: number, fromKey: string, toKey: string) => {
+    if (fromKey === toKey) return;
+    setEditableQs(prev => prev.map((q, j) => {
+      if (j !== qIndex || !q.options) return q;
+      const keys = Object.keys(q.options);
+      const values = keys.map(k => q.options![k]);
+      const fromIdx = keys.indexOf(fromKey);
+      const toIdx = keys.indexOf(toKey);
+      if (fromIdx === -1 || toIdx === -1) return q;
+      const answerIdx = q.answer ? keys.indexOf(q.answer) : -1;
+
+      const newValues = [...values];
+      const [moved] = newValues.splice(fromIdx, 1);
+      newValues.splice(toIdx, 0, moved);
+
+      const newOptions: Record<string, string> = {};
+      keys.forEach((k, idx) => { newOptions[k] = newValues[idx]; });
+
+      let newAnswer = q.answer;
+      if (answerIdx !== -1) {
+        // Theo dõi đáp án đúng theo vị trí gốc di chuyển cùng nội dung
+        const order = keys.map((_, idx) => idx);
+        const [movedIdx] = order.splice(fromIdx, 1);
+        order.splice(toIdx, 0, movedIdx);
+        newAnswer = keys[order.indexOf(answerIdx)];
+      }
+      return { ...q, options: newOptions, answer: newAnswer };
+    }));
+  };
+
+  const moveOption = (qIndex: number, fromKey: string, dir: -1 | 1) => {
+    const q = editableQs[qIndex];
+    if (!q.options) return;
+    const keys = Object.keys(q.options);
+    const fromIdx = keys.indexOf(fromKey);
+    const toIdx = fromIdx + dir;
+    if (toIdx < 0 || toIdx >= keys.length) return;
+    reorderOption(qIndex, fromKey, keys[toIdx]);
+  };
+
+  const [dragOpt, setDragOpt] = useState<{ qIndex: number; key: string } | null>(null);
+
   const handleConfirm = async () => {
-    if (!exam.exam_id) return;
+    if (!exam?.exam_id) return;
     setConfirming(true);
     try {
       const r = await ChatApi.confirmExam(exam.ma_mon ?? subjectId, {
         exam_id:        exam.exam_id,
         session_id:     exam.session_id ?? sessionId,
         exam_type:      exam.exam_type,
-        time_limit:     timeLimit ? Number(timeLimit) : null,
+        time_limit:     timeLimit,
         question_count: editableQs.length,
         chapters:       exam.chapters,
         questions:      editableQs.map((q, i) => ({
@@ -124,58 +180,76 @@ const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, sessionId, subjectId, o
     }
   };
 
-  return (
-    <>
-      {/* Backdrop */}
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,23,42,0.3)', backdropFilter: 'blur(3px)', animation: 'fadeIn .2s ease both' }} />
+  const isLoading = loading || !exam;
 
-      {/* Panel — left side */}
-      <div style={{
-        position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 201,
-        width: 'min(580px, 100vw)', background: '#f8faff',
-        display: 'flex', flexDirection: 'column',
-        animation: 'slideInLeft .28s cubic-bezier(.34,1.2,.64,1) both',
-        boxShadow: '4px 0 32px rgba(15,23,42,0.15)',
-      }}>
+  return (
+    <div style={{
+      flexShrink: 0, width: 'min(480px, 100vw)', height: '100%', background: '#f7f8fa',
+      display: 'flex', flexDirection: 'column',
+      animation: `${closing ? 'slideOutRight .24s ease both' : 'slideInRight .28s cubic-bezier(.34,1.2,.64,1) both'}`,
+      boxShadow: '-4px 0 32px rgba(15,23,42,0.15)',
+      borderLeft: '1px solid #e2e8f0',
+    }}>
         {/* Header */}
-        <div style={{ padding: '14px 18px 12px', background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', flexShrink: 0 }}>
+        <div style={{ padding: '14px 18px 12px', background: '#2968ED', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
-                <ClipboardList size={13} color="#93c5fd" />
-                <span style={{ fontSize: '0.63rem', color: '#93c5fd', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Preview đề kiểm tra</span>
+                <ClipboardList size={13} color="white" />
+                <span style={{ fontSize: '0.63rem', color: 'white', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Preview đề kiểm tra</span>
               </div>
-              <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'white' }}>{exam.ten_mon || subjectId}</div>
+              <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'white' }}>{isLoading ? 'Đang tải đề...' : (exam.ten_mon || subjectId)}</div>
               <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.12)', borderRadius: 20, padding: '1px 8px' }}>{exam.ma_mon ?? subjectId}</span>
-                <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.12)', borderRadius: 20, padding: '1px 8px' }}>{editableQs.length} câu</span>
-                {timeLimit && <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.12)', borderRadius: 20, padding: '1px 8px' }}>{timeLimit} phút</span>}
+                <span style={{ fontSize: '0.65rem', color: 'white', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 8px' }}>{exam?.ma_mon ?? subjectId}</span>
+                {!isLoading && <span style={{ fontSize: '0.65rem', color: 'white', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 8px' }}>{editableQs.length} câu</span>}
+                {!isLoading && <span style={{ fontSize: '0.65rem', color: 'white', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 8px' }}>{timeLimit} phút</span>}
               </div>
             </div>
-            <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <X size={14} />
             </button>
           </div>
         </div>
 
+        {/* Loading state — chờ dữ liệu đề */}
+        {isLoading && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <Loader2 size={26} color="#2968ED" style={{ animation: 'spin 1s linear infinite' }} />
+            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#64748b' }}>Đang tải đề kiểm tra...</span>
+          </div>
+        )}
+
         {/* Editable fields */}
+        {!isLoading && exam && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* Time limit */}
-          <div style={{ background: 'white', borderRadius: 10, border: '1px solid rgba(37,99,235,0.1)', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', whiteSpace: 'nowrap' }}>Thời gian (phút)</label>
-            <input
-              type="number" value={timeLimit} onChange={e => setTimeLimit(e.target.value)}
-              style={{ flex: 1, padding: '5px 8px', borderRadius: 7, border: '1.5px solid rgba(37,99,235,0.15)', fontSize: '0.82rem', outline: 'none', color: '#1e293b', maxWidth: 100 }}
-            />
+          {/* Time limit — chỉ 2 lựa chọn */}
+          <div style={{ background: 'white', borderRadius: 10, border: '1px solid #e2e8f0', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', whiteSpace: 'nowrap' }}>Thời gian làm bài</label>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {TIME_LIMIT_OPTIONS.map(t => (
+                <button
+                  key={t}
+                  onClick={() => setTimeLimit(t)}
+                  style={{
+                    padding: '6px 14px', borderRadius: 8, fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+                    border: `1.5px solid ${timeLimit === t ? '#334155' : '#e2e8f0'}`,
+                    background: timeLimit === t ? '#334155' : 'white',
+                    color: timeLimit === t ? 'white' : '#64748b',
+                  }}
+                >
+                  {t} phút
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Chapters */}
           {(exam.chapters ?? []).length > 0 && (
-            <div style={{ background: 'white', borderRadius: 10, border: '1px solid rgba(37,99,235,0.1)', padding: '10px 14px' }}>
+            <div style={{ background: 'white', borderRadius: 10, border: '1px solid #e2e8f0', padding: '10px 14px' }}>
               <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Chương</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                 {(exam.chapters ?? []).map(ch => (
-                  <span key={ch.id} style={{ fontSize: '0.72rem', fontWeight: 600, color: '#1e3a8a', background: 'rgba(30,58,138,0.06)', borderRadius: 20, padding: '2px 10px', border: '1px solid rgba(30,58,138,0.1)' }}>{ch.title}</span>
+                  <span key={ch.id} style={{ fontSize: '0.72rem', fontWeight: 600, color: '#475569', background: '#f1f5f9', borderRadius: 20, padding: '2px 10px', border: '1px solid #e2e8f0' }}>{ch.title}</span>
                 ))}
               </div>
             </div>
@@ -186,15 +260,15 @@ const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, sessionId, subjectId, o
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 8 }}>Câu hỏi — có thể chỉnh sửa toàn bộ nội dung</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {editableQs.map((q, i) => (
-                <div key={i} style={{ background: 'white', borderRadius: 11, border: '1px solid rgba(37,99,235,0.1)', overflow: 'hidden' }}>
+                <div key={i} style={{ background: 'white', borderRadius: 11, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                   {/* Question header */}
-                  <div style={{ padding: '6px 12px', background: 'linear-gradient(135deg,rgba(30,58,138,0.06),rgba(37,99,235,0.04))', borderBottom: '1px solid rgba(37,99,235,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#1e3a8a' }}>Câu {i + 1}</span>
+                  <div style={{ padding: '6px 12px', background: '#f8fafc', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#334155' }}>Câu {i + 1}</span>
                     {q.chapter_title && <span style={{ fontSize: '0.6rem', color: '#94a3b8' }}>{q.chapter_title}</span>}
                   </div>
 
                   {/* Editable question text */}
-                  <div style={{ padding: '2px 12px 0', borderBottom: '1px solid rgba(37,99,235,0.06)' }}>
+                  <div style={{ padding: '2px 12px 0', borderBottom: '1px solid #f1f5f9' }}>
                     <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94a3b8', paddingTop: 7, marginBottom: 3 }}>NỘI DUNG CÂU HỎI</div>
                     <textarea
                       value={q.question}
@@ -204,20 +278,39 @@ const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, sessionId, subjectId, o
                     />
                   </div>
 
-                  {/* Options — fully editable + click to set answer */}
+                  {/* Options — fully editable + click to set answer + đổi vị trí */}
                   {q.options && Object.keys(q.options).length > 0 && (
                     <div style={{ padding: '8px 12px 10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94a3b8', marginBottom: 2 }}>ĐÁP ÁN — click vào ký hiệu để chọn đáp án đúng</div>
-                      {Object.entries(q.options).map(([key, val]) => {
+                      <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94a3b8', marginBottom: 2 }}>ĐÁP ÁN — kéo thả (hoặc dùng mũi tên) để đổi vị trí, click ký hiệu để chọn đáp án đúng</div>
+                      {Object.entries(q.options).map(([key, val], optIdx, arr) => {
                         const isAnswer = key === q.answer;
-                        const col = OPTION_COLORS[key] ?? OPTION_COLORS.A;
+                        const isDragging = dragOpt?.qIndex === i && dragOpt.key === key;
                         return (
-                          <div key={key} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, padding: '5px 8px', borderRadius: 8, background: isAnswer ? 'rgba(5,150,105,0.07)' : col.bg, border: `1.5px solid ${isAnswer ? 'rgba(5,150,105,0.3)' : 'rgba(37,99,235,0.07)'}`, transition: 'all .12s' }}>
+                          <div
+                            key={key}
+                            draggable
+                            onDragStart={() => setDragOpt({ qIndex: i, key })}
+                            onDragOver={e => e.preventDefault()}
+                            onDrop={e => {
+                              e.preventDefault();
+                              if (dragOpt && dragOpt.qIndex === i) reorderOption(i, dragOpt.key, key);
+                              setDragOpt(null);
+                            }}
+                            onDragEnd={() => setDragOpt(null)}
+                            style={{ display: 'flex', alignItems: 'flex-start', gap: 7, padding: '5px 8px', borderRadius: 8, background: isAnswer ? '#f0fdf4' : '#f8fafc', border: `1.5px solid ${isAnswer ? '#bbf7d0' : '#eef2f7'}`, opacity: isDragging ? 0.4 : 1, transition: 'opacity .12s' }}
+                          >
+                            {/* Drag handle */}
+                            <span
+                              title="Kéo để đổi vị trí"
+                              style={{ flexShrink: 0, width: 14, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', cursor: 'grab', touchAction: 'none' }}
+                            >
+                              <GripVertical size={13} />
+                            </span>
                             {/* Click to set answer */}
                             <button
                               onClick={() => setEditableQs(prev => prev.map((x, j) => j === i ? { ...x, answer: key } : x))}
                               title={isAnswer ? 'Đang là đáp án đúng' : 'Chọn làm đáp án đúng'}
-                              style={{ flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: isAnswer ? '#059669' : col.color, color: 'white', fontSize: '0.65rem', fontWeight: 800, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .12s' }}
+                              style={{ flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: isAnswer ? '#16a34a' : '#94a3b8', color: 'white', fontSize: '0.65rem', fontWeight: 800, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .12s' }}
                             >
                               {isAnswer ? '✓' : key}
                             </button>
@@ -228,11 +321,30 @@ const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, sessionId, subjectId, o
                                 if (j !== i || !x.options) return x;
                                 return { ...x, options: { ...x.options, [key]: e.target.value } };
                               }))}
-                              style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.8rem', color: isAnswer ? '#059669' : '#334155', fontWeight: isAnswer ? 600 : 400, background: 'transparent', fontFamily: 'inherit', padding: '1px 0' }}
+                              style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.8rem', color: isAnswer ? '#15803d' : '#334155', fontWeight: isAnswer ? 600 : 400, background: 'transparent', fontFamily: 'inherit', padding: '1px 0' }}
                             />
                             {isAnswer && (
-                              <span style={{ fontSize: '0.6rem', color: '#059669', fontWeight: 800, whiteSpace: 'nowrap', alignSelf: 'center' }}>Đáp án đúng</span>
+                              <span style={{ fontSize: '0.6rem', color: '#15803d', fontWeight: 800, whiteSpace: 'nowrap', alignSelf: 'center' }}>Đáp án đúng</span>
                             )}
+                            {/* Move up/down */}
+                            <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+                              <button
+                                onClick={() => moveOption(i, key, -1)}
+                                disabled={optIdx === 0}
+                                title="Di chuyển lên"
+                                style={{ width: 18, height: 15, border: 'none', background: 'none', color: optIdx === 0 ? '#e2e8f0' : '#64748b', cursor: optIdx === 0 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                              >
+                                <ChevronUp size={13} />
+                              </button>
+                              <button
+                                onClick={() => moveOption(i, key, 1)}
+                                disabled={optIdx === arr.length - 1}
+                                title="Di chuyển xuống"
+                                style={{ width: 18, height: 15, border: 'none', background: 'none', color: optIdx === arr.length - 1 ? '#e2e8f0' : '#64748b', cursor: optIdx === arr.length - 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                              >
+                                <ChevronDown size={13} />
+                              </button>
+                            </div>
                           </div>
                         );
                       })}
@@ -243,26 +355,27 @@ const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, sessionId, subjectId, o
             </div>
           </div>
         </div>
+        )}
 
         {/* Footer actions */}
-        <div style={{ flexShrink: 0, padding: '10px 14px', borderTop: '1px solid rgba(37,99,235,0.08)', background: 'white', display: 'flex', gap: 8 }}>
+        <div style={{ flexShrink: 0, padding: '10px 14px', borderTop: '1px solid #e2e8f0', background: 'white', display: 'flex', gap: 8 }}>
           <button
             onClick={reset}
-            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px', borderRadius: 10, background: 'rgba(37,99,235,0.06)', border: '1px solid rgba(37,99,235,0.15)', color: '#2563eb', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}
+            disabled={isLoading}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px', borderRadius: 10, background: 'white', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.82rem', fontWeight: 700, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.6 : 1 }}
           >
             <RotateCcw size={13} /> Reset
           </button>
           <button
             onClick={handleConfirm}
-            disabled={confirming}
-            style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px', borderRadius: 10, background: 'linear-gradient(135deg,#059669,#10b981)', border: 'none', color: 'white', fontSize: '0.82rem', fontWeight: 700, cursor: confirming ? 'not-allowed' : 'pointer', opacity: confirming ? 0.8 : 1 }}
+            disabled={confirming || isLoading}
+            style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px', borderRadius: 10, background: '#16a34a', border: 'none', color: 'white', fontSize: '0.82rem', fontWeight: 700, cursor: (confirming || isLoading) ? 'not-allowed' : 'pointer', opacity: (confirming || isLoading) ? 0.6 : 1 }}
           >
             {confirming ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <CheckCircle size={13} />}
             {confirming ? 'Đang lưu...' : 'Xác nhận & Lưu'}
           </button>
         </div>
-      </div>
-    </>
+    </div>
   );
 };
 
@@ -272,22 +385,83 @@ interface SubjectPickerProps {
   loading: boolean;
   onSelect: (maMon: string) => void;
   onClose: () => void;
+  semesters: ISemester[];
+  currentHocKy: number | null;
+  selectedHocKy: number | null;
+  onSelectSemester: (hocKy: number) => void;
 }
 
-const SubjectPicker: FC<SubjectPickerProps> = ({ courses, loading, onSelect, onClose }) => (
+const SubjectPicker: FC<SubjectPickerProps> = ({ courses, loading, onSelect, onClose, semesters, currentHocKy, selectedHocKy, onSelectSemester }) => {
+  const [semDropOpen, setSemDropOpen] = useState(false);
+  const semDropRef = useRef<HTMLDivElement>(null);
+  const selectedSem = semesters.find(s => s.hoc_ky === selectedHocKy);
+
+  useEffect(() => {
+    if (!semDropOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (!semDropRef.current?.contains(e.target as Node)) setSemDropOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [semDropOpen]);
+
+  return (
   <>
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', animation: 'fadeIn .18s ease both' }} />
     <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 301, width: 'min(480px,92vw)', background: 'white', borderRadius: 18, boxShadow: '0 20px 60px rgba(15,23,42,0.25)', animation: 'fadeIn .22s ease both', display: 'flex', flexDirection: 'column', maxHeight: '80vh' }}>
       <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid rgba(37,99,235,0.08)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#1e293b' }}>Chọn môn học</div>
             <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: 2 }}>Chat sẽ gắn với môn học này</div>
           </div>
-          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', flexShrink: 0 }}>
             <X size={13} />
           </button>
         </div>
+
+        {/* Semester dropdown — hiện khi có danh sách học kỳ (kể cả khi API không trả kỳ hiện tại) */}
+        {semesters.length > 0 && (
+          <div ref={semDropRef} style={{ position: 'relative', marginTop: 10 }}>
+            <button
+              onClick={() => setSemDropOpen(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 12px', borderRadius: 20, background: 'white', border: '1.5px solid rgba(37,99,235,0.18)', cursor: 'pointer' }}
+            >
+              <Calendar size={12} color="#2563eb" />
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e293b', whiteSpace: 'nowrap' }}>
+                {selectedSem?.ten_hoc_ky ?? 'Chọn học kỳ'}
+              </span>
+              {selectedSem && selectedSem.hoc_ky === currentHocKy && (
+                <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#059669', background: 'rgba(5,150,105,0.1)', borderRadius: 20, padding: '2px 7px', whiteSpace: 'nowrap' }}>
+                  Hiện tại
+                </span>
+              )}
+              <ChevronDown size={12} color="#64748b" style={{ transition: 'transform .2s', transform: semDropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+            </button>
+
+            {semDropOpen && (
+              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 310, minWidth: 220, background: 'white', borderRadius: 12, boxShadow: '0 8px 30px rgba(30,58,138,0.15)', maxHeight: 220, overflowY: 'auto', padding: 4 }}>
+                {semesters.map(s => (
+                  <button
+                    key={s.hoc_ky}
+                    onClick={() => { onSelectSemester(s.hoc_ky); setSemDropOpen(false); }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 9, padding: '8px 12px', background: s.hoc_ky === selectedHocKy ? 'rgba(37,99,235,0.05)' : 'none', border: 'none', borderRadius: 8, cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: s.hoc_ky === selectedHocKy ? '#2563eb' : s.hoc_ky === currentHocKy ? '#22c55e' : '#e2e8f0' }} />
+                    <span style={{ flex: 1, fontSize: '0.78rem', fontWeight: s.hoc_ky === selectedHocKy ? 700 : 500, color: s.hoc_ky === selectedHocKy ? '#1e3a8a' : '#334155' }}>
+                      {s.ten_hoc_ky}
+                    </span>
+                    {s.hoc_ky === currentHocKy && (
+                      <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#059669', background: 'rgba(5,150,105,0.09)', borderRadius: 20, padding: '1px 7px' }}>
+                        Hiện tại
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 7 }}>
         {loading ? (
@@ -315,7 +489,8 @@ const SubjectPicker: FC<SubjectPickerProps> = ({ courses, loading, onSelect, onC
       </div>
     </div>
   </>
-);
+  );
+};
 
 // ── Main component ────────────────────────────────────
 const TeacherAITutors: FC = () => {
@@ -337,8 +512,22 @@ const TeacherAITutors: FC = () => {
   const [loadingCrs,  setLoadingCrs]  = useState(false);
   const [creatingSession, setCreatingSession] = useState(false);
 
+  // Semester (dùng khi chọn môn học cho chat mới) — hoc_ky_hien_tai có thể null từ API
+  const [semesters,     setSemesters]     = useState<ISemester[]>([]);
+  const [currentHocKy,  setCurrentHocKy]  = useState<number | null>(null);
+  const [selectedHocKy, setSelectedHocKy] = useState<number | null>(null);
+
   // Sidebar mobile
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   // Preview drawer
   const [previewExam,     setPreviewExam]     = useState<IExamDetail | null>(null);
@@ -346,11 +535,36 @@ const TeacherAITutors: FC = () => {
   const [previewSubject,  setPreviewSubject]  = useState('');
   const [previewSession,  setPreviewSession]  = useState('');
   const [loadingPreview,  setLoadingPreview]  = useState(false);
+  const [previewVisible,  setPreviewVisible]  = useState(false);
+  const [previewClosing,  setPreviewClosing]  = useState(false);
 
+
+  // Dựng lại 1 message từ lịch sử — khôi phục examMeta nếu backend có trả intent/exam_id,
+  // để nút Xác nhận/Xem đề không bị mất khi reload trang hoặc chuyển qua lại giữa các session.
+  const toChatMessage = useCallback((m: IChatHistoryMessage, i: number, sess: IChatSession): ChatMessage => {
+    const isExam = m.role === 'assistant' && (m.intent === 'exam_generate' || m.intent === 'exam_edit');
+    return {
+      id: `hist-${i}-${m.role}`,
+      role: m.role,
+      content: m.content,
+      timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
+      examMeta: isExam && m.exam_id
+        ? {
+            examId: m.exam_id,
+            sessionId: sess.id,
+            subjectId: sess.subject_id ?? '',
+            confirmed: !!m.saved_exam_id,
+            savedExamId: m.saved_exam_id,
+          }
+        : undefined,
+    };
+  }, []);
 
   // ── Load sessions + auto-restore từ URL ─────────────
+  // Không set loadingSessions(true) ở đây: state đã khởi tạo true cho lần load đầu (mount effect),
+  // còn lần gọi lại sau khi tạo session mới đã có creatingSession phủ trạng thái loading rồi —
+  // tránh gọi setState đồng bộ ngay trong effect (react-hooks/set-state-in-effect).
   const loadSessions = useCallback(async () => {
-    setLoadingSessions(true);
     try {
       const r = await ChatApi.getSessions();
       const list = r.sessions ?? [];
@@ -361,12 +575,7 @@ const TeacherAITutors: FC = () => {
         if (found) {
           setCurrentSession(found);
           const hist = await ChatApi.getSessionHistory(found.id);
-          const msgs: ChatMessage[] = (hist.messages ?? []).map((m, i) => ({
-            id: `hist-${i}-${m.role}`,
-            role: m.role,
-            content: m.content,
-            timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
-          }));
+          const msgs: ChatMessage[] = (hist.messages ?? []).map((m, i) => toChatMessage(m, i, found));
           setMessages(msgs);
         }
       }
@@ -375,16 +584,19 @@ const TeacherAITutors: FC = () => {
     } finally {
       setLoadingSessions(false);
     }
-  }, [urlSessionId]);
+  }, [urlSessionId, toChatMessage]);
 
-  useEffect(() => { loadSessions(); }, [loadSessions]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadSessions();
+  }, [loadSessions]);
 
   // ── Load courses for picker ──────────────────────────
-  const loadCourses = useCallback(async () => {
+  // hoc_ky_hien_tai có thể null (API không xác định được kỳ hiện tại) → fallback
+  // sang kỳ đầu tiên trong ds_hoc_ky, đồng thời hiện dropdown chọn kỳ trong SubjectPicker.
+  const loadCoursesForSemester = useCallback(async (hocKy: number) => {
     setLoadingCrs(true);
     try {
-      const semRes = await TeacherApi.getSemesters();
-      const hocKy  = semRes.data.hoc_ky_hien_tai;
       const crsRes = await TeacherApi.getSemesterCourses(hocKy);
       setCourses(crsRes.data);
     } catch {
@@ -393,6 +605,36 @@ const TeacherAITutors: FC = () => {
       setLoadingCrs(false);
     }
   }, []);
+
+  const loadCourses = useCallback(async () => {
+    setLoadingCrs(true);
+    try {
+      const semRes = await TeacherApi.getSemesters();
+      const list    = semRes.data.ds_hoc_ky;
+      const current = semRes.data.hoc_ky_hien_tai;
+      const initialHocKy = current ?? list[0]?.hoc_ky ?? null;
+
+      setSemesters(list);
+      setCurrentHocKy(current);
+      setSelectedHocKy(initialHocKy);
+
+      if (initialHocKy) {
+        const crsRes = await TeacherApi.getSemesterCourses(initialHocKy);
+        setCourses(crsRes.data);
+      } else {
+        setCourses([]);
+      }
+    } catch {
+      setCourses([]);
+    } finally {
+      setLoadingCrs(false);
+    }
+  }, []);
+
+  const handleSelectSemester = (hocKy: number) => {
+    setSelectedHocKy(hocKy);
+    loadCoursesForSemester(hocKy);
+  };
 
   const handleNewChat = () => {
     if (courses.length === 0) loadCourses();
@@ -435,15 +677,7 @@ const TeacherAITutors: FC = () => {
     setMessages([]);
     try {
       const r = await ChatApi.getSessionHistory(sess.id);
-      const msgs: ChatMessage[] = [];
-      (r.messages ?? []).forEach((m, i) => {
-        msgs.push({
-          id: `hist-${i}-${m.role}`,
-          role: m.role,
-          content: m.content,
-          timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
-        });
-      });
+      const msgs: ChatMessage[] = (r.messages ?? []).map((m, i) => toChatMessage(m, i, sess));
       setMessages(msgs);
     } catch {
       setMessages([]);
@@ -453,11 +687,23 @@ const TeacherAITutors: FC = () => {
   // ── Delete session ───────────────────────────────────
   const handleDeleteSession = async (id: string) => {
     if (!confirm('Xóa cuộc trò chuyện này?')) return;
+    const prevSessions = sessions;
+    const wasCurrent = currentSession?.id === id;
+
+    // Optimistic update — rollback nếu API lỗi
     setSessions(prev => prev.filter(s => s.id !== id));
-    if (currentSession?.id === id) {
+    if (wasCurrent) {
       setCurrentSession(null);
       setMessages([]);
       navigate('/teacher/chat', { replace: true });
+    }
+
+    try {
+      const res = await ChatApi.deleteSession(id);
+      if (!res.success) throw new Error(res.message ?? 'Xóa thất bại');
+    } catch {
+      toast.error('Không thể xóa cuộc trò chuyện. Vui lòng thử lại.');
+      setSessions(prevSessions);
     }
   };
 
@@ -491,7 +737,7 @@ const TeacherAITutors: FC = () => {
             ));
           },
           onDone: done => {
-            const isExam = done.intent === 'exam_generate';
+            const isExam = done.intent === 'exam_generate' || done.intent === 'exam_edit';
             const examId = done.exam_id;
             setMessages(prev => prev.map(m =>
               m.id === botMsgId
@@ -575,26 +821,34 @@ const TeacherAITutors: FC = () => {
   const handleExamPreview = async (msgId: string) => {
     const msg = messages.find(m => m.id === msgId);
     if (!msg?.examMeta) return;
+    // Mở drawer ngay lập tức, loading sẽ hiện bên trong khi chờ dữ liệu
+    setPreviewMsgId(msgId);
+    setPreviewSubject(msg.examMeta.subjectId);
+    setPreviewSession(msg.examMeta.sessionId);
+    setPreviewExam(null);
+    setPreviewClosing(false);
+    setPreviewVisible(true);
     setLoadingPreview(true);
     try {
       const r = await ChatApi.getExam(msg.examMeta.examId);
-      if (r.exam) {
-        setPreviewExam(r.exam);
-        setPreviewMsgId(msgId);
-        setPreviewSubject(msg.examMeta.subjectId);
-        setPreviewSession(msg.examMeta.sessionId);
-      } else {
-        // Fallback: open with minimal data so user can still confirm
-        setPreviewExam({ exam_id: msg.examMeta.examId });
-        setPreviewMsgId(msgId);
-        setPreviewSubject(msg.examMeta.subjectId);
-        setPreviewSession(msg.examMeta.sessionId);
-      }
+      // Fallback: nếu API không trả đề, vẫn mở với dữ liệu tối thiểu để xác nhận được
+      setPreviewExam(r.exam ?? { exam_id: msg.examMeta.examId });
     } catch {
       toast.error('Không thể tải chi tiết đề.');
+      setPreviewExam({ exam_id: msg.examMeta.examId });
     } finally {
       setLoadingPreview(false);
     }
+  };
+
+  const closePreview = () => {
+    setPreviewClosing(true);
+    setTimeout(() => {
+      setPreviewVisible(false);
+      setPreviewClosing(false);
+      setPreviewExam(null);
+      setPreviewMsgId(null);
+    }, 240);
   };
 
   const handlePreviewConfirmed = () => {
@@ -603,11 +857,16 @@ const TeacherAITutors: FC = () => {
         m.id === previewMsgId && m.examMeta ? { ...m, examMeta: { ...m.examMeta, confirmed: true } } : m
       ));
     }
-    setPreviewExam(null);
-    setPreviewMsgId(null);
+    closePreview();
     // Gửi "xác nhận" vào chat để bot phản hồi
     handleSend('xác nhận');
   };
+
+  const currentSubjectLabel = (() => {
+    if (!currentSession?.subject_id) return '';
+    const subject = courses.find(c => c.subject.ma_mon === currentSession.subject_id)?.subject;
+    return subject ? `${subject.ten_mon} (${subject.ma_mon})` : currentSession.subject_id;
+  })();
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif", background: '#f0f4ff', overflow: 'hidden' }}>
@@ -622,8 +881,16 @@ const TeacherAITutors: FC = () => {
             style={{ position: 'absolute', inset: 0, zIndex: 40, background: 'rgba(15,23,42,0.35)', backdropFilter: 'blur(2px)' }} />
         )}
 
+        {/* Dim overlay over sidebar + chat area while exam preview drawer is open */}
+        {previewVisible && (
+          <div
+            onClick={closePreview}
+            style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 'min(480px, 100vw)', zIndex: 30, background: 'rgba(15,23,42,0.3)', backdropFilter: 'blur(1.5px)', animation: `${previewClosing ? 'fadeOut' : 'fadeIn'} .22s ease both` }}
+          />
+        )}
+
         {/* ── Sidebar ── */}
-        <div className={`tai-sidebar${sidebarOpen ? ' open' : ''}`}>
+        <div className={`tai-sidebar${sidebarOpen ? ' open' : ''}${sidebarCollapsed && !isMobile ? ' collapsed' : ''}`}>
           <ChatHistory
             sessions={sessions}
             currentSessionId={currentSession?.id ?? ''}
@@ -634,11 +901,13 @@ const TeacherAITutors: FC = () => {
             onNewChat={handleNewChat}
             onDeleteSession={handleDeleteSession}
             isLoading={loadingSessions || creatingSession}
+            collapsed={sidebarCollapsed && !isMobile}
+            onToggleCollapse={isMobile ? undefined : () => setSidebarCollapsed(v => !v)}
           />
         </div>
 
         {/* ── Chat area ── */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#f4f6fb', minWidth: 0 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#f4f6fb', minWidth: 0, position: 'relative' }}>
           {/* Topbar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'white', borderBottom: '1px solid #eef0f5', flexShrink: 0 }}>
             <button className="tai-hamburger" onClick={() => setSidebarOpen(v => !v)} title="Danh sách chat">
@@ -651,25 +920,18 @@ const TeacherAITutors: FC = () => {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    Chatbot hỗ trợ giảng dạy
+                    {currentSession.name || 'Cuộc trò chuyện'}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 1 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
-                    <span style={{ fontSize: '0.65rem', color: '#64748b' }}>Trực tuyến · Trả lời 24/7</span>
-                  </div>
+                  {currentSubjectLabel && (
+                    <div style={{ fontSize: '0.65rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>
+                      {currentSubjectLabel}
+                    </div>
+                  )}
                 </div>
-                {(currentSession.name || currentSession.subject_id) && (
-                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#2563eb', background: 'rgba(37,99,235,0.08)', padding: '4px 10px', borderRadius: 20, flexShrink: 0, whiteSpace: 'nowrap', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {currentSession.name || currentSession.subject_id}
-                  </span>
-                )}
               </>
             ) : (
               <span style={{ flex: 1, fontSize: '0.82rem', fontWeight: 600, color: '#94a3b8' }}>Chọn hoặc tạo cuộc trò chuyện</span>
             )}
-            <Button variant="outline" onClick={() => navigate('/teacher/dashboard')} title="Về trang chủ" style={{ flexShrink: 0 }}>
-              <ArrowLeft size={14} />
-            </Button>
           </div>
 
           {currentSession ? (
@@ -678,6 +940,7 @@ const TeacherAITutors: FC = () => {
                 <ChatContent
                   messages={messages}
                   isStreaming={streaming}
+                  sessionId={currentSession?.id}
                   onExamDismiss={handleExamDismiss}
                   onExamConfirm={handleExamConfirm}
                   onExamPreview={handleExamPreview}
@@ -709,17 +972,20 @@ const TeacherAITutors: FC = () => {
             </div>
           )}
         </div>
-      </div>
 
-      {/* ── Loading preview ── */}
-      {loadingPreview && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.25)', backdropFilter: 'blur(3px)' }}>
-          <div style={{ background: 'white', borderRadius: 16, padding: '24px 32px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
-            <Loader2 size={20} color="#2563eb" style={{ animation: 'spin 1s linear infinite' }} />
-            <span style={{ fontWeight: 600, color: '#1e293b' }}>Đang tải đề kiểm tra...</span>
-          </div>
-        </div>
-      )}
+        {/* ── Exam preview drawer — pushes chat area left ── */}
+        {previewVisible && (
+          <ExamPreviewDrawer
+            exam={previewExam}
+            loading={loadingPreview}
+            closing={previewClosing}
+            sessionId={previewSession}
+            subjectId={previewSubject}
+            onClose={closePreview}
+            onConfirmed={handlePreviewConfirmed}
+          />
+        )}
+      </div>
 
       {/* ── Subject picker modal ── */}
       {showPicker && (
@@ -728,17 +994,10 @@ const TeacherAITutors: FC = () => {
           loading={loadingCrs}
           onSelect={handlePickSubject}
           onClose={() => setShowPicker(false)}
-        />
-      )}
-
-      {/* ── Exam preview drawer ── */}
-      {previewExam && (
-        <ExamPreviewDrawer
-          exam={previewExam}
-          sessionId={previewSession}
-          subjectId={previewSubject}
-          onClose={() => { setPreviewExam(null); setPreviewMsgId(null); }}
-          onConfirmed={handlePreviewConfirmed}
+          semesters={semesters}
+          currentHocKy={currentHocKy}
+          selectedHocKy={selectedHocKy}
+          onSelectSemester={handleSelectSemester}
         />
       )}
     </div>

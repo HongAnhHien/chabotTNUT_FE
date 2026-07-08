@@ -2,7 +2,7 @@ import { type FC, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import {
   LayoutDashboard, BookOpen, MessageCircle,
-  LogOut, ChevronLeft, ChevronRight, GraduationCap,
+  ChevronLeft, ChevronRight,
   ChevronRight as ArrowRight, X, CalendarDays, BarChart2,
 } from 'lucide-react';
 import logoTNUT from '@/assets/logo_tnut/logo_tnut.png';
@@ -12,7 +12,6 @@ interface Props {
   userCode?: string;
   userInitials?: string;
   userAvatar?: string;
-  onLogout: () => void;
   // Desktop drawer
   collapsed?: boolean;
   onToggle?: () => void;
@@ -46,8 +45,6 @@ const ACCENT_BG = 'rgba(37,99,235,0.07)';
 const CSS = `
   .sv3-item { position:relative; transition:background .14s,color .14s; }
   .sv3-item:hover:not([data-active="true"]) { background:#f8fafc !important; color:#1e293b !important; }
-  .sv3-logout { transition:background .14s,color .14s; }
-  .sv3-logout:hover { background:rgba(239,68,68,0.07) !important; color:#ef4444 !important; }
   .sv3-toggle { transition:background .14s; }
   .sv3-toggle:hover { background:#f1f5f9 !important; }
   .sv3-profile-card { transition:background .14s; }
@@ -58,7 +55,6 @@ const CSS = `
 
 const StudentSidebar: FC<Props> = ({
   userName, userCode, userInitials, userAvatar,
-  onLogout,
   collapsed = false, onToggle,
   isMobile = false, mobileOpen = false, onMobileClose,
 }) => {
@@ -133,13 +129,7 @@ const StudentSidebar: FC<Props> = ({
               )}
             </>
           ) : (
-            <div style={{
-              width: 38, height: 38, borderRadius: 10,
-              background: 'linear-gradient(135deg,#1e40af,#3b82f6)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <GraduationCap size={20} color="white" strokeWidth={2.5} />
-            </div>
+            <img src={logoTNUT} alt="TNUT" style={{ width: 38, height: 38, objectFit: 'contain' }} />
           )}
         </div>
 
@@ -256,7 +246,7 @@ const StudentSidebar: FC<Props> = ({
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
               <div onClick={() => navigate('/student/profile')} title={userName ?? 'Sinh viên'}
                 style={{
                   width: 38, height: 38, borderRadius: 10, flexShrink: 0,
@@ -264,12 +254,6 @@ const StudentSidebar: FC<Props> = ({
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'white', overflow: 'hidden', cursor: 'pointer',
                 }}>{avatar}</div>
-              <button className="sv3-logout" onClick={onLogout} title="Đăng xuất"
-                style={{
-                  width: 36, height: 36, borderRadius: 8, border: 'none',
-                  background: 'transparent', color: '#94a3b8',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                }}><LogOut size={15} /></button>
             </div>
           )}
         </div>

@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import StudentApi from '@/infra/student/student_api';
 import TeacherApi from '@/infra/teacher/teacher_api';
+import AdminApi from '@/infra/admin/admin_api';
 import type { INotification } from '@/infra/api/interfaces/INotification';
 
 const ACTIVE_INTERVAL_MS     = 30_000;
 const BACKGROUND_INTERVAL_MS = 120_000;
 
-export type NotificationRole = 'student' | 'teacher';
+export type NotificationRole = 'student' | 'teacher' | 'admin';
 
-const apiFor = (role: NotificationRole) => (role === 'student' ? StudentApi : TeacherApi);
+const apiFor = (role: NotificationRole) =>
+  role === 'student' ? StudentApi : role === 'teacher' ? TeacherApi : AdminApi;
 
 export const useNotifications = (role: NotificationRole) => {
   const [notifications, setNotifications] = useState<INotification[]>([]);

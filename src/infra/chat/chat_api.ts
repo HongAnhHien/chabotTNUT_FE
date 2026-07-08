@@ -5,6 +5,7 @@ import type {
   ICreateSessionResponse,
   ISessionsResponse,
   ISessionHistoryResponse,
+  IDeleteSessionResponse,
   IExamResponse,
   ISSEDoneEvent,
   IConfirmExamBody,
@@ -33,6 +34,13 @@ class ChatApi {
   async getSessionHistory(sessionId: string): Promise<ISessionHistoryResponse> {
     const res = await axiosInstance.get<ISessionHistoryResponse>(
       API_ENDPOINTS.CHAT.SESSION_HISTORY(sessionId)
+    );
+    return res.data;
+  }
+
+  async deleteSession(sessionId: string): Promise<IDeleteSessionResponse> {
+    const res = await axiosInstance.delete<IDeleteSessionResponse>(
+      API_ENDPOINTS.CHAT.SESSION_DELETE(sessionId)
     );
     return res.data;
   }

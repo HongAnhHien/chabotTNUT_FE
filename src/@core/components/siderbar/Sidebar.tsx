@@ -1,12 +1,12 @@
 import { type FC, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { ChevronRight, ChevronDown, PanelLeft, LogOut } from "lucide-react";
+import { ChevronRight, ChevronLeft, ChevronDown, PanelLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { type SidebarProps } from "./INavProps";
 import { getNavGroupsByRole } from "./nav";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/hooks/useUser";
-import { useAuthStore } from "@/views/pages/stores/auth_store";
+import logoTNUT from "@/assets/logo_tnut/logo_tnut.png";
 
 const Sidebar: FC<SidebarProps> = ({
   isCollapsed,
@@ -20,12 +20,6 @@ const Sidebar: FC<SidebarProps> = ({
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
   const { profile, avatarUrl } = useUser();
-  const logout = useAuthStore((s) => s.logout);
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
 
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 1024);
@@ -65,24 +59,16 @@ const Sidebar: FC<SidebarProps> = ({
           className={`flex items-center gap-2.5 ${isCollapsed ? "" : ""}`}
           onClick={() => isCollapsed && onCollapse?.(false)}
         >
-          {isCollapsed ? (
-            <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center shrink-0 cursor-pointer">
-              <span className="text-primary-foreground text-xs font-black">
-                G
-              </span>
-            </div>
-          ) : (
-            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0 cursor-pointer">
-              <span className="text-primary-foreground text-xs font-black">
-                G
-              </span>
-            </div>
-          )}
+          <img
+            src={logoTNUT}
+            alt="TNUT"
+            className={`shrink-0 cursor-pointer object-contain ${isCollapsed ? "w-10 h-10" : "w-8 h-8"}`}
+          />
 
           {!isCollapsed && (
             <div>
               <p className="text-sm font-bold text-sidebar-primary leading-none">
-                GeoRisk
+                TNUT Learning
               </p>
               <p className="text-[10px] text-sidebar-foreground mt-0.5">
                 {t(`role.${userRole}`)}
@@ -236,6 +222,20 @@ const Sidebar: FC<SidebarProps> = ({
         )}
       </nav>
 
+      {/* ── Collapse toggle — desktop only ───────── */}
+      {!isMobile && onCollapse && (
+        <div className={`shrink-0 border-t border-sidebar-border ${isCollapsed ? "p-2" : "p-2.5"}`}>
+          <button
+            onClick={() => onCollapse(!isCollapsed)}
+            title={isCollapsed ? "Mở rộng" : "Thu gọn"}
+            className={`w-full flex items-center rounded-lg px-2 py-1.5 text-xs text-sidebar-foreground hover:bg-sidebar-primary transition-colors ${isCollapsed ? "justify-center" : "justify-between"}`}
+          >
+            {!isCollapsed && <span>Thu gọn</span>}
+            {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+      )}
+
       {/* ── User profile ──────────────────────────── */}
       <div className={`shrink-0  ${isCollapsed ? "p-2" : "p-3"}`}>
         {isCollapsed ? (
@@ -250,34 +250,25 @@ const Sidebar: FC<SidebarProps> = ({
             </button>
           </div>
         ) : (
-          <div className="space-y-2">
-            <button
-              onClick={() => navigate('/me/profile')}
-              className="w-full flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-sidebar-primary transition-colors group"
-            >
-              <Avatar size="default">
-                <AvatarImage src={avatarUrl} />
-                <AvatarFallback className="text-xs font-semibold">
-                  {profile?.name?.charAt(0).toUpperCase() ?? 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-medium text-sidebar-primary truncate group-hover:text-sidebar-accent">
-                  {profile?.name ?? '—'}
-                </p>
-                <p className="text-[11px] text-sidebar-foreground truncate group-hover:text-sidebar-accent">
-                  {profile?.email ?? t(`role.${userRole}`)}
-                </p>
-              </div>
-            </button>
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-sidebar-foreground hover:bg-red-500/10 hover:text-red-500 transition-colors"
-            >
-              <LogOut className="w-3.5 h-3.5 shrink-0" />
-              Đăng xuất
-            </button>
-          </div>
+          <button
+            onClick={() => navigate('/me/profile')}
+            className="w-full flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-sidebar-primary transition-colors group"
+          >
+            <Avatar size="default">
+              <AvatarImage src={avatarUrl} />
+              <AvatarFallback className="text-xs font-semibold">
+                {profile?.name?.charAt(0).toUpperCase() ?? 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-sm font-medium text-sidebar-primary truncate group-hover:text-sidebar-accent">
+                {profile?.name ?? '—'}
+              </p>
+              <p className="text-[11px] text-sidebar-foreground truncate group-hover:text-sidebar-accent">
+                {profile?.email ?? t(`role.${userRole}`)}
+              </p>
+            </div>
+          </button>
         )}
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, MapPin } from "lucide-react";
+import { LayoutDashboard, Users, FileSearch, KeyRound } from "lucide-react";
 import { type NavLink, type NavGroup, type UserRole } from "./INavProps";
 
 // ─── Section label keys (dùng với t()) ───────────────────────────────────────
@@ -28,25 +28,23 @@ export const adminNavLinks: NavLink[] = [
     href: "/admin/dashboard/manage-users",
   },
   {
-    title: "nav.locations",
-    section: "manage",
-    icon: MapPin,
+    title: "nav.parseLogs",
+    section: "data",
+    icon: FileSearch,
     checkRoll: ["admin"],
-    href: "/admin/dashboard/manage-locations",
+    href: "/admin/dashboard/parse-logs",
   },
-];
-
-
-export const userNavLinks: NavLink[] = [
- 
   {
-    title: "nav.locations",
-    section: "manage",
-    icon: MapPin,
-    checkRoll: ["user"],
-    href: "/user/dashboard/manage-locations",
+    title: "nav.apiSettings",
+    section: "data",
+    icon: KeyRound,
+    checkRoll: ["admin"],
+    href: "/admin/dashboard/api-settings",
   },
 ];
+
+
+export const userNavLinks: NavLink[] = [];
 // ─── Teacher (placeholder, bổ sung sau) ──────────────────────────────────────
 export const teacherNavLinks: NavLink[] = [];
 

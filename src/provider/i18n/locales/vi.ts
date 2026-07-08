@@ -17,7 +17,8 @@ const vi = {
   nav: {
     dashboard: "Tổng quan",
     users: "Quản lý tài khoản",
-    locations: "Quản lý địa điểm",
+    parseLogs: "Nhật ký xử lý",
+    apiSettings: "API key LlamaParse",
     userList: "Danh sách",
     userSystem: "Hệ thống",
     userSocial: "Mạng xã hội",

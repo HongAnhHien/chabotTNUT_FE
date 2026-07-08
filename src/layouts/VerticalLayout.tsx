@@ -5,6 +5,8 @@ import { Sidebar } from "../@core/components/siderbar";
 import { Navbar } from "../@core/components/navbar";
 // import { Footer } from '../@core/components/footer';
 import { ArrowUp } from "lucide-react";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useAuthStore } from "@/views/pages/stores/auth_store";
 
 interface VerticalLayoutProps {
   userRole?: "admin" | "user";
@@ -13,6 +15,13 @@ interface VerticalLayoutProps {
 
 const VerticalLayout: FC<VerticalLayoutProps> = ({ userRole }) => {
   const navigation = useNavigate();
+  const logout = useAuthStore((s) => s.logout);
+  const { notifications, unreadCount, loading: notifLoading, markRead, markAllRead } = useNotifications('admin');
+
+  const handleLogout = async () => {
+    await logout();
+    navigation('/login');
+  };
 
   // ** Get collapsed state from localStorage
   const getInitialCollapsedState = () => {
@@ -56,24 +65,6 @@ const VerticalLayout: FC<VerticalLayoutProps> = ({ userRole }) => {
     });
   };
 
-  // ** Handler functions for navbar
-  const handleNotificationClick = () => {
-    console.log("Notifications clicked");
-    // Navigate to notifications or open notifications modal
-    navigation("dashboard/notifications");
-    // Implement your notification logic here
-  };
-
-  const handleSettingsClick = () => {
-    console.log("Settings clicked");
-    // Navigate to settings or open settings modal
-  };
-
-  // const handleUserClick = () => {
-  //   console.log("User menu clicked");
-  //   // Open user dropdown menu
-  // };
-
   return (
     <>
       <CoreVerticalLayout
@@ -89,9 +80,12 @@ const VerticalLayout: FC<VerticalLayoutProps> = ({ userRole }) => {
         }
         navbar={
           <Navbar
-            notificationCount={3}
-            onNotificationClick={handleNotificationClick}
-            onSettingsClick={handleSettingsClick}
+            notifications={notifications}
+            unreadCount={unreadCount}
+            notifLoading={notifLoading}
+            onMarkRead={markRead}
+            onMarkAllRead={markAllRead}
+            onLogout={handleLogout}
           />
         }
       >

@@ -262,11 +262,23 @@ const StudentChatbot: FC = () => {
   // ── Delete session ───────────────────────────────────
   const handleDeleteSession = async (id: string) => {
     if (!confirm('Xóa cuộc trò chuyện này?')) return;
+    const prevSessions = sessions;
+    const wasCurrent = currentSession?.id === id;
+
+    // Optimistic update — rollback nếu API lỗi
     setSessions(prev => prev.filter(s => s.id !== id));
-    if (currentSession?.id === id) {
+    if (wasCurrent) {
       setCurrentSession(null);
       setMessages([]);
       navigate('/student/chat', { replace: true });
+    }
+
+    try {
+      const res = await ChatApi.deleteSession(id);
+      if (!res.success) throw new Error(res.message ?? 'Xóa thất bại');
+    } catch {
+      toast.error('Không thể xóa cuộc trò chuyện. Vui lòng thử lại.');
+      setSessions(prevSessions);
     }
   };
 
@@ -422,6 +434,7 @@ const StudentChatbot: FC = () => {
                   role="student"
                   messages={messages}
                   isStreaming={streaming}
+                  sessionId={currentSession?.id}
                   onExamDismiss={() => {}}
                   onExamConfirm={() => Promise.resolve()}
                   onExamPreview={() => {}}

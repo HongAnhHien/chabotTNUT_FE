@@ -9,7 +9,7 @@ export const StatusBadge: FC<{ status: IFileExternalStatus }> = ({ status }) => 
   if (!status) return null;
   const c = STATUS_CFG[status];
   if (!c) return null;
-  const spinning = status === 'pending' || status === 'sending';
+  const spinning = status === 'pending' || status === 'processing' || status === 'sending';
   return (
     <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11.5, fontWeight:600, padding:'3px 9px', borderRadius:999, background:c.bg, color:c.color, whiteSpace:'nowrap' }}>
       {spinning

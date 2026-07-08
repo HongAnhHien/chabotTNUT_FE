@@ -1,28 +1,41 @@
 export type ParseLogService = 'llama' | 'word' | 'excel';
 export type ParseLogStatus  = 'success' | 'error';
+export type ParseLogChatbotStatus = 'parsed' | 'send_queued' | 'sending' | 'success' | 'failed';
 
 export interface IParseLog {
-  _id:             string;
-  subject_file_id: string;
-  ma_mon:          string;
-  filename:        string;
-  file_size:       number;
-  service:         ParseLogService;
-  status:          ParseLogStatus;
-  duration_ms:     number;
-  job_id:          string | null;
-  error:           string | null;
-  preview:         string | null;
-  created_at:      string;
+  id:               string;
+  subject_file_id:  string;
+  ma_mon:           string;
+  ten_mon:          string;
+  teacher_id:       string;
+  teacher_username: string;
+  teacher_name:     string;
+  filename:         string;
+  file_size:        number;
+  service:          ParseLogService;
+  status:           ParseLogStatus;
+  duration_ms:      number;
+  job_id:           string | null;
+  error:            string | null;
+  preview:          string | null;
+  parsed_at:        string;
+  sent_to_chatbot:  boolean;
+  chatbot_status:   ParseLogChatbotStatus | null;
+  rag_chunks:       number | null;
+  sent_at:          string | null;
 }
 
 export interface IParseLogsQuery {
-  status?:   ParseLogStatus;
-  service?:  ParseLogService;
-  ma_mon?:   string;
-  filename?: string;
-  per_page?: number;
-  page?:     number;
+  status?:          ParseLogStatus;
+  service?:         ParseLogService;
+  ma_mon?:          string;
+  teacher_id?:      string;
+  filename?:        string;
+  sent_to_chatbot?: boolean;
+  date_from?:       string;
+  date_to?:         string;
+  per_page?:        number;
+  page?:            number;
 }
 
 export interface IParseLogsMeta {
@@ -38,28 +51,62 @@ export interface IParseLogsResponse {
   meta:    IParseLogsMeta;
 }
 
-export interface IParseLogStatsByService {
-  service:      ParseLogService;
+// ── Stats ───────────────────────────────────────────────
+export interface IParseLogStatsParse {
   total:        number;
   success:      number;
   error:        number;
-  avg_duration: number;
+  success_rate: number;
+}
+
+export interface IParseLogStatsChatbot {
+  sent_success: number;
+  send_failed:  number;
+  pending_rag:  number;
+}
+
+export interface IParseLogStatsByService {
+  service:          ParseLogService;
+  total:            number;
+  success:          number;
+  error:            number;
+  avg_duration_ms:  number;
+  total_size_bytes: number;
+}
+
+export interface IParseLogStatsBySubject {
+  ma_mon:  string;
+  ten_mon: string;
+  total:   number;
+  success: number;
+  error:   number;
+}
+
+export interface IParseLogStatsByTeacher {
+  teacher_id:       string;
+  teacher_username: string;
+  teacher_name:     string;
+  total:            number;
+  success:          number;
 }
 
 export interface IParseLogRecentError {
-  filename:   string;
-  ma_mon:     string;
-  service:    ParseLogService;
-  error:      string;
-  created_at: string;
+  filename:         string;
+  ma_mon:           string;
+  ten_mon:          string;
+  teacher_username: string;
+  teacher_name:     string;
+  service:          ParseLogService;
+  error:            string;
+  created_at:       string;
 }
 
 export interface IParseLogStats {
-  total:         number;
-  success:       number;
-  error:         number;
-  success_rate:  number;
+  parse:         IParseLogStatsParse;
+  chatbot:       IParseLogStatsChatbot;
   by_service:    IParseLogStatsByService[];
+  by_subject:    IParseLogStatsBySubject[];
+  by_teacher:    IParseLogStatsByTeacher[];
   recent_errors: IParseLogRecentError[];
 }
 

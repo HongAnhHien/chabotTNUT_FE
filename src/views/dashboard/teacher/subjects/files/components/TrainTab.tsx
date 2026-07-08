@@ -23,14 +23,14 @@ const TrainTab: FC<Props> = ({ files, working, onRefresh, onPreview, onCancel, o
   return (
     <div>
       {/* Toolbar */}
-      <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
+      <div className="tdf-train-toolbar">
         <div style={{ fontSize:15, fontWeight:700, color:'#0f172a' }}>Hàng đợi huấn luyện AI</div>
         {needPoll && (
           <span style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:12.5, fontWeight:600, color:'#d97706', background:'#fff7ed', padding:'4px 11px', borderRadius:999 }}>
             <Loader2 size={12} style={{ animation:'tdf-spin 1s linear infinite' }} /> Đang xử lý
           </span>
         )}
-        <button onClick={onRefresh} style={{ marginLeft:'auto', height:38, padding:'0 15px', borderRadius:11, border:'1px solid #e7ecf3', background:'#fff', color:'#334155', fontWeight:600, fontSize:13, fontFamily:'inherit', display:'flex', alignItems:'center', gap:7, cursor:'pointer' }}>
+        <button onClick={onRefresh} className="tdf-train-refresh" style={{ height:38, padding:'0 15px', borderRadius:11, border:'1px solid #e7ecf3', background:'#fff', color:'#334155', fontWeight:600, fontSize:13, fontFamily:'inherit', display:'flex', alignItems:'center', gap:7, cursor:'pointer' }}>
           <RefreshCw size={14} /> Làm mới
         </button>
       </div>
@@ -49,13 +49,15 @@ const TrainTab: FC<Props> = ({ files, working, onRefresh, onPreview, onCancel, o
             const name = f.original_name ?? '—';
             const st   = f.external_status;
             return (
-              <div key={f.id} style={{ background:'#fff', border:'1px solid #e7ecf3', borderRadius:14, padding:'14px 17px', display:'flex', alignItems:'center', gap:14 }}>
-                <ExtBadge name={name} size={40} />
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:14, fontWeight:600, color:'#0f172a', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</div>
-                  <div style={{ fontSize:11.5, color:'#94a3b8', marginTop:3 }}>{TYPE_LABEL[f.type]} · {fmtSize(f.file_size)}</div>
+              <div key={f.id} className="tdf-train-row">
+                <div className="tdf-train-head">
+                  <ExtBadge name={name} size={40} />
+                  <div className="tdf-train-info">
+                    <div style={{ fontSize:14, fontWeight:600, color:'#0f172a', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</div>
+                    <div style={{ fontSize:11.5, color:'#94a3b8', marginTop:3 }}>{TYPE_LABEL[f.type]} · {fmtSize(f.file_size)}</div>
+                  </div>
                 </div>
-                <div style={{ display:'flex', gap:8, alignItems:'center', flexShrink:0 }}>
+                <div className="tdf-train-actions">
                   <StatusBadge status={st ?? null} />
 
                   {st === 'parsed' && (

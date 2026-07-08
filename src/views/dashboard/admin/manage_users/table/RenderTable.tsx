@@ -14,13 +14,13 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 const RenderTableManageUsers: FC = () => {
-  const { users, pagination, isLoading, fetchUsers } = useManageUsersStore();
+  const { users, meta, isLoading, fetchUsers } = useManageUsersStore();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [role,       setRole]       = useState('all');
   const [status,     setStatus]     = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize,    setPageSize]    = useState(10);
+  const [pageSize,    setPageSize]    = useState(20);
   const [selectedCount, setSelectedCount] = useState(0);
 
   const searchDebounced = useDebounce(searchTerm, 400);
@@ -28,11 +28,11 @@ const RenderTableManageUsers: FC = () => {
   // Fetch khi filter/page thay đổi
   useEffect(() => {
     fetchUsers({
-      page:   currentPage,
-      limit:  pageSize,
-      search: searchDebounced || undefined,
-      role:   role   !== 'all' ? role   : undefined,
-      isActive: status !== 'all' ? status : undefined,
+      page:     currentPage,
+      per_page: pageSize,
+      search:   searchDebounced || undefined,
+      role:     role   !== 'all' ? role : undefined,
+      blocked:  status !== 'all' ? status === 'true' : undefined,
     });
   }, [fetchUsers, currentPage, pageSize, searchDebounced, role, status]);
 
@@ -53,10 +53,10 @@ const RenderTableManageUsers: FC = () => {
         onStatusChange={(v) => { setStatus(v); reset(); }}
       />
       <DataTablePagination
-        total={pagination.total}
+        total={meta.total}
         selectedCount={selectedCount}
         currentPage={currentPage}
-        totalPages={pagination.totalPages}
+        totalPages={meta.last_page}
         pageSize={pageSize}
         onPageChange={setCurrentPage}
         onPageSizeChange={(s) => { setPageSize(s); reset(); }}

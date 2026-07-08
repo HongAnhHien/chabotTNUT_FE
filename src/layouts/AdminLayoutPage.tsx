@@ -1,18 +1,17 @@
 import { type FC, useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router';
 import { useAuthStore } from '@/views/pages/stores/auth_store';
-import TeacherSidebar from '@/components/teacher/TeacherSidebar';
+import AdminSidebar from '@/components/admin/AdminSidebar';
 import StudentHeader from '@/components/student/StudentHeader';
 import { useNotifications } from '@/hooks/useNotifications';
-import type { INotification } from '@/infra/api/interfaces/INotification';
 
 const MOBILE_BP = 768;
 
-const TeacherLayout: FC = () => {
+const AdminLayoutPage: FC = () => {
   const navigate = useNavigate();
   const user    = useAuthStore(s => s.user);
   const logout  = useAuthStore(s => s.logout);
-  const { notifications, unreadCount, loading: notifLoading, markRead, markAllRead } = useNotifications('teacher');
+  const { notifications, unreadCount, loading: notifLoading, markRead, markAllRead } = useNotifications('admin');
 
   const [collapsed,  setCollapsed]  = useState(false);
   const [isMobile,   setIsMobile]   = useState(() => window.innerWidth < MOBILE_BP);
@@ -31,16 +30,11 @@ const TeacherLayout: FC = () => {
   const handleLogout = () => { logout(); navigate('/login', { replace: true }); };
 
   const initials = user?.name
-    ?.split(' ').map((w: string) => w[0]).slice(-2).join('').toUpperCase() ?? 'GV';
-
-  const handleNotificationClick = (n: INotification) => {
-    const assignmentId = (n.data as { assignment_id?: string })?.assignment_id;
-    if (assignmentId) navigate(`/teacher/assignments/${assignmentId}`);
-  };
+    ?.split(' ').map((w: string) => w[0]).slice(-2).join('').toUpperCase() ?? 'AD';
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#f8fafc' }}>
-      <TeacherSidebar
+      <AdminSidebar
         userName={user?.name}
         userCode={user?.username}
         userInitials={initials}
@@ -59,13 +53,11 @@ const TeacherLayout: FC = () => {
           notifLoading={notifLoading}
           onMarkRead={markRead}
           onMarkAllRead={markAllRead}
-          onNotificationClick={handleNotificationClick}
           onLogout={handleLogout}
           onMenuClick={isMobile ? () => setMobileOpen(true) : undefined}
           isMobile={isMobile}
-          notificationsPath="/teacher/notifications"
         />
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px 40px' }}>
           <Outlet />
         </div>
       </div>
@@ -73,4 +65,4 @@ const TeacherLayout: FC = () => {
   );
 };
 
-export default TeacherLayout;
+export default AdminLayoutPage;
