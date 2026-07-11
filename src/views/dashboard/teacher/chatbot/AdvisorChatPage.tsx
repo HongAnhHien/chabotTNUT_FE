@@ -1,0 +1,352 @@
+import { type FC, useCallback, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router';
+import { ArrowLeft, GraduationCap, Loader2, Menu, RefreshCw } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+import ChatHistory from '@/views/dashboard/teacher/chatbot/ChatHistory';
+import ChatContent from '@/views/dashboard/teacher/chatbot/ChatContent';
+import ChatInput from '@/views/dashboard/teacher/chatbot/ChatInput';
+import type { ChatMessage } from '@/views/dashboard/teacher/chatbot/types';
+
+import AdvisorApi from '@/infra/chat/advisor_api';
+import type { IChatSession } from '@/infra/api/interfaces/IChat';
+import { Button } from '@/components/ui/button';
+
+const CSS = `
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive sidebar ── */
+.aai-sidebar {
+  flex-shrink:0; width:240px; height:100%;
+  position:absolute; left:-240px; z-index:45;
+  transition:left .22s cubic-bezier(.34,1.2,.64,1);
+}
+.aai-sidebar.open { left:0; }
+.aai-hamburger {
+  display:flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:8px; flex-shrink:0;
+  background:rgba(30,58,138,0.06); border:1px solid rgba(30,58,138,0.12);
+  color:#1e3a8a; cursor:pointer;
+}
+@media (min-width:768px) {
+  .aai-sidebar { position:relative !important; left:0 !important; z-index:1 !important; }
+  .aai-hamburger { display:none !important; }
+}
+`;
+
+interface Props {
+  role: 'student' | 'teacher';
+  homePath: string;
+  chatBasePath: string; // e.g. "/student/chat/advisor"
+}
+
+const SUGGESTIONS: Record<Props['role'], string[]> = {
+  student: [
+    '📊 Điểm HK này của tôi ra sao?',
+    '🗓️ TKB tuần này của tôi?',
+    '📝 Lịch thi cuối kỳ của tôi?',
+  ],
+  teacher: [
+    '🗓️ Tuần này tôi dạy gì?',
+    '👥 Danh sách sinh viên tôi cố vấn HK này?',
+    '📝 Lịch thi cuối kỳ các lớp tôi phụ trách?',
+  ],
+};
+
+const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
+  const navigate = useNavigate();
+  const { sessionId: urlSessionId } = useParams<{ sessionId?: string }>();
+
+  const [sessions,        setSessions]        = useState<IChatSession[]>([]);
+  const [currentSession,  setCurrentSession]  = useState<IChatSession | null>(null);
+  const [loadingSessions, setLoadingSessions] = useState(true);
+  const [creatingSession, setCreatingSession] = useState(false);
+
+  const [messages,  setMessages]  = useState<ChatMessage[]>([]);
+  const [streaming, setStreaming] = useState(false);
+
+  const [sidebarOpen,    setSidebarOpen]    = useState(false);
+  const [refreshingToken, setRefreshingToken] = useState(false);
+
+  const mapHistory = (raw: { role: string; content: string; timestamp?: string }[]): ChatMessage[] =>
+    raw.map((m, i) => ({
+      id: `hist-${i}-${m.role}`,
+      // Chuẩn hoá role: chỉ có 2 bên hội thoại, coi mọi giá trị không phải assistant/bot/ai là user
+      // (phòng trường hợp backend trả role khác chuỗi 'assistant' đúng casing).
+      role: /^(assistant|bot|ai)$/i.test(m.role) ? 'assistant' : 'user',
+      content: m.content,
+      timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
+    }));
+
+  // Endpoint chi tiết (GET .../sessions/{id}) trả title chính xác ngay lập tức
+  // (BE tự suy title từ câu hỏi đầu nếu job đặt tên CVHT chưa chạy xong); endpoint
+  // danh sách thì có thể trễ vài giây. Nên mỗi khi mở 1 session, đồng bộ lại title
+  // đó vào cả currentSession lẫn sidebar để không phải chờ danh sách tự cập nhật.
+  const applySessionDetail = (session: IChatSession | null) => {
+    if (!session) return;
+    setCurrentSession(session);
+    setSessions(prev => prev.map(s => (s.id === session.id ? session : s)));
+  };
+
+  // ── Load sessions + auto-restore từ URL ─────────────
+  const loadSessions = useCallback(async () => {
+    setLoadingSessions(true);
+    try {
+      const r = await AdvisorApi.getSessions();
+      const list = r.sessions ?? [];
+      setSessions(list);
+      if (urlSessionId) {
+        const found = list.find(s => s.id === urlSessionId);
+        if (found) {
+          setCurrentSession(found);
+          const hist = await AdvisorApi.getSessionHistory(found.id);
+          setMessages(mapHistory(hist.messages ?? []));
+          applySessionDetail(hist.session);
+        }
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setLoadingSessions(false);
+    }
+  }, [urlSessionId]);
+
+  useEffect(() => {
+    void Promise.resolve().then(loadSessions);
+  }, [loadSessions]);
+
+  // ── Create session (không cần chọn môn học) ──────────
+  const handleNewChat = async () => {
+    setCreatingSession(true);
+    try {
+      const r = await AdvisorApi.createSession();
+      const allRes = await AdvisorApi.getSessions();
+      setSessions(allRes.sessions ?? []);
+      const sess = (allRes.sessions ?? []).find(s => s.id === r.session_id);
+      if (sess) {
+        handleSelectSession(sess);
+      } else {
+        const fake: IChatSession = { id: r.session_id, name: 'Cố vấn học tập' };
+        navigate(`${chatBasePath}/${r.session_id}`, { replace: true });
+        setCurrentSession(fake);
+        setMessages([]);
+      }
+    } catch {
+      toast.error('Không thể tạo cuộc trò chuyện.');
+    } finally {
+      setCreatingSession(false);
+    }
+  };
+
+  // ── Select session ───────────────────────────────────
+  const handleSelectSession = async (sess: IChatSession) => {
+    if (sess.id === currentSession?.id) return;
+    navigate(`${chatBasePath}/${sess.id}`, { replace: true });
+    setCurrentSession(sess);
+    setSidebarOpen(false);
+    setStreaming(false);
+    setMessages([]);
+    try {
+      const r = await AdvisorApi.getSessionHistory(sess.id);
+      setMessages(mapHistory(r.messages ?? []));
+      applySessionDetail(r.session);
+    } catch {
+      setMessages([]);
+    }
+  };
+
+  // ── Delete session ───────────────────────────────────
+  const handleDeleteSession = async (id: string) => {
+    if (!confirm('Xóa cuộc trò chuyện này?')) return;
+    const prevSessions = sessions;
+    const wasCurrent = currentSession?.id === id;
+
+    setSessions(prev => prev.filter(s => s.id !== id));
+    if (wasCurrent) {
+      setCurrentSession(null);
+      setMessages([]);
+      navigate(chatBasePath, { replace: true });
+    }
+
+    try {
+      const res = await AdvisorApi.deleteSession(id);
+      if (!res.success) throw new Error(res.message ?? 'Xóa thất bại');
+    } catch {
+      toast.error('Không thể xóa cuộc trò chuyện. Vui lòng thử lại.');
+      setSessions(prevSessions);
+    }
+  };
+
+  // ── Refresh Portal token (khi hết hạn giữa chừng) ────
+  const handleRefreshToken = async () => {
+    if (!currentSession) return;
+    setRefreshingToken(true);
+    try {
+      await AdvisorApi.refreshPortalToken(currentSession.id);
+      toast.success('Đã làm mới token cổng thông tin.');
+    } catch {
+      toast.error('Không thể làm mới token. Vui lòng thử lại.');
+    } finally {
+      setRefreshingToken(false);
+    }
+  };
+
+  // ── Send message (SSE) ───────────────────────────────
+  const handleSend = async (text: string) => {
+    if (!currentSession || streaming) return;
+
+    const isFirstMessage = messages.length === 0;
+    const userMsgId = `user-${Date.now()}`;
+    const botMsgId  = `bot-${Date.now()}`;
+
+    setMessages(prev => [
+      ...prev,
+      { id: userMsgId, role: 'user', content: text, timestamp: new Date() },
+      { id: botMsgId,  role: 'assistant', content: '', timestamp: new Date(), isStreaming: true },
+    ]);
+    setStreaming(true);
+
+    let accumulated = '';
+
+    try {
+      await AdvisorApi.streamChat(currentSession.id, text, {
+        onChunk: chunk => {
+          accumulated += chunk;
+          setMessages(prev => prev.map(m =>
+            m.id === botMsgId ? { ...m, content: accumulated } : m
+          ));
+        },
+        onDone: data => {
+          setMessages(prev => prev.map(m =>
+            m.id === botMsgId ? { ...m, content: data.full_response, isStreaming: false } : m
+          ));
+          // Endpoint chi tiết trả title suy từ câu hỏi đầu ngay lập tức (endpoint danh
+          // sách có thể trễ vài giây) — gọi lại để cập nhật tên ngay trên sidebar.
+          if (isFirstMessage) {
+            AdvisorApi.getSessionHistory(currentSession.id)
+              .then(r => applySessionDetail(r.session))
+              .catch(() => {});
+          }
+        },
+        onError: err => {
+          toast.error('Lỗi kết nối: ' + err.message);
+          setMessages(prev => prev.map(m =>
+            m.id === botMsgId ? { ...m, content: accumulated || 'Đã xảy ra lỗi.', isStreaming: false } : m
+          ));
+        },
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Không thể kết nối đến chatbot.';
+      toast.error(msg);
+      setMessages(prev => prev.map(m =>
+        m.id === botMsgId ? { ...m, content: accumulated || 'Đã xảy ra lỗi.', isStreaming: false } : m
+      ));
+    } finally {
+      setStreaming(false);
+    }
+  };
+
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif", background: '#f0f4ff', overflow: 'hidden' }}>
+      <style>{CSS}</style>
+
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
+
+        {sidebarOpen && (
+          <div onClick={() => setSidebarOpen(false)}
+            style={{ position: 'absolute', inset: 0, zIndex: 40, background: 'rgba(15,23,42,0.35)', backdropFilter: 'blur(2px)' }} />
+        )}
+
+        <div className={`aai-sidebar${sidebarOpen ? ' open' : ''}`}>
+          <ChatHistory
+            sessions={sessions}
+            currentSessionId={currentSession?.id ?? ''}
+            onSelectSession={id => {
+              const sess = sessions.find(s => s.id === id);
+              if (sess) handleSelectSession(sess);
+            }}
+            onNewChat={handleNewChat}
+            onDeleteSession={handleDeleteSession}
+            isLoading={loadingSessions || creatingSession}
+          />
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#f4f6fb', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'white', borderBottom: '1px solid #eef0f5', flexShrink: 0 }}>
+            <button className="aai-hamburger" onClick={() => setSidebarOpen(v => !v)} title="Danh sách chat">
+              <Menu size={16} />
+            </button>
+            {currentSession ? (
+              <>
+                <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#2563eb,#60a5fa)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>
+                  <GraduationCap size={18} color="white" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>Chatbot cố vấn học tập</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 1 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+                    <span style={{ fontSize: '0.65rem', color: '#64748b' }}>Trực tuyến · Trả lời 24/7</span>
+                  </div>
+                </div>
+                <button
+                  onClick={handleRefreshToken}
+                  disabled={refreshingToken}
+                  title="Làm mới token cổng thông tin (nếu hết hạn giữa chừng)"
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(37,99,235,0.2)', background: 'rgba(37,99,235,0.06)', color: '#2563eb', fontSize: '0.7rem', fontWeight: 700, cursor: refreshingToken ? 'not-allowed' : 'pointer' }}
+                >
+                  <RefreshCw size={12} style={refreshingToken ? { animation: 'spin 1s linear infinite' } : undefined} />
+                  Làm mới token
+                </button>
+              </>
+            ) : (
+              <span style={{ flex: 1, fontSize: '0.82rem', fontWeight: 600, color: '#94a3b8' }}>Chọn hoặc tạo cuộc trò chuyện</span>
+            )}
+            <Button variant="outline" onClick={() => navigate(homePath)} title="Về trang chủ" style={{ flexShrink: 0 }}>
+              <ArrowLeft size={14} />
+            </Button>
+          </div>
+
+          {currentSession ? (
+            <>
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <ChatContent
+                  role={role}
+                  messages={messages}
+                  isStreaming={streaming}
+                  sessionId={currentSession?.id}
+                  onExamDismiss={() => {}}
+                  onExamConfirm={() => {}}
+                  onExamPreview={() => {}}
+                />
+              </div>
+              <ChatInput
+                onSend={handleSend}
+                isLoading={streaming}
+                suggestions={SUGGESTIONS[role]}
+              />
+            </>
+          ) : (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '2rem 1rem' }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#2563eb,#60a5fa)', boxShadow: '0 4px 20px rgba(37,99,235,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {loadingSessions ? <Loader2 size={30} color="white" style={{ animation: 'spin 1s linear infinite' }} /> : <GraduationCap size={30} color="white" />}
+              </div>
+              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1e293b' }}>Chatbot cố vấn học tập</div>
+              <div style={{ fontSize: '0.8rem', color: '#64748b', textAlign: 'center', maxWidth: 300, lineHeight: 1.6 }}>
+                Chọn cuộc trò chuyện hoặc tạo mới để bắt đầu hỏi cố vấn học tập
+              </div>
+              <button
+                onClick={handleNewChat}
+                disabled={creatingSession}
+                style={{ marginTop: 4, padding: '10px 28px', borderRadius: 12, background: 'linear-gradient(135deg,#2563eb,#60a5fa)', border: 'none', color: 'white', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 2px 10px rgba(37,99,235,0.3)' }}
+              >
+                {creatingSession ? 'Đang tạo...' : '+ Cuộc trò chuyện mới'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdvisorChatPage;

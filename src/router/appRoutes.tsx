@@ -22,6 +22,8 @@ const StudentProfile        = lazy(() => import("@views/dashboard/student/profil
 const StudentSubjectsPage   = lazy(() => import("@views/dashboard/student/subjects/StudentSubjects"));
 const StudentAssignmentExam  = lazy(() => import("@views/dashboard/student/assignments/StudentAssignmentExam"));
 const StudentChatbotPage        = lazy(() => import("@views/dashboard/student/chatbot/StudentChatbot"));
+const StudentAdvisorPage        = lazy(() => import("@views/dashboard/student/chatbot/StudentAdvisor"));
+const ChatModeLayout            = lazy(() => import("@views/dashboard/teacher/chatbot/ChatModeLayout"));
 const StudentSubjectDetailPage  = lazy(() => import("@views/dashboard/student/subjects/StudentSubjectDetail"));
 const StudentSchedulePage       = lazy(() => import("@views/dashboard/student/schedule/StudentSchedule"));
 const NotificationsPage         = lazy(() => import("@views/dashboard/notifications/NotificationsPage"));
@@ -33,6 +35,7 @@ const ClassAnalyticsPage      = lazy(() => import("@views/dashboard/teacher/anal
 const SubjectAnalyticsPage    = lazy(() => import("@views/dashboard/teacher/analytics/SubjectAnalyticsPage"));
 const TeacherProfile       = lazy(() => import("@views/dashboard/teacher/profile"));
 const TeacherChatPage      = lazy(() => import("@views/dashboard/teacher/chatbot/TeacherAITutors"));
+const TeacherAdvisorPage   = lazy(() => import("@views/dashboard/teacher/chatbot/TeacherAdvisor"));
 const TeacherAssignmentsPage  = lazy(() => import("@views/dashboard/teacher/assignments/TeacherAssignments"));
 const TeacherAssignmentDetail = lazy(() => import("@views/dashboard/teacher/assignments/TeacherAssignmentDetail"));
 const TeacherExamView      = lazy(() => import("@views/dashboard/teacher/exams/TeacherExamView"));
@@ -80,8 +83,16 @@ export const appRoutes: RouteObject[] = [
       { path: "schedule",         element: <StudentSchedulePage /> },
       { path: "notifications",    element: <NotificationsPage /> },
       { path: "profile",          element: <StudentProfile /> },
-      { path: "chat",             element: <StudentChatbotPage /> },
-      { path: "chat/:sessionId",  element: <StudentChatbotPage /> },
+      {
+        path: "chat",
+        element: <ChatModeLayout basePath="/student/chat" chatLabel="Chat môn học" />,
+        children: [
+          { index: true,             element: <StudentChatbotPage /> },
+          { path: ":sessionId",      element: <StudentChatbotPage /> },
+          { path: "advisor",         element: <StudentAdvisorPage /> },
+          { path: "advisor/:sessionId", element: <StudentAdvisorPage /> },
+        ],
+      },
     ],
   },
 
@@ -109,8 +120,16 @@ export const appRoutes: RouteObject[] = [
       { path: "dashboard",           element: <TeacherAspx /> },
       { path: "subjects",            element: <TeacherSubjectList /> },
       { path: "profile",             element: <TeacherProfile /> },
-      { path: "chat",                element: <TeacherChatPage /> },
-      { path: "chat/:sessionId",     element: <TeacherChatPage /> },
+      {
+        path: "chat",
+        element: <ChatModeLayout basePath="/teacher/chat" chatLabel="Chatbot trợ giảng" />,
+        children: [
+          { index: true,                element: <TeacherChatPage /> },
+          { path: ":sessionId",         element: <TeacherChatPage /> },
+          { path: "advisor",            element: <TeacherAdvisorPage /> },
+          { path: "advisor/:sessionId", element: <TeacherAdvisorPage /> },
+        ],
+      },
       { path: "assignments",         element: <TeacherAssignmentsPage /> },
       { path: "assignments/:id",     element: <TeacherAssignmentDetail /> },
       { path: "notifications",       element: <NotificationsPage /> },

@@ -1,0 +1,172 @@
+{
+  "info": {
+    "name": "Chatbot BE - Advisor (CVHT proxy)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",     "value": "http://127.0.0.1:8000/api", "type": "string" },
+    { "key": "username",     "value": "K255520207218",             "type": "string" },
+    { "key": "password",     "value": "",                          "type": "string" },
+    { "key": "session_id",   "value": "",                          "type": "string" },
+    { "key": "access_token", "value": "",                          "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (lấy JWT của chatbot_BE)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const r = pm.response.json();",
+                "if (r.data && r.data.access_token) pm.collectionVariables.set('access_token', r.data.access_token);"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "username", "value": "{{username}}", "type": "text" },
+                { "key": "password", "value": "{{password}}", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Session",
+      "item": [
+        {
+          "name": "Tạo session (CVHT)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const r = pm.response.json();",
+                "if (r.session_id) pm.collectionVariables.set('session_id', r.session_id);"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/advisor/session",
+              "host": ["{{base_url}}"],
+              "path": ["advisor", "session"]
+            }
+          }
+        },
+        {
+          "name": "Danh sách sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/advisor/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["advisor", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "Xem session + messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/advisor/sessions/{{session_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["advisor", "sessions", "{{session_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Portal token (khi token cũ hết hạn giữa chừng)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/advisor/sessions/{{session_id}}/token",
+              "host": ["{{base_url}}"],
+              "path": ["advisor", "sessions", "{{session_id}}", "token"]
+            }
+          }
+        },
+        {
+          "name": "Xóa session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/advisor/sessions/{{session_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["advisor", "sessions", "{{session_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "item": [
+        {
+          "name": "Chat (không stream)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "session_id", "value": "{{session_id}}", "type": "text" },
+                { "key": "question",   "value": "Lịch học tuần này của tôi thế nào?", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/advisor/chat",
+              "host": ["{{base_url}}"],
+              "path": ["advisor", "chat"]
+            }
+          }
+        },
+        {
+          "name": "Chat stream",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "session_id", "value": "{{session_id}}", "type": "text" },
+                { "key": "question",   "value": "Điểm học kỳ này của tôi ra sao?", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/advisor/chat/stream",
+              "host": ["{{base_url}}"],
+              "path": ["advisor", "chat", "stream"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

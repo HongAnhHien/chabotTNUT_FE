@@ -77,6 +77,16 @@ export const API_ENDPOINTS = {
     STREAM:          '/chat/stream',
   },
 
+  ADVISOR: {
+    SESSION:         '/advisor/session',
+    SESSIONS:        '/advisor/sessions',
+    SESSION_DETAIL:  (id: string) => `/advisor/sessions/${id}`,
+    SESSION_DELETE:  (id: string) => `/advisor/sessions/${id}`,
+    SESSION_TOKEN:   (id: string) => `/advisor/sessions/${id}/token`,
+    CHAT:            '/advisor/chat',
+    STREAM:          '/advisor/chat/stream',
+  },
+
   EXAM: {
     CONFIRM: (subjectId: string) => `/teacher/subjects/${subjectId}/exams/confirm`,
     LIST:    '/teacher/exams',
