@@ -5,12 +5,15 @@ import {
 } from 'lucide-react';
 import { useManageUsersStore } from './admin/manage_users/stores/user_store';
 import { useUser } from '@/hooks/useUser';
+import AnalyticsOverviewSection from './admin/analytics/AnalyticsOverviewSection';
+import KnowledgeMapSection from './admin/analytics/KnowledgeMapSection';
+import ReportSection from './admin/analytics/ReportSection';
 
 const formatDate = () =>
   new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
-const StatCard: FC<{
+export const StatCard: FC<{
   label: string;
   value: string | number;
   sub?: string;
@@ -102,6 +105,15 @@ const Dashboard: FC = () => {
           onClick={() => navigate('/admin/dashboard/api-settings')}
         />
       </div>
+
+      {/* ── Chatbot analytics ── */}
+      <div>
+        <h2 className="text-sm font-bold text-foreground mb-3">Thống kê chatbot</h2>
+        <AnalyticsOverviewSection />
+      </div>
+
+      <KnowledgeMapSection />
+      <ReportSection />
     </div>
   );
 };

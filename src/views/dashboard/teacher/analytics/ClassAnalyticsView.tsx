@@ -22,10 +22,11 @@ const EXAM_TYPE: Record<string, string> = {
 const SCORE_COLORS = ['#dc2626','#ea580c','#d97706','#84cc16','#16a34a','#15803d','#94a3b8'];
 
 const WARN_COLORS: Record<string, string> = {
-  'Bình thường': '#22c55e',
-  'Cần chú ý':   '#d97706',
-  'Nguy cơ':     '#ea580c',
-  'Rất nguy cơ': '#dc2626',
+  'Bình thường':      '#22c55e',
+  'Cần chú ý':        '#d97706',
+  'Nguy cơ':          '#ea580c',
+  'Rất nguy cơ':      '#dc2626',
+  'Chưa có đánh giá': '#94a3b8',
 };
 
 const AI_COLORS = ['#7c3aed','#e2e8f0'];
@@ -167,6 +168,13 @@ const ClassAnalyticsView: FC<Props> = ({ data, compact = false }) => {
   const completion  = data.assignments.completion_rate;
   const ch          = data.charts;
   const chartH      = compact ? 150 : 180;
+  // "Chưa có đánh giá" hiển thị đầu tiên (trước "Bình thường") — SV chưa có điểm
+  // là trạng thái trung tính cần thấy ngay, không lẫn giữa các mức cảnh báo.
+  const warningBreakdown = ch
+    ? [...ch.warning_breakdown].sort((a, b) =>
+        (a.level === 'chua_danh_gia' ? -1 : 0) - (b.level === 'chua_danh_gia' ? -1 : 0)
+      )
+    : [];
 
   return (
     <div style={{ display:'flex', flexDirection:'column', gap: compact ? 14 : 20 }}>
@@ -267,14 +275,14 @@ const ClassAnalyticsView: FC<Props> = ({ data, compact = false }) => {
               <ResponsiveContainer width="100%" height={chartH}>
                 <PieChart>
                   <Pie
-                    data={ch.warning_breakdown}
+                    data={warningBreakdown}
                     dataKey="count"
                     nameKey="label"
                     innerRadius="50%"
                     outerRadius="72%"
                     paddingAngle={3}
                   >
-                    {ch.warning_breakdown.map((entry, i) => (
+                    {warningBreakdown.map((entry, i) => (
                       <Cell key={i} fill={WARN_COLORS[entry.label] ?? '#94a3b8'} />
                     ))}
                   </Pie>

@@ -1,6 +1,6 @@
 import { type FC, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { ArrowDown, Copy, Check, Trash2, CheckCircle, Eye, ChevronDown, ChevronUp, ExternalLink, X, Loader2, Hash, Clock, BookOpen } from 'lucide-react';
+import { ArrowDown, Copy, Check, Trash2, CheckCircle, Eye, ChevronDown, ChevronUp, ExternalLink, X, Loader2, Hash, Clock, BookOpen, ThumbsUp, ThumbsDown } from 'lucide-react';
 import logoTNUT from '@/assets/logo_tnut/logo_tnut.png';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
@@ -187,6 +187,7 @@ interface Props {
   onExamDismiss: (msgId: string) => void;
   onExamConfirm: (msgId: string) => void;
   onExamPreview: (msgId: string) => void;
+  onFeedback: (msgId: string, messageId: string | undefined, value: 'like' | 'dislike') => void;
 }
 
 const fmtTime = (d: Date) => d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -196,7 +197,7 @@ const EXAM_API_RE = /^GET \/api\/exam\/([a-zA-Z0-9_-]+)$/;
 const cleanContent = (s: string) =>
   s.replace(/ API:/g, ':').replace(/ API\b/g, '');
 
-const ChatContent = ({ messages, isStreaming = false, role = 'teacher', sessionId, onExamDismiss, onExamConfirm, onExamPreview }: Props) => {
+const ChatContent = ({ messages, isStreaming = false, role = 'teacher', sessionId, onExamDismiss, onExamConfirm, onExamPreview, onFeedback }: Props) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const viewingExamId = searchParams.get('exam');
   const setViewingExamId = (id: string | null) =>
@@ -412,15 +413,33 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', sessionI
                           )}
                         </div>
 
-                        {/* Footer: time + copy */}
+                        {/* Footer: time + copy + feedback */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, padding: '0 2px' }}>
                           {msg.role === 'assistant' && !msg.isStreaming && (
-                            <button onClick={() => handleCopy(msg.content, msg.id)}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '3px 5px', borderRadius: 5, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.68rem' }}
-                              title="Sao chép"
-                            >
-                              {copiedId === msg.id ? <Check size={11} color="#059669" /> : <Copy size={11} />}
-                            </button>
+                            <>
+                              <button onClick={() => handleCopy(msg.content, msg.id)}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '3px 5px', borderRadius: 5, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.68rem' }}
+                                title="Sao chép"
+                              >
+                                {copiedId === msg.id ? <Check size={11} color="#059669" /> : <Copy size={11} />}
+                              </button>
+                              <button
+                                onClick={() => onFeedback(msg.id, msg.messageId, 'like')}
+                                disabled={!!msg.feedback}
+                                style={{ background: 'none', border: 'none', cursor: msg.feedback ? 'default' : 'pointer', padding: '3px 5px', borderRadius: 5, color: msg.feedback === 'like' ? '#2563eb' : '#94a3b8', opacity: msg.feedback && msg.feedback !== 'like' ? 0.4 : 1, display: 'flex', alignItems: 'center' }}
+                                title="Hữu ích"
+                              >
+                                <ThumbsUp size={11} />
+                              </button>
+                              <button
+                                onClick={() => onFeedback(msg.id, msg.messageId, 'dislike')}
+                                disabled={!!msg.feedback}
+                                style={{ background: 'none', border: 'none', cursor: msg.feedback ? 'default' : 'pointer', padding: '3px 5px', borderRadius: 5, color: msg.feedback === 'dislike' ? '#dc2626' : '#94a3b8', opacity: msg.feedback && msg.feedback !== 'dislike' ? 0.4 : 1, display: 'flex', alignItems: 'center' }}
+                                title="Không hữu ích"
+                              >
+                                <ThumbsDown size={11} />
+                              </button>
+                            </>
                           )}
                           <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{fmtTime(msg.timestamp)}</span>
                         </div>

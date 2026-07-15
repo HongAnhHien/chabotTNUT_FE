@@ -4,10 +4,12 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend, Cell,
 } from 'recharts';
-import { ArrowLeft, Loader2, BookOpen, Users, Bot, AlertTriangle, CheckCircle, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Loader2, BookOpen, Users, Bot, AlertTriangle, CheckCircle, ChevronDown, MessageCircle, ThumbsUp, Star, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
 import TeacherApi from '@/infra/teacher/teacher_api';
+import ChatApi from '@/infra/chat/chat_api';
 import type { ISubjectAnalytics, IClassAnalytics } from '@/infra/api/interfaces/ITeacher';
+import type { IAnalyticsSummary } from '@/infra/api/interfaces/IChat';
 import CSS from './analytics.styles';
 import ClassAnalyticsView from './ClassAnalyticsView';
 
@@ -88,6 +90,9 @@ const SubjectAnalyticsPage: FC = () => {
   const [data,    setData]    = useState<ISubjectAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Thống kê chatbot AI (Chat môn học) — gọi riêng, không chặn phần dữ liệu chính
+  const [chatSummary, setChatSummary] = useState<IAnalyticsSummary | null>(null);
+
   useEffect(() => {
     if (!maMon) return;
     TeacherApi.getSubjectAnalytics(maMon, hocKy)
@@ -95,6 +100,13 @@ const SubjectAnalyticsPage: FC = () => {
       .catch(() => toast.error('Không thể tải dữ liệu môn học.'))
       .finally(() => setLoading(false));
   }, [maMon, hocKy]);
+
+  useEffect(() => {
+    if (!maMon) return;
+    ChatApi.getAnalyticsSummary(maMon)
+      .then(res => setChatSummary(res.data))
+      .catch(() => setChatSummary(null));
+  }, [maMon]);
 
   const aiPct  = data && data.total_students > 0 ? Math.round(data.ai_users / data.total_students * 100) : 0;
   const ch     = data?.charts;
@@ -159,6 +171,21 @@ const SubjectAnalyticsPage: FC = () => {
                 <span style={{ fontSize:'0.68rem', color:'#94a3b8' }}>{data.assignments.total_submitted} lượt nộp</span>
               </div>
             </div>
+
+            {/* Chatbot AI summary */}
+            {chatSummary && (
+              <ChartCard title="Chatbot AI — thống kê">
+                <div className="an-stat-grid">
+                  <StatCard icon={<Users        size={15} color="#2563eb" />} label="Người dùng"  color="#2563eb" value={chatSummary.unique_users} />
+                  <StatCard icon={<MessageCircle size={15} color="#7c3aed" />} label="Tin nhắn"    color="#7c3aed" value={chatSummary.total_messages} />
+                  <StatCard icon={<ThumbsUp     size={15} color="#16a34a" />} label="Hữu ích"      color="#16a34a" value={`${chatSummary.helpful_rate}%`} />
+                  <StatCard icon={<Activity     size={15} color="#ea580c" />} label="Đang hoạt động" color="#ea580c" value={chatSummary.active_now} />
+                  {chatSummary.csat && (
+                    <StatCard icon={<Star size={15} color="#d97706" />} label="Đánh giá CSAT" color="#d97706" value={`${chatSummary.csat.avg_score}/${chatSummary.csat.max_score}`} sub={`${chatSummary.csat.total_ratings} lượt`} />
+                  )}
+                </div>
+              </ChartCard>
+            )}
 
             {/* Subject-level charts */}
             {ch && (

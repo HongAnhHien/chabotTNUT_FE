@@ -13,6 +13,9 @@ import type {
   ISavedExamsResponse,
   ISavedExamDetailResponse,
   IDeleteExamResponse,
+  IFeedbackResponse,
+  IRatingResponse,
+  IAnalyticsSummaryResponse,
 } from '@/infra/api/interfaces/IChat';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
@@ -135,6 +138,35 @@ class ChatApi {
 
   async deleteExam(id: string): Promise<IDeleteExamResponse> {
     const res = await axiosInstance.delete<IDeleteExamResponse>(API_ENDPOINTS.EXAM.DELETE(id));
+    return res.data;
+  }
+
+  // ── Feedback / Rating / Analytics ─────────────────────
+  async sendFeedback(messageId: string, value: 'like' | 'dislike'): Promise<IFeedbackResponse> {
+    const form = new FormData();
+    form.append('message_id', messageId);
+    form.append('value', value);
+    const res = await axiosInstance.post<IFeedbackResponse>(API_ENDPOINTS.CHAT.FEEDBACK, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  }
+
+  async sendRating(score: number, sessionId?: string, comment?: string): Promise<IRatingResponse> {
+    const form = new FormData();
+    form.append('score', String(score));
+    if (sessionId) form.append('session_id', sessionId);
+    if (comment) form.append('comment', comment);
+    const res = await axiosInstance.post<IRatingResponse>(API_ENDPOINTS.CHAT.RATING, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  }
+
+  async getAnalyticsSummary(subjectId?: string): Promise<IAnalyticsSummaryResponse> {
+    const res = await axiosInstance.get<IAnalyticsSummaryResponse>(API_ENDPOINTS.CHAT.ANALYTICS_SUMMARY, {
+      params: subjectId ? { subject_id: subjectId } : undefined,
+    });
     return res.data;
   }
 }

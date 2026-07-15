@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import ChatHistory from './ChatHistory';
 import ChatContent from './ChatContent';
 import ChatInput from './ChatInput';
+import RatingCard from './RatingCard';
 import type { ChatMessage } from './types';
 
 
@@ -13,6 +14,7 @@ import ChatApi from '@/infra/chat/chat_api';
 import TeacherApi from '@/infra/teacher/teacher_api';
 import type { IChatSession, IExamDetail, IExamQuestion as IQ, IChatHistoryMessage } from '@/infra/api/interfaces/IChat';
 import type { ITeacherSubjectWithClasses, ISemester } from '@/infra/api/interfaces/ITeacher';
+import { storage } from '@/helper/storage';
 
 // ── CSS ───────────────────────────────────────────────
 const CSS = `
@@ -506,6 +508,14 @@ const TeacherAITutors: FC = () => {
   const [messages,  setMessages]  = useState<ChatMessage[]>([]);
   const [streaming, setStreaming] = useState(false);
 
+  // CSAT rating — derived, không cần effect: ẩn ngay khi dismiss (submit/skip) qua
+  // dismissedSessionId, ẩn vĩnh viễn qua storage sau khi session đã "resolved".
+  const [dismissedSessionId, setDismissedSessionId] = useState<string | null>(null);
+  const showRating = !!currentSession
+    && currentSession.id !== dismissedSessionId
+    && messages.length >= 8
+    && !storage.hasResolvedRating(currentSession.id);
+
   // Subject picker
   const [showPicker,  setShowPicker]  = useState(false);
   const [courses,     setCourses]     = useState<ITeacherSubjectWithClasses[]>([]);
@@ -745,6 +755,7 @@ const TeacherAITutors: FC = () => {
                     ...m,
                     content: accumulated,
                     isStreaming: false,
+                    messageId: done.message_id,
                     examMeta: isExam && examId
                       ? { examId, sessionId: currentSession.id, subjectId }
                       : undefined,
@@ -839,6 +850,35 @@ const TeacherAITutors: FC = () => {
     } finally {
       setLoadingPreview(false);
     }
+  };
+
+  // ── Feedback (like/dislike) ──────────────────────────
+  const handleFeedback = async (msgId: string, messageId: string | undefined, value: 'like' | 'dislike') => {
+    if (!messageId) return;
+    setMessages(prev => prev.map(m => m.id === msgId ? { ...m, feedback: value } : m));
+    try {
+      await ChatApi.sendFeedback(messageId, value);
+    } catch {
+      toast.error('Không thể gửi phản hồi.');
+    }
+  };
+
+  // ── Rating CSAT ───────────────────────────────────────
+  const handleRatingSubmit = async (score: number) => {
+    if (!currentSession) return;
+    setDismissedSessionId(currentSession.id);
+    storage.markRatingResolved(currentSession.id);
+    try {
+      await ChatApi.sendRating(score, currentSession.id);
+    } catch {
+      toast.error('Không thể gửi đánh giá.');
+    }
+  };
+
+  const handleRatingSkip = () => {
+    if (!currentSession) return;
+    setDismissedSessionId(currentSession.id);
+    storage.markRatingResolved(currentSession.id);
   };
 
   const closePreview = () => {
@@ -944,8 +984,10 @@ const TeacherAITutors: FC = () => {
                   onExamDismiss={handleExamDismiss}
                   onExamConfirm={handleExamConfirm}
                   onExamPreview={handleExamPreview}
+                  onFeedback={handleFeedback}
                 />
               </div>
+              {showRating && <RatingCard onSubmit={handleRatingSubmit} onSkip={handleRatingSkip} />}
               <ChatInput
                 onSend={handleSend}
                 isLoading={streaming}

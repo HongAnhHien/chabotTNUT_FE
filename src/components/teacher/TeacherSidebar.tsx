@@ -25,7 +25,7 @@ const NAV_SECTIONS = [
   {
     label: 'Tổng quan',
     items: [
-      { icon: LayoutDashboard, label: 'Dashboard',    path: '#' },
+      { icon: LayoutDashboard, label: 'Dashboard',    path: '/teacher/dashboard' },
     ],
   },
   {

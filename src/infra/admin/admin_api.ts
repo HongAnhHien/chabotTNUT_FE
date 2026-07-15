@@ -19,6 +19,12 @@ import type {
   IMarkNotificationReadResponse,
   IMarkAllNotificationsReadResponse,
 } from '@/infra/api/interfaces/INotification';
+import type {
+  ISubjectsResponse,
+  IKnowledgeMapResponse,
+  IWeeklyAnalyticsResponse,
+  IReportResponse,
+} from '@/infra/api/interfaces/IAnalytics';
 
 class AdminApi {
   // ── Parse logs ────────────────────────────────────────────
@@ -88,6 +94,33 @@ class AdminApi {
   async markAllNotificationsRead(): Promise<IMarkAllNotificationsReadResponse> {
     const res = await axiosInstance.post<IMarkAllNotificationsReadResponse>(
       API_ENDPOINTS.ADMIN.NOTIFICATIONS_READ_ALL
+    );
+    return res.data;
+  }
+
+  // ── Analytics ──────────────────────────────────────────────
+  async getSubjects(): Promise<ISubjectsResponse> {
+    const res = await axiosInstance.get<ISubjectsResponse>(API_ENDPOINTS.ADMIN.SUBJECTS);
+    return res.data;
+  }
+
+  async getKnowledgeMap(subjectId: string, days?: number): Promise<IKnowledgeMapResponse> {
+    const res = await axiosInstance.get<IKnowledgeMapResponse>(
+      API_ENDPOINTS.ADMIN.ANALYTICS_KNOWLEDGE_MAP,
+      { params: { subject_id: subjectId, ...(days ? { days } : {}) } }
+    );
+    return res.data;
+  }
+
+  async getWeeklyAnalytics(): Promise<IWeeklyAnalyticsResponse> {
+    const res = await axiosInstance.get<IWeeklyAnalyticsResponse>(API_ENDPOINTS.ADMIN.ANALYTICS_WEEKLY);
+    return res.data;
+  }
+
+  async getReport(subjectId: string, days?: number): Promise<IReportResponse> {
+    const res = await axiosInstance.get<IReportResponse>(
+      API_ENDPOINTS.ADMIN.ANALYTICS_REPORT,
+      { params: { subject_id: subjectId, ...(days ? { days } : {}) } }
     );
     return res.data;
   }

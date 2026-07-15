@@ -6,11 +6,13 @@ import toast from 'react-hot-toast';
 import ChatHistory from '@/views/dashboard/teacher/chatbot/ChatHistory';
 import ChatContent from '@/views/dashboard/teacher/chatbot/ChatContent';
 import ChatInput from '@/views/dashboard/teacher/chatbot/ChatInput';
+import RatingCard from '@/views/dashboard/teacher/chatbot/RatingCard';
 import type { ChatMessage } from '@/views/dashboard/teacher/chatbot/types';
 
 import AdvisorApi from '@/infra/chat/advisor_api';
 import type { IChatSession } from '@/infra/api/interfaces/IChat';
 import { Button } from '@/components/ui/button';
+import { storage } from '@/helper/storage';
 
 const CSS = `
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -67,6 +69,14 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
 
   const [sidebarOpen,    setSidebarOpen]    = useState(false);
   const [refreshingToken, setRefreshingToken] = useState(false);
+
+  // CSAT rating — derived, không cần effect: ẩn ngay khi dismiss (submit/skip) qua
+  // dismissedSessionId, ẩn vĩnh viễn qua storage sau khi session đã "resolved".
+  const [dismissedSessionId, setDismissedSessionId] = useState<string | null>(null);
+  const showRating = !!currentSession
+    && currentSession.id !== dismissedSessionId
+    && messages.length >= 8
+    && !storage.hasResolvedRating(currentSession.id);
 
   const mapHistory = (raw: { role: string; content: string; timestamp?: string }[]): ChatMessage[] =>
     raw.map((m, i) => ({
@@ -218,7 +228,7 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
         },
         onDone: data => {
           setMessages(prev => prev.map(m =>
-            m.id === botMsgId ? { ...m, content: data.full_response, isStreaming: false } : m
+            m.id === botMsgId ? { ...m, content: data.full_response, isStreaming: false, messageId: data.message_id } : m
           ));
           // Endpoint chi tiết trả title suy từ câu hỏi đầu ngay lập tức (endpoint danh
           // sách có thể trễ vài giây) — gọi lại để cập nhật tên ngay trên sidebar.
@@ -244,6 +254,35 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
     } finally {
       setStreaming(false);
     }
+  };
+
+  // ── Feedback (like/dislike) ──────────────────────────
+  const handleFeedback = async (msgId: string, messageId: string | undefined, value: 'like' | 'dislike') => {
+    if (!messageId) return;
+    setMessages(prev => prev.map(m => m.id === msgId ? { ...m, feedback: value } : m));
+    try {
+      await AdvisorApi.sendFeedback(messageId, value);
+    } catch {
+      toast.error('Không thể gửi phản hồi.');
+    }
+  };
+
+  // ── Rating CSAT ───────────────────────────────────────
+  const handleRatingSubmit = async (score: number) => {
+    if (!currentSession) return;
+    setDismissedSessionId(currentSession.id);
+    storage.markRatingResolved(currentSession.id);
+    try {
+      await AdvisorApi.sendRating(score, currentSession.id);
+    } catch {
+      toast.error('Không thể gửi đánh giá.');
+    }
+  };
+
+  const handleRatingSkip = () => {
+    if (!currentSession) return;
+    setDismissedSessionId(currentSession.id);
+    storage.markRatingResolved(currentSession.id);
   };
 
   return (
@@ -317,8 +356,10 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
                   onExamDismiss={() => {}}
                   onExamConfirm={() => {}}
                   onExamPreview={() => {}}
+                  onFeedback={handleFeedback}
                 />
               </div>
+              {showRating && <RatingCard onSubmit={handleRatingSubmit} onSkip={handleRatingSkip} />}
               <ChatInput
                 onSend={handleSend}
                 isLoading={streaming}

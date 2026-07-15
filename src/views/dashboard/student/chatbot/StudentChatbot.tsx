@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import ChatHistory from '@/views/dashboard/teacher/chatbot/ChatHistory';
 import ChatContent from '@/views/dashboard/teacher/chatbot/ChatContent';
 import ChatInput from '@/views/dashboard/teacher/chatbot/ChatInput';
+import RatingCard from '@/views/dashboard/teacher/chatbot/RatingCard';
 import type { ChatMessage } from '@/views/dashboard/teacher/chatbot/types';
 
 import ChatApi from '@/infra/chat/chat_api';
@@ -14,6 +15,7 @@ import type { IChatSession } from '@/infra/api/interfaces/IChat';
 import type { IStudentSubject, IStudentExamStatusResponse } from '@/infra/api/interfaces/IStudent';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/views/pages/stores/auth_store';
+import { storage } from '@/helper/storage';
 
 // ── Extract assignment link embedded in content ───────
 const ASGN_URL_RE = /(https?:\/\/\S+\/student\/assignments\/[a-zA-Z0-9]+)/;
@@ -133,6 +135,14 @@ const StudentChatbot: FC = () => {
   // Exam status
   const user = useAuthStore(s => s.user);
   const [examStatus, setExamStatus] = useState<IStudentExamStatusResponse | null>(null);
+
+  // CSAT rating — derived, không cần effect: ẩn ngay khi dismiss (submit/skip) qua
+  // dismissedSessionId, ẩn vĩnh viễn qua storage sau khi session đã "resolved".
+  const [dismissedSessionId, setDismissedSessionId] = useState<string | null>(null);
+  const showRating = !!currentSession
+    && currentSession.id !== dismissedSessionId
+    && messages.length >= 8
+    && !storage.hasResolvedRating(currentSession.id);
 
   // ── Helper: map history, extract any embedded assignment links ──
   const mapHistory = (raw: { role: 'user' | 'assistant'; content: string; timestamp?: string }[]): ChatMessage[] => {
@@ -321,7 +331,7 @@ const StudentChatbot: FC = () => {
             }
             setMessages(prev => prev.map(m =>
               m.id === botMsgId
-                ? { ...m, content: finalContent, isStreaming: false, intent: done.intent, ...(embeddedLink ? { assignmentLink: embeddedLink } : {}) }
+                ? { ...m, content: finalContent, isStreaming: false, intent: done.intent, messageId: done.message_id, ...(embeddedLink ? { assignmentLink: embeddedLink } : {}) }
                 : m
             ));
           },
@@ -348,6 +358,35 @@ const StudentChatbot: FC = () => {
     } finally {
       setStreaming(false);
     }
+  };
+
+  // ── Feedback (like/dislike) ──────────────────────────
+  const handleFeedback = async (msgId: string, messageId: string | undefined, value: 'like' | 'dislike') => {
+    if (!messageId) return;
+    setMessages(prev => prev.map(m => m.id === msgId ? { ...m, feedback: value } : m));
+    try {
+      await ChatApi.sendFeedback(messageId, value);
+    } catch {
+      toast.error('Không thể gửi phản hồi.');
+    }
+  };
+
+  // ── Rating CSAT ───────────────────────────────────────
+  const handleRatingSubmit = async (score: number) => {
+    if (!currentSession) return;
+    setDismissedSessionId(currentSession.id);
+    storage.markRatingResolved(currentSession.id);
+    try {
+      await ChatApi.sendRating(score, currentSession.id);
+    } catch {
+      toast.error('Không thể gửi đánh giá.');
+    }
+  };
+
+  const handleRatingSkip = () => {
+    if (!currentSession) return;
+    setDismissedSessionId(currentSession.id);
+    storage.markRatingResolved(currentSession.id);
   };
 
   return (
@@ -438,8 +477,10 @@ const StudentChatbot: FC = () => {
                   onExamDismiss={() => {}}
                   onExamConfirm={() => Promise.resolve()}
                   onExamPreview={() => {}}
+                  onFeedback={handleFeedback}
                 />
               </div>
+              {showRating && <RatingCard onSubmit={handleRatingSubmit} onSkip={handleRatingSkip} />}
               <ChatInput
                 onSend={handleSend}
                 isLoading={streaming}

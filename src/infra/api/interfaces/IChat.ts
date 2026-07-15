@@ -60,6 +60,7 @@ export interface ISSEDoneEvent {
   exam_id?: string;
   timing?: Record<string, number>;
   session?: IChatSession;
+  message_id: string;
 }
 
 // ── Exam (from /chat/exam/{examId}) ───────────────────
@@ -149,4 +150,28 @@ export interface ISavedExamDetailResponse {
 export interface IDeleteExamResponse {
   success: boolean;
   message: string;
+}
+
+// ── Feedback / Rating / Analytics summary ──────────────
+export interface IFeedbackResponse {
+  success: boolean;
+  message?: string;
+}
+
+export interface IRatingResponse {
+  success: boolean;
+  message?: string;
+}
+
+export interface IAnalyticsSummary {
+  unique_users: number;
+  total_messages: number;
+  helpful_rate: number;
+  active_now: number;
+  csat?: { total_ratings: number; avg_score: number; max_score: number } | null;
+}
+
+export interface IAnalyticsSummaryResponse {
+  success: boolean;
+  data: IAnalyticsSummary;
 }

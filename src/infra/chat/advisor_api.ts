@@ -1,7 +1,7 @@
 import axiosInstance from '@/infra/api/conflig/axiosInstance';
 import { API_ENDPOINTS } from '@/infra/api/conflig/apiEndpoints';
 import { storage, STORAGE_KEYS } from '@/helper/storage';
-import type { IChatSession } from '@/infra/api/interfaces/IChat';
+import type { IChatSession, IFeedbackResponse, IRatingResponse, IAnalyticsSummaryResponse } from '@/infra/api/interfaces/IChat';
 import type {
   ICreateAdvisorSessionResponse,
   IAdvisorSessionsResponse,
@@ -11,6 +11,7 @@ import type {
   IAdvisorChatResponse,
   IAdvisorSSEEvent,
   IAdvisorSSEDoneEvent,
+  IAdvisorTrendResponse,
 } from '@/infra/api/interfaces/IAdvisor';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
@@ -132,6 +133,40 @@ class AdvisorApi {
     } finally {
       reader.releaseLock();
     }
+  }
+
+  // ── Feedback / Rating / Analytics ─────────────────────
+  async sendFeedback(messageId: string, value: 'like' | 'dislike'): Promise<IFeedbackResponse> {
+    const form = new FormData();
+    form.append('message_id', messageId);
+    form.append('value', value);
+    const res = await axiosInstance.post<IFeedbackResponse>(API_ENDPOINTS.ADVISOR.FEEDBACK, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  }
+
+  async sendRating(score: number, sessionId?: string, comment?: string): Promise<IRatingResponse> {
+    const form = new FormData();
+    form.append('score', String(score));
+    if (sessionId) form.append('session_id', sessionId);
+    if (comment) form.append('comment', comment);
+    const res = await axiosInstance.post<IRatingResponse>(API_ENDPOINTS.ADVISOR.RATING, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  }
+
+  async getAnalyticsSummary(): Promise<IAnalyticsSummaryResponse> {
+    const res = await axiosInstance.get<IAnalyticsSummaryResponse>(API_ENDPOINTS.ADVISOR.ANALYTICS_SUMMARY);
+    return res.data;
+  }
+
+  async getAnalyticsTrend(days?: number): Promise<IAdvisorTrendResponse> {
+    const res = await axiosInstance.get<IAdvisorTrendResponse>(API_ENDPOINTS.ADVISOR.ANALYTICS_TREND, {
+      params: days ? { days } : undefined,
+    });
+    return res.data;
   }
 }
 

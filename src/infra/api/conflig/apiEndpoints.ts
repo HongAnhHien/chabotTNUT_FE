@@ -34,6 +34,14 @@ export const API_ENDPOINTS = {
     NOTIFICATIONS:          '/admin/notifications',
     NOTIFICATION_READ:      (id: string) => `/admin/notifications/${id}/read`,
     NOTIFICATIONS_READ_ALL: '/admin/notifications/read-all',
+
+    // Subjects list — endpoint public (không có prefix /admin), dùng để làm dropdown
+    SUBJECTS: '/subjects',
+
+    // Analytics (admin-only)
+    ANALYTICS_KNOWLEDGE_MAP: '/admin/analytics/knowledge-map',
+    ANALYTICS_WEEKLY:        '/admin/analytics/weekly',
+    ANALYTICS_REPORT:        '/admin/analytics/report',
   },
 
   TEACHER: {
@@ -75,6 +83,9 @@ export const API_ENDPOINTS = {
     SESSION_DELETE:  (id: string) => `/chat/sessions/${id}`,
     EXAM:            (examId: string) => `/chat/exam/${examId}`,
     STREAM:          '/chat/stream',
+    FEEDBACK:        '/chat/feedback',
+    RATING:          '/chat/rating',
+    ANALYTICS_SUMMARY: '/chat/analytics/summary',
   },
 
   ADVISOR: {
@@ -85,6 +96,10 @@ export const API_ENDPOINTS = {
     SESSION_TOKEN:   (id: string) => `/advisor/sessions/${id}/token`,
     CHAT:            '/advisor/chat',
     STREAM:          '/advisor/chat/stream',
+    FEEDBACK:        '/advisor/feedback',
+    RATING:          '/advisor/rating',
+    ANALYTICS_SUMMARY: '/advisor/analytics/summary',
+    ANALYTICS_TREND:   '/advisor/analytics/trend',
   },
 
   EXAM: {

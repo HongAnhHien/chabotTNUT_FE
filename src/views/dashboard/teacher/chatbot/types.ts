@@ -6,6 +6,8 @@ export interface ChatMessage {
   isStreaming?: boolean;
   intent?: string;
   assignmentLink?: string;
+  messageId?: string;
+  feedback?: 'like' | 'dislike';
   examMeta?: {
     examId: string;
     sessionId: string;

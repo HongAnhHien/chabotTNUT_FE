@@ -1,15 +1,18 @@
 import { type FC, useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { Loader2, ChevronDown, Calendar, Search, X, BookOpen, Layers, Users, Target } from 'lucide-react';
 import toast from 'react-hot-toast';
 import TeacherApi from '@/infra/teacher/teacher_api';
+import ChatApi from '@/infra/chat/chat_api';
 import type { ISemester, ITeacherSubjectWithClasses } from '@/infra/api/interfaces/ITeacher';
+import type { IAnalyticsSummary } from '@/infra/api/interfaces/IChat';
 import CSS from './subjectList.styles';
 import SubjectRow from './SubjectRow';
 import SubjectStatCards, { type ISubjectOverviewStat } from './SubjectStatCards';
 
 const TeacherSubjectList: FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [semesters,     setSemesters]     = useState<ISemester[]>([]);
   const [currentHocKy,  setCurrentHocKy]  = useState<number | null>(null);
@@ -20,14 +23,30 @@ const TeacherSubjectList: FC = () => {
   const [dropOpen,      setDropOpen]      = useState(false);
   const [search,        setSearch]        = useState('');
   const [searchInput,   setSearchInput]   = useState('');
+  const [chatSummaries, setChatSummaries] = useState<Record<string, IAnalyticsSummary>>({});
 
   const dropRef    = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Số môn của 1 giáo viên thường ít (khác danh sách toàn trường bên admin) nên
+  // gọi song song 1 request/môn là chấp nhận được, không cần endpoint tổng hợp riêng.
+  const loadChatSummaries = (maMons: string[]) => {
+    setChatSummaries({});
+    Promise.all(maMons.map(m => ChatApi.getAnalyticsSummary(m).then(r => [m, r.data] as const).catch(() => null)))
+      .then(results => {
+        const map: Record<string, IAnalyticsSummary> = {};
+        for (const r of results) if (r) map[r[0]] = r[1];
+        setChatSummaries(map);
+      });
+  };
+
   const loadCourses = useCallback((hocKy: number, q?: string) => {
     setLoadingCourses(true);
     TeacherApi.getSemesterCourses(hocKy, q || undefined)
-      .then(res => { setCourses(res.data); })
+      .then(res => {
+        setCourses(res.data);
+        loadChatSummaries(res.data.map(c => c.subject.ma_mon));
+      })
       .catch(() => toast.error('Không thể tải danh sách môn học.'))
       .finally(() => setLoadingCourses(false));
   }, []);
@@ -46,8 +65,12 @@ const TeacherSubjectList: FC = () => {
       .then(res => {
         const list    = res.data.ds_hoc_ky;
         const current = res.data.hoc_ky_hien_tai;
-        // Không có học kỳ hiện tại (API trả null) → fallback chọn học kỳ đầu tiên trong danh sách
-        const initialHocKy = current ?? list[0]?.hoc_ky ?? null;
+        // Ưu tiên học kỳ còn lưu trong URL (vd quay lại từ trang chi tiết),
+        // sau đó mới đến học kỳ hiện tại, cuối cùng fallback học kỳ đầu danh sách
+        const hkFromUrl = Number(searchParams.get('hk')) || null;
+        const initialHocKy = (hkFromUrl && list.some(s => s.hoc_ky === hkFromUrl))
+          ? hkFromUrl
+          : current ?? list[0]?.hoc_ky ?? null;
 
         setSemesters(list);
         setCurrentHocKy(current);
@@ -56,6 +79,7 @@ const TeacherSubjectList: FC = () => {
       })
       .catch(() => toast.error('Không thể tải danh sách học kỳ.'))
       .finally(() => setLoadingSem(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadCourses]);
 
   // close dropdown on outside click
@@ -138,7 +162,12 @@ const TeacherSubjectList: FC = () => {
                     <button
                       key={s.hoc_ky}
                       className="sl-drop-item"
-                      onClick={() => { setSelectedHocKy(s.hoc_ky); loadCourses(s.hoc_ky); setDropOpen(false); }}
+                      onClick={() => {
+                        setSelectedHocKy(s.hoc_ky);
+                        loadCourses(s.hoc_ky);
+                        setDropOpen(false);
+                        setSearchParams(prev => { const next = new URLSearchParams(prev); next.set('hk', String(s.hoc_ky)); return next; }, { replace: true });
+                      }}
                       style={{ background: s.hoc_ky === selectedHocKy ? 'rgba(37,99,235,0.05)' : 'none' }}
                     >
                       <div style={{ width:7, height:7, borderRadius:'50%', flexShrink:0, background: s.hoc_ky === selectedHocKy ? '#2563eb' : s.hoc_ky === currentHocKy ? '#22c55e' : '#e2e8f0' }} />
@@ -202,6 +231,7 @@ const TeacherSubjectList: FC = () => {
                 course={course}
                 colorIdx={idx}
                 analytics={course.analytics}
+                chatSummary={chatSummaries[course.subject.ma_mon]}
                 onDetail={()     => navigate(`/teacher/subjects/${course.subject.ma_mon}/analytics${selectedHocKy ? `?hoc_ky=${selectedHocKy}` : ''}`)}
                 onFiles={()      => navigate(`/teacher/subjects/${course.subject.ma_mon}/files`, { state: { tenMon: course.subject.ten_mon } })}
                 onExams={()      => navigate(`/teacher/subjects/${course.subject.ma_mon}/exams`)}

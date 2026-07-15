@@ -56,6 +56,18 @@ export interface IAdvisorChatResponse {
 // stream events (that only appears on the non-stream POST /advisor/chat).
 export type IAdvisorSSEEvent =
   | { content: string; done: false }
-  | { content: ''; done: true; full_response: string };
+  | { content: ''; done: true; full_response: string; message_id: string };
 
 export type IAdvisorSSEDoneEvent = Extract<IAdvisorSSEEvent, { done: true }>;
+
+// ── Trend theo ngày (chỉ CVHT) ─────────────────────────
+export interface IAdvisorTrendItem {
+  date: string;
+  message_count: number;
+  unique_users: number;
+}
+
+export interface IAdvisorTrendResponse {
+  success: boolean;
+  data: { trend: IAdvisorTrendItem[] };
+}

@@ -1,6 +1,7 @@
 import { type FC, useState } from 'react';
-import { BookOpen, Users, MapPin, Calendar, ChevronDown, FileText, ClipboardList, Info, Sparkles, AlertTriangle } from 'lucide-react';
+import { BookOpen, Users, MapPin, Calendar, ChevronDown, FileText, ClipboardList, Info, Sparkles, AlertTriangle, MessageCircle } from 'lucide-react';
 import type { ITeacherSubjectWithClasses, ISubjectAnalyticsEmbed } from '@/infra/api/interfaces/ITeacher';
+import type { IAnalyticsSummary } from '@/infra/api/interfaces/IChat';
 
 type Cls = ITeacherSubjectWithClasses['classes'][number];
 
@@ -20,6 +21,7 @@ interface Props {
   colorIdx:   number;
   analytics?: ISubjectAnalyticsEmbed;
   analyticsLoading?: boolean;
+  chatSummary?: IAnalyticsSummary;
   onDetail:   () => void;
   onFiles:    () => void;
   onExams:    () => void;
@@ -28,7 +30,7 @@ interface Props {
   onClsExams:  (cls: Cls) => void;
 }
 
-const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, onDetail, onFiles, onExams, onClsDetail, onStudents, onClsExams }) => {
+const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, chatSummary, onDetail, onFiles, onExams, onClsDetail, onStudents, onClsExams }) => {
   const [expanded, setExpanded] = useState(true);
   const { subject, classes } = course;
   const color = COLORS[colorIdx % COLORS.length];
@@ -84,6 +86,11 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, 
               {analytics.attention_count > 0 && (
                 <span style={{ display:'flex', alignItems:'center', gap:6, fontSize:'0.72rem', fontWeight:600, color:'#ea580c' }}>
                   <AlertTriangle size={11} /> {analytics.attention_count} cần chú ý
+                </span>
+              )}
+              {chatSummary && (
+                <span style={{ display:'flex', alignItems:'center', gap:6, fontSize:'0.72rem', color:'#64748b' }}>
+                  <MessageCircle size={11} color="#2563eb" /> {chatSummary.total_messages} tin nhắn · {chatSummary.helpful_rate}% hữu ích
                 </span>
               )}
             </div>
