@@ -61,8 +61,8 @@ const AnalyticsOverviewSection: FC = () => {
 
     Promise.all([AdvisorApi.getAnalyticsTrend(7), AdminApi.getWeeklyAnalytics()])
       .then(([t, w]) => {
-        setTrend(t.data.trend);
-        setWeekly(w.data);
+        setTrend(t.data?.trend ?? []);
+        setWeekly(w.data ?? []);
       })
       .catch(() => {})
       .finally(() => setLoadingCharts(false));

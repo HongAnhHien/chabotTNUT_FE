@@ -21,8 +21,8 @@ const KnowledgeMapSection: FC = () => {
     setLoading(true);
     AdminApi.getKnowledgeMap(id, 30)
       .then(res => {
-        setData(res.knowledge_map);
-        setTotalStudents(res.total_students);
+        setData(res.knowledge_map ?? []);
+        setTotalStudents(res.total_students ?? 0);
       })
       .catch(() => { setData([]); setTotalStudents(0); })
       .finally(() => setLoading(false));
