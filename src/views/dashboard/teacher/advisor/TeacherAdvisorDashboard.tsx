@@ -89,13 +89,17 @@ const TeacherAdvisorDashboard: FC = () => {
     );
   }
 
+  // BE đôi khi trả total > 0 nhưng thiếu summary/students (lỗi Portal giữa chừng) —
+  // không tin tưởng tuyệt đối shape đầy đủ chỉ vì total > 0, tránh crash trắng trang.
+  const summary = classRisk.summary ?? { binh_thuong: 0, can_theo_doi: 0, can_tu_van_som: 0, nguy_co_cao: 0 };
+
   const pieData = (Object.keys(RISK_THEME) as (keyof typeof RISK_THEME)[])
-    .map(key => ({ key, theme: riskTheme(key), count: classRisk.summary[key as keyof typeof classRisk.summary] }))
+    .map(key => ({ key, theme: riskTheme(key), count: summary[key as keyof typeof summary] ?? 0 }))
     .filter(d => d.count > 0);
 
-  const students = [...classRisk.students].sort((a, b) => b.risk.score - a.risk.score);
+  const students = [...(classRisk.students ?? [])].sort((a, b) => b.risk.score - a.risk.score);
 
-  const atRiskPct = overview ? overview.at_risk_rate : (classRisk.summary.can_tu_van_som + classRisk.summary.nguy_co_cao) / classRisk.total * 100;
+  const atRiskPct = overview ? overview.at_risk_rate : (summary.can_tu_van_som + summary.nguy_co_cao) / classRisk.total * 100;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>

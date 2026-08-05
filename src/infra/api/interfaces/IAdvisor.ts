@@ -158,8 +158,10 @@ export interface IClassRiskResponse {
   data: {
     nhhk: number;
     total: number;
-    summary: IClassRiskSummary;
-    students: IClassRiskStudent[];
+    // Đã gặp thực tế trên production: total > 0 nhưng summary/students thiếu (lỗi
+    // Portal giữa chừng phía BE) — FE phải tự fallback, không giả định luôn có đủ.
+    summary?: IClassRiskSummary;
+    students?: IClassRiskStudent[];
   };
 }
 
