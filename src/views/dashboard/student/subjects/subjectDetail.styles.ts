@@ -12,7 +12,7 @@ const CSS = `
   .ssd-tab.active { color:#2563eb; border-bottom-color:#2563eb; font-weight:700; }
 
   .ssd-meta { display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:4px; align-items:center; }
-  .ssd-meta span { font-size:0.68rem; }
+  .ssd-meta span { font-size:0.7rem; }
 
   .ssd-exam-badge {
     display:flex; align-items:center; gap:14px; flex-wrap:wrap;
@@ -63,7 +63,7 @@ const CSS = `
     .ssd-filter-btn   { padding:7px 10px; font-size:0.72rem; width:100%; justify-content:space-between; }
     .ssd-search-wrap  { width:100%; flex:none; }
     .ssd-meta         { gap:4px 8px; }
-    .ssd-meta span    { font-size:0.63rem; }
+    .ssd-meta span    { font-size:0.7rem; }
     .ssd-exam-badge   { flex-direction:column; align-items:flex-start; gap:6px; padding:10px 12px; }
   }
 `;

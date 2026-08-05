@@ -42,6 +42,8 @@ const TeacherExamView      = lazy(() => import("@views/dashboard/teacher/exams/T
 const TeacherSubjectFiles  = lazy(() => import("@views/dashboard/teacher/subjects/TeacherSubjectFiles"));
 const TeacherSubjectExams  = lazy(() => import("@views/dashboard/teacher/subjects/exams"));
 const ClassStudentsPage    = lazy(() => import("@views/dashboard/teacher/class"));
+const TeacherAdvisorDashboard      = lazy(() => import("@views/dashboard/teacher/advisor/TeacherAdvisorDashboard"));
+const TeacherAdvisorStudentDetail  = lazy(() => import("@views/dashboard/teacher/advisor/TeacherAdvisorStudentDetail"));
 
 export const appRoutes: RouteObject[] = [
   // Landing
@@ -139,6 +141,8 @@ export const appRoutes: RouteObject[] = [
       { path: "subjects/:maMon/analytics",   element: <SubjectAnalyticsPage /> },
       { path: "courses/:idToHoc/students",   element: <ClassStudentsPage /> },
       { path: "courses/:idToHoc/analytics",  element: <ClassAnalyticsPage /> },
+      { path: "advisor",         element: <TeacherAdvisorDashboard /> },
+      { path: "advisor/:maSv",   element: <TeacherAdvisorStudentDetail /> },
     ],
   },
 

@@ -334,8 +334,8 @@ const Home: FC = () => {
                               }}>
                                 <Icon style={{ width:22, height:22, color:'#2563eb' }} />
                               </div>
-                              <span style={{ fontSize:10, fontWeight:700, color:'#1e3a8a', whiteSpace:'nowrap', lineHeight:1.3 }}>{label}</span>
-                              <span style={{ fontSize:9, color:'#94a3b8', lineHeight:1.2 }}>{sub}</span>
+                              <span style={{ fontSize:11, fontWeight:700, color:'#1e3a8a', whiteSpace:'nowrap', lineHeight:1.3 }}>{label}</span>
+                              <span style={{ fontSize:11, color:'#94a3b8', lineHeight:1.2 }}>{sub}</span>
                             </div>
                           </div>
                         </div>

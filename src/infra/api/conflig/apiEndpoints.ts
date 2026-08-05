@@ -100,6 +100,17 @@ export const API_ENDPOINTS = {
     RATING:          '/advisor/rating',
     ANALYTICS_SUMMARY: '/advisor/analytics/summary',
     ANALYTICS_TREND:   '/advisor/analytics/trend',
+
+    // Dashboard CVHT — Tầng 1/2/3 (xem DASHBOARD_CVHT.md)
+    PORTAL_STUDENT_INFO: '/advisor/portal/student-info',
+    CLASS_RISK:          '/advisor/analytics/class-risk',
+    ADOPTION_RATE:       '/advisor/analytics/adoption-rate',
+    RISK_OVERVIEW:       '/advisor/analytics/risk-overview',
+    USER_HISTORY:        '/advisor/analytics/user-history',
+    STUDENT_ACTIVITY:    '/advisor/analytics/student-activity',
+    TOP_KEYWORDS:        '/advisor/analytics/top-keywords',
+    TOPIC_GROUPS:        '/advisor/analytics/topic-groups',
+    LAST_RECOMMENDATION: '/advisor/analytics/last-recommendation',
   },
 
   EXAM: {

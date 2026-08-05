@@ -41,7 +41,7 @@ const CSS = `
   .an-tab-badge {
     display:inline-flex; align-items:center; justify-content:center;
     min-width:18px; height:18px; padding:0 5px;
-    border-radius:9px; font-size:0.62rem; font-weight:700;
+    border-radius:9px; font-size:0.7rem; font-weight:700;
     background:#f1f5f9; color:#64748b;
   }
   .an-tab-badge.red { background:rgba(220,38,38,0.1); color:#dc2626; }

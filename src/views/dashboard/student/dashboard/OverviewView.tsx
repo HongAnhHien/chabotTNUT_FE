@@ -86,7 +86,7 @@ const OverviewView: FC<OverviewViewProps> = ({ data, assignments, subjects, seme
                 <Calendar size={13} color="#2563eb" style={{ flexShrink:0 }} />
                 <span style={{ fontSize:'0.8rem', fontWeight:700, color:'#1e293b', whiteSpace:'nowrap', flex:1, textAlign:'left' }}>{currentSem?.ten_hoc_ky ?? 'Chọn học kỳ'}</span>
                 {currentSem?.is_current && (
-                  <span style={{ fontSize:'0.58rem', fontWeight:700, color:'#059669', background:'rgba(5,150,105,0.1)', borderRadius:20, padding:'2px 8px', whiteSpace:'nowrap', flexShrink:0 }}>Hiện tại</span>
+                  <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#059669', background:'rgba(5,150,105,0.1)', borderRadius:20, padding:'2px 8px', whiteSpace:'nowrap', flexShrink:0 }}>Hiện tại</span>
                 )}
                 <ChevronDown size={13} color="#64748b" style={{ flexShrink:0, transition:'transform .2s', transform: dropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
               </button>
@@ -94,7 +94,7 @@ const OverviewView: FC<OverviewViewProps> = ({ data, assignments, subjects, seme
               {dropOpen && (
                 <div className="sd-sem-drop-panel" style={{ position:'absolute', top:'calc(100% + 6px)', right:0, zIndex:20, background:'white', borderRadius:14, boxShadow:'0 8px 30px rgba(30,58,138,0.15)', border:'1px solid rgba(37,99,235,0.1)', minWidth:240, overflow:'hidden', maxHeight:280, overflowY:'auto' }}>
                   <div style={{ padding:'8px 14px 6px', borderBottom:'1px solid rgba(37,99,235,0.07)' }}>
-                    <span style={{ fontSize:'0.6rem', fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.06em' }}>Chọn học kỳ</span>
+                    <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.06em' }}>Chọn học kỳ</span>
                   </div>
                   {semesters.map(s => (
                     <button
@@ -104,7 +104,7 @@ const OverviewView: FC<OverviewViewProps> = ({ data, assignments, subjects, seme
                     >
                       <div style={{ width:7, height:7, borderRadius:'50%', flexShrink:0, background: s.hoc_ky === selectedHk ? '#2563eb' : s.is_current ? '#22c55e' : '#e2e8f0' }} />
                       <span style={{ flex:1, fontSize:'0.76rem', fontWeight: s.hoc_ky === selectedHk ? 700 : 500, color: s.hoc_ky === selectedHk ? '#1e3a8a' : '#334155' }}>{s.ten_hoc_ky}</span>
-                      {s.is_current && <span style={{ fontSize:'0.56rem', fontWeight:700, color:'#059669', background:'rgba(5,150,105,0.09)', borderRadius:20, padding:'1px 7px' }}>Hiện tại</span>}
+                      {s.is_current && <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#059669', background:'rgba(5,150,105,0.09)', borderRadius:20, padding:'1px 7px' }}>Hiện tại</span>}
                     </button>
                   ))}
                 </div>
@@ -140,9 +140,9 @@ const OverviewView: FC<OverviewViewProps> = ({ data, assignments, subjects, seme
                     <tr key={subj.ma_mon}>
                       <td>
                         <div style={{ fontWeight:700, color:'#1e293b' }}>{subj.ten_mon}</div>
-                        <div style={{ fontSize:'0.62rem', color:'#94a3b8', fontFamily:'monospace', marginTop:2 }}>{subj.ma_mon}</div>
+                        <div style={{ fontSize:'0.7rem', color:'#94a3b8', fontFamily:'monospace', marginTop:2 }}>{subj.ma_mon}</div>
                         {subj.lich_thi && (
-                          <div style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:'0.62rem', fontWeight:600, color:'#b45309', background:'rgba(217,119,6,0.08)', border:'1px solid rgba(217,119,6,0.16)', borderRadius:8, padding:'2px 7px', marginTop:4 }}>
+                          <div style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:'0.7rem', fontWeight:600, color:'#b45309', background:'rgba(217,119,6,0.08)', border:'1px solid rgba(217,119,6,0.16)', borderRadius:8, padding:'2px 7px', marginTop:4 }}>
                             <Calendar size={9} /> {subj.lich_thi.ngay_thi} · {subj.lich_thi.gio_bat_dau}
                           </div>
                         )}
@@ -173,7 +173,7 @@ const OverviewView: FC<OverviewViewProps> = ({ data, assignments, subjects, seme
                             const ec  = EXAM_TYPE_COLOR[t.exam_type] ?? { bg:'#f1f5f9', color:'#64748b' };
                             const sc2 = scoreColor(t.avg_score_10);
                             return (
-                              <div key={t.exam_type} style={{ display:'inline-flex', alignItems:'center', gap:3, background:ec.bg, borderRadius:20, padding:'2px 7px', fontSize:'0.62rem', fontWeight:700, color:ec.color }}>
+                              <div key={t.exam_type} style={{ display:'inline-flex', alignItems:'center', gap:3, background:ec.bg, borderRadius:20, padding:'2px 7px', fontSize:'0.7rem', fontWeight:700, color:ec.color }}>
                                 {EXAM_TYPE_SHORT[t.exam_type] ?? t.exam_type}
                                 <span style={{ color:sc2.color }}>{fmt1(t.avg_score_10)}</span>
                               </div>
@@ -195,7 +195,7 @@ const OverviewView: FC<OverviewViewProps> = ({ data, assignments, subjects, seme
           </div>
         )}
         {semFrom && (
-          <div style={{ padding:'8px 18px', fontSize:'0.65rem', color:'#94a3b8', borderTop:'1px solid #f8fafc' }}>
+          <div style={{ padding:'8px 18px', fontSize:'0.7rem', color:'#94a3b8', borderTop:'1px solid #f8fafc' }}>
             Thống kê từ {semFrom}
           </div>
         )}

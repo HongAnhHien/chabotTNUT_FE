@@ -141,7 +141,7 @@ const TeacherSubjectList: FC = () => {
                   {currentSem?.ten_hoc_ky ?? 'Chọn học kỳ'}
                 </span>
                 {currentSem && currentSem.hoc_ky === currentHocKy && (
-                  <span style={{ fontSize:'0.58rem', fontWeight:700, color:'#059669', background:'rgba(5,150,105,0.1)', borderRadius:20, padding:'2px 7px', whiteSpace:'nowrap' }}>
+                  <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#059669', background:'rgba(5,150,105,0.1)', borderRadius:20, padding:'2px 7px', whiteSpace:'nowrap' }}>
                     Hiện tại
                   </span>
                 )}
@@ -154,7 +154,7 @@ const TeacherSubjectList: FC = () => {
               {dropOpen && (
                 <div className="sl-drop-panel">
                   <div style={{ padding:'8px 14px 6px', borderBottom:'1px solid rgba(37,99,235,0.07)' }}>
-                    <span style={{ fontSize:'0.62rem', fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.06em' }}>
+                    <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.06em' }}>
                       Chọn học kỳ
                     </span>
                   </div>
@@ -175,7 +175,7 @@ const TeacherSubjectList: FC = () => {
                         {s.ten_hoc_ky}
                       </span>
                       {s.hoc_ky === currentHocKy && (
-                        <span style={{ fontSize:'0.58rem', fontWeight:700, color:'#059669', background:'rgba(5,150,105,0.09)', borderRadius:20, padding:'1px 7px' }}>
+                        <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#059669', background:'rgba(5,150,105,0.09)', borderRadius:20, padding:'1px 7px' }}>
                           Hiện tại
                         </span>
                       )}

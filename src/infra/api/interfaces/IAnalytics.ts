@@ -51,9 +51,9 @@ export interface IReportChatStats {
   unique_sessions: number;
   exams_created: number;
   messages_with_sources: number;
-  helpful_rate?: number;
+  helpful_rate?: { rate: number; count: number } | null;
   active_now?: number;
-  csat?: { total_ratings: number; avg_score: number; max_score: number } | null;
+  csat?: { total_ratings: number; avg_score: number | null; max_score: number } | null;
 }
 
 export interface IReportResponse {

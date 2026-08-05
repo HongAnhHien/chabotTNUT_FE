@@ -6,8 +6,10 @@ import {
 import { useManageUsersStore } from './admin/manage_users/stores/user_store';
 import { useUser } from '@/hooks/useUser';
 import AnalyticsOverviewSection from './admin/analytics/AnalyticsOverviewSection';
+import CvhtStatsSection from './admin/analytics/CvhtStatsSection';
 import KnowledgeMapSection from './admin/analytics/KnowledgeMapSection';
 import ReportSection from './admin/analytics/ReportSection';
+import CSS from './admin/analytics/adminDashboard.styles';
 
 const formatDate = () =>
   new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -19,32 +21,35 @@ export const StatCard: FC<{
   sub?: string;
   icon: React.ReactNode;
   loading?: boolean;
-}> = ({ label, value, sub, icon, loading }) => (
-  <div className="rounded-xl border border-border bg-card p-5 flex items-start gap-4">
-    <div className="p-2.5 rounded-lg bg-[#2F6B3F]/10 shrink-0">{icon}</div>
-    <div className="min-w-0">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+  tint?: string;
+  ink?: string;
+}> = ({ label, value, sub, icon, loading, tint = 'rgba(47,107,63,0.1)', ink = '#2F6B3F' }) => (
+  <div className="ad-stat-card">
+    <div style={{ width: 42, height: 42, borderRadius: 12, background: tint, color: ink, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      {icon}
+    </div>
+    <div style={{ minWidth: 0 }}>
+      <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500, margin: 0 }}>{label}</p>
       {loading ? (
-        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground mt-1.5" />
+        <Loader2 style={{ width: 18, height: 18, marginTop: 5, animation: 'ad-spin 1s linear infinite', color: '#94a3b8' }} />
       ) : (
-        <p className="text-2xl font-bold text-foreground mt-0.5 tabular-nums">{value}</p>
+        <p style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', margin: '1px 0 0', letterSpacing: '-0.02em' }}>{value}</p>
       )}
-      {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
+      {sub && <p style={{ fontSize: '0.7rem', color: ink, fontWeight: 600, margin: '2px 0 0' }}>{sub}</p>}
     </div>
   </div>
 );
 
-const QuickLink: FC<{ label: string; sub: string; icon: React.ReactNode; onClick: () => void }> = ({ label, sub, icon, onClick }) => (
-  <button
-    onClick={onClick}
-    className="flex items-center gap-3 rounded-xl border border-border bg-card p-5 text-left hover:border-[#2F6B3F]/40 hover:bg-[#2F6B3F]/5 transition-colors"
-  >
-    <div className="p-2.5 rounded-lg bg-[#2F6B3F]/10 shrink-0">{icon}</div>
-    <div className="min-w-0 flex-1">
-      <p className="text-sm font-semibold text-foreground">{label}</p>
-      <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
+const QuickLink: FC<{ label: string; sub: string; icon: React.ReactNode; grad: string; glow: string; onClick: () => void }> = ({ label, sub, icon, grad, glow, onClick }) => (
+  <button onClick={onClick} className="ad-quicklink">
+    <div style={{ width: 40, height: 40, borderRadius: 11, background: grad, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 10px ${glow}` }}>
+      {icon}
     </div>
-    <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+    <div style={{ minWidth: 0, flex: 1 }}>
+      <p style={{ fontSize: '0.86rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>{label}</p>
+      <p style={{ fontSize: '0.74rem', color: '#94a3b8', margin: '2px 0 0' }}>{sub}</p>
+    </div>
+    <ArrowRight size={16} color="#94a3b8" style={{ flexShrink: 0 }} />
   </button>
 );
 
@@ -64,53 +69,68 @@ const Dashboard: FC = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="space-y-6">
-      {/* ── Header ── */}
-      <div>
-        <h1 className="text-xl font-bold" style={{ color: '#1e4429' }}>
-          Xin chào, {profile?.name ?? 'Admin'} 👋
-        </h1>
-        <p className="text-sm text-muted-foreground mt-0.5">{formatDate()}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+      <style>{CSS}</style>
+
+      {/* ── Hero header ── */}
+      <div className="ad-hero" style={{ background: 'linear-gradient(120deg,#14532d 0%,#1e4429 45%,#2F6B3F 100%)' }}>
+        <div style={{ position: 'absolute', top: -50, right: -20, width: 200, height: 200, borderRadius: '50%', background: 'rgba(255,255,255,0.07)' }} />
+        <div style={{ position: 'absolute', bottom: -70, right: 90, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+        <div style={{ position: 'relative' }}>
+          <h1 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
+            Xin chào, {profile?.name ?? 'Admin'} 👋
+          </h1>
+          <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.82)' }}>{formatDate()}</p>
+        </div>
       </div>
 
       {/* ── Stat cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="ad-stats-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
         <StatCard
           label="Tổng người dùng"
           value={userMeta.total.toLocaleString()}
           sub="tài khoản hệ thống"
-          icon={<Users className="w-5 h-5 text-[#2F6B3F]" />}
+          icon={<Users size={19} />}
           loading={isUserLoading}
+          tint="#eef2ff" ink="#4f46e5"
         />
       </div>
 
       {/* ── Quick links ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
         <QuickLink
           label="Quản lý tài khoản"
           sub="Xem, thêm, sửa tài khoản người dùng"
-          icon={<Users className="w-5 h-5 text-[#2F6B3F]" />}
+          icon={<Users size={18} color="white" />}
+          grad="linear-gradient(135deg,#1e3a8a,#2563eb)"
+          glow="rgba(37,99,235,0.3)"
           onClick={() => navigate('/admin/dashboard/manage-users')}
         />
         <QuickLink
           label="Nhật ký xử lý"
           sub="Theo dõi các lần parse tài liệu"
-          icon={<FileSearch className="w-5 h-5 text-[#2F6B3F]" />}
+          icon={<FileSearch size={18} color="white" />}
+          grad="linear-gradient(135deg,#6d28d9,#7c3aed)"
+          glow="rgba(124,58,237,0.3)"
           onClick={() => navigate('/admin/dashboard/parse-logs')}
         />
         <QuickLink
           label="API key LlamaParse"
           sub="Quản lý key dùng để parse tài liệu"
-          icon={<KeyRound className="w-5 h-5 text-[#2F6B3F]" />}
+          icon={<KeyRound size={18} color="white" />}
+          grad="linear-gradient(135deg,#9a3412,#ea580c)"
+          glow="rgba(234,88,12,0.3)"
           onClick={() => navigate('/admin/dashboard/api-settings')}
         />
       </div>
 
       {/* ── Chatbot analytics ── */}
       <div>
-        <h2 className="text-sm font-bold text-foreground mb-3">Thống kê chatbot</h2>
+        <h2 style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>Thống kê chatbot</h2>
         <AnalyticsOverviewSection />
       </div>
+
+      <CvhtStatsSection />
 
       <KnowledgeMapSection />
       <ReportSection />

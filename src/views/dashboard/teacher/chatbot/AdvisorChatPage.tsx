@@ -324,7 +324,7 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
                   <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>Chatbot cố vấn học tập</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 1 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
-                    <span style={{ fontSize: '0.65rem', color: '#64748b' }}>Trực tuyến · Trả lời 24/7</span>
+                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Trực tuyến · Trả lời 24/7</span>
                   </div>
                 </div>
                 <button

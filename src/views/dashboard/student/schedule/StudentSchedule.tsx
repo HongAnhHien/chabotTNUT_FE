@@ -203,7 +203,7 @@ const StudentSchedule: FC = () => {
             {/* Day headers */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 6, marginBottom: 6, flexShrink: 0 }}>
               {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map(d => (
-                <div key={d} style={{ textAlign: 'center', fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700, padding: '2px 0' }}>{d}</div>
+                <div key={d} style={{ textAlign: 'center', fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, padding: '2px 0' }}>{d}</div>
               ))}
             </div>
 
@@ -244,7 +244,7 @@ const StudentSchedule: FC = () => {
                         return (
                           <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                             <div style={{ width: 5, height: 5, borderRadius: '50%', background: DOT_COLOR[t], flexShrink: 0 }} />
-                            <span className="ssc-evt-dot-label" style={{ fontSize: '0.6rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span className="ssc-evt-dot-label" style={{ fontSize: '0.7rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {label}
                             </span>
                           </div>
@@ -271,7 +271,7 @@ const StudentSchedule: FC = () => {
             <div style={{ padding: '16px 18px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
               <div>
                 <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#1e293b', textTransform: 'capitalize' }}>{selectedLabel}</div>
-                <div style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: 2 }}>{selectedEvts.length} sự kiện</div>
+                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: 2 }}>{selectedEvts.length} sự kiện</div>
               </div>
               <button onClick={() => setSelected(null)}
                 style={{ width: 32, height: 32, borderRadius: 9, border: '1px solid #e2e8f0', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b' }}>
@@ -290,7 +290,7 @@ const StudentSchedule: FC = () => {
                     <div key={type} style={{ borderRadius: 14, background: EVT_BG[type], padding: '10px 12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                         <div style={{ width: 7, height: 7, borderRadius: '50%', background: DOT_COLOR[type], flexShrink: 0 }} />
-                        <span style={{ fontSize: '0.68rem', fontWeight: 700, color: DOT_COLOR[type], textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: DOT_COLOR[type], textTransform: 'uppercase', letterSpacing: '0.03em' }}>
                           {EVT_LABEL[type]} · {events.length} {type === 'exam' ? 'môn' : 'bài'}
                         </span>
                       </div>
@@ -302,7 +302,7 @@ const StudentSchedule: FC = () => {
                               <>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
                                   <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1e293b', lineHeight: 1.4, flex: 1 }}>{ev.title}</div>
-                                  <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#7c3aed', background: 'rgba(124,58,237,0.1)', borderRadius: 20, padding: '2px 8px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#7c3aed', background: 'rgba(124,58,237,0.1)', borderRadius: 20, padding: '2px 8px', flexShrink: 0, whiteSpace: 'nowrap' }}>
                                     {ev.examMeta.examName}
                                   </span>
                                 </div>

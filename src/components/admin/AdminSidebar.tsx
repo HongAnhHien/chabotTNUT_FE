@@ -2,8 +2,7 @@ import { type FC, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import {
   LayoutDashboard, Users, FileSearch, KeyRound,
-  ChevronLeft, ChevronRight,
-  ChevronRight as ArrowRight, X,
+  ChevronLeft, ChevronRight, X,
 } from 'lucide-react';
 import logoTNUT from '@/assets/logo_tnut/logo_tnut.png';
 
@@ -51,8 +50,6 @@ const CSS = `
   .av3-item:hover:not([data-active="true"]) { background:#f4f8f5 !important; color:#1e293b !important; }
   .av3-toggle { transition:background .14s; }
   .av3-toggle:hover { background:#eef4ef !important; }
-  .av3-profile-card { transition:background .14s; }
-  .av3-profile-card:hover { background:#eef6f0 !important; }
   .av3-close { transition:background .14s; }
   .av3-close:hover { background:#eef4ef !important; }
 `;
@@ -119,7 +116,7 @@ const AdminSidebar: FC<Props> = ({
                 <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1e4429', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                   TNUT Learning
                 </div>
-                <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: 2, whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 2, whiteSpace: 'nowrap' }}>
                   Cổng quản trị
                 </div>
               </div>
@@ -146,7 +143,7 @@ const AdminSidebar: FC<Props> = ({
               {showExpanded && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 8px 5px' }}>
                   <span style={{
-                    fontSize: '0.62rem', fontWeight: 700, color: '#94a3b8',
+                    fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8',
                     letterSpacing: '0.07em', textTransform: 'uppercase', whiteSpace: 'nowrap',
                   }}>{label}</span>
                   <div style={{ flex: 1, height: 1, background: '#f0f4f8' }} />
@@ -214,11 +211,11 @@ const AdminSidebar: FC<Props> = ({
         }}>
           {showExpanded ? (
             <div>
-              <button className="av3-profile-card" onClick={() => navigate('/me/profile')}
+              <div
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                   padding: '9px 8px', borderRadius: 10, background: '#fff',
-                  border: '1px solid #e2ebe4', marginBottom: 8, cursor: 'pointer', textAlign: 'left',
+                  border: '1px solid #e2ebe4', marginBottom: 8, textAlign: 'left',
                 }}>
                 <div style={{
                   width: 36, height: 36, borderRadius: 10, flexShrink: 0,
@@ -233,17 +230,16 @@ const AdminSidebar: FC<Props> = ({
                   }}>{userName ?? 'Quản trị viên'}</div>
                   {userCode && <div style={{ marginTop: 2 }}><span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#64748b' }}>{userCode}</span></div>}
                 </div>
-                <ArrowRight size={13} color="#cbd5e1" style={{ flexShrink: 0 }} />
-              </button>
+              </div>
             </div>
           ) : (
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div onClick={() => navigate('/me/profile')} title={userName ?? 'Quản trị viên'}
+              <div title={userName ?? 'Quản trị viên'}
                 style={{
                   width: 38, height: 38, borderRadius: 10, flexShrink: 0,
                   background: 'linear-gradient(135deg,#2F6B3F,#3d7a50)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', overflow: 'hidden', cursor: 'pointer',
+                  color: 'white', overflow: 'hidden',
                 }}>{avatar}</div>
             </div>
           )}

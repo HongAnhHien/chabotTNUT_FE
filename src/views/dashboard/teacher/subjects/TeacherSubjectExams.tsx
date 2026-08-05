@@ -185,17 +185,17 @@ const AssignmentDetailModal: FC<{
           <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e3a8a)', padding: '16px 18px', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ flex: 1, minWidth: 0, marginRight: 10 }}>
-                <div style={{ fontSize: '0.6rem', color: '#93c5fd', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Bài giao kiểm tra</div>
+                <div style={{ fontSize: '0.7rem', color: '#93c5fd', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Bài giao kiểm tra</div>
                 <div style={{ fontWeight: 800, fontSize: '1rem', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {loading ? '...' : (detail?.title ?? '—')}
                 </div>
                 {detail && (
                   <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20, ...( detail.status === 'published' ? { background: 'rgba(74,222,128,0.18)', color: '#4ade80' } : { background: 'rgba(148,163,184,0.18)', color: '#94a3b8' } ) }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20, ...( detail.status === 'published' ? { background: 'rgba(74,222,128,0.18)', color: '#4ade80' } : { background: 'rgba(148,163,184,0.18)', color: '#94a3b8' } ) }}>
                       {detail.status === 'published' ? '● Đang mở' : '● Đã đóng'}
                     </span>
-                    <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)' }}>Mở: {fmtDt(detail.available_from)}</span>
-                    <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)' }}>HN: {fmtDt(detail.due_at)}</span>
+                    <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)' }}>Mở: {fmtDt(detail.available_from)}</span>
+                    <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)' }}>HN: {fmtDt(detail.due_at)}</span>
                   </div>
                 )}
               </div>
@@ -225,25 +225,25 @@ const AssignmentDetailModal: FC<{
               /* ── Edit form ── */
               <div style={{ padding: '18px', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
                 <div>
-                  <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>Tiêu đề</div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>Tiêu đề</div>
                   <input className="se-edit-input" value={eTitle} onChange={e => setETitle(e.target.value)} placeholder="Tiêu đề bài kiểm tra" />
                 </div>
                 <div className="se-edit-grid">
                   <div>
-                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
                       <Calendar size={10} /> Ngày mở bài
                     </div>
                     <input type="datetime-local" className="se-edit-input" value={eFrom} onChange={e => setEFrom(e.target.value)} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
                       <Calendar size={10} /> Hạn nộp
                     </div>
                     <input type="datetime-local" className="se-edit-input" value={eDue} onChange={e => setEDue(e.target.value)} />
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>Trạng thái</div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>Trạng thái</div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {(['published', 'closed'] as const).map(s => (
                       <button key={s} onClick={() => setEStatus(s)}
@@ -279,7 +279,7 @@ const AssignmentDetailModal: FC<{
                       <div key={label} style={{ borderRadius: 12, padding: '10px 8px', textAlign: 'center', background: bg, border: `1px solid ${color}18` }}>
                         <Icon size={16} color={color} style={{ margin: '0 auto 4px', display: 'block' }} />
                         <div style={{ fontSize: '1.3rem', fontWeight: 900, color, lineHeight: 1 }}>{val}</div>
-                        <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, marginTop: 3 }}>{label}</div>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, marginTop: 3 }}>{label}</div>
                       </div>
                     ))}
                   </div>
@@ -291,7 +291,7 @@ const AssignmentDetailModal: FC<{
                     <div style={{ height: 6, borderRadius: 99, background: 'rgba(37,99,235,0.08)', overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${(stats.submitted / stats.total) * 100}%`, background: 'linear-gradient(90deg,#059669,#10b981)', borderRadius: 99, transition: 'width .4s ease' }} />
                     </div>
-                    <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: 4, textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: 4, textAlign: 'right' }}>
                       {stats.submitted}/{stats.total} đã nộp ({Math.round((stats.submitted / stats.total) * 100)}%)
                     </div>
                   </div>
@@ -320,19 +320,19 @@ const AssignmentDetailModal: FC<{
                         {/* Info */}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{stu.name}</div>
-                          <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontFamily: 'monospace', marginTop: 1 }}>{stu.student_code}</div>
+                          <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontFamily: 'monospace', marginTop: 1 }}>{stu.student_code}</div>
                         </div>
                         {/* Score */}
                         {stu.status === 'submitted' && stu.score !== null && stu.total && (
                           <div style={{ textAlign: 'center', flexShrink: 0 }}>
                             <div style={{ fontSize: '1rem', fontWeight: 800, lineHeight: 1, color: pct !== null && pct >= 50 ? '#059669' : '#dc2626' }}>
-                              {stu.score}<span style={{ fontSize: '0.6rem', color: '#94a3b8' }}>/{stu.total}</span>
+                              {stu.score}<span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>/{stu.total}</span>
                             </div>
-                            {pct !== null && <div style={{ fontSize: '0.58rem', color: '#94a3b8', marginTop: 1 }}>{pct}%</div>}
+                            {pct !== null && <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: 1 }}>{pct}%</div>}
                           </div>
                         )}
                         {/* Status */}
-                        <span style={{ fontSize: '0.65rem', fontWeight: 700, borderRadius: 20, padding: '3px 9px', background: b.bg, color: b.color, flexShrink: 0 }}>{b.label}</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, borderRadius: 20, padding: '3px 9px', background: b.bg, color: b.color, flexShrink: 0 }}>{b.label}</span>
                       </div>
                     );
                   })}
@@ -367,7 +367,7 @@ const DetailView: FC<{ detail: ExamDetail; onBack: () => void }> = ({ detail, on
         </button>
         <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1e293b' }}>Chi tiết đề kiểm tra</span>
         <div style={{ flex: 1 }} />
-        <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '2px 10px', borderRadius: 20, background: isConfirmed ? 'rgba(5,150,105,0.1)' : 'rgba(217,119,6,0.1)', color: isConfirmed ? '#059669' : '#d97706' }}>
+        <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 10px', borderRadius: 20, background: isConfirmed ? 'rgba(5,150,105,0.1)' : 'rgba(217,119,6,0.1)', color: isConfirmed ? '#059669' : '#d97706' }}>
           {isConfirmed ? 'Đã xác nhận' : 'Nháp'}
         </span>
       </div>
@@ -375,7 +375,7 @@ const DetailView: FC<{ detail: ExamDetail; onBack: () => void }> = ({ detail, on
         <div className="se-meta-grid" style={{ marginBottom: 16 }}>
           {metaItems.map(({ label, value }) => (
             <div key={label} style={{ background: 'white', border: '1px solid rgba(37,99,235,0.08)', borderRadius: 10, padding: '10px 12px' }}>
-              <div style={{ fontSize: '0.62rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>{label}</div>
+              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>{label}</div>
               <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1e293b' }}>{String(value)}</div>
             </div>
           ))}
@@ -397,8 +397,8 @@ const DetailView: FC<{ detail: ExamDetail; onBack: () => void }> = ({ detail, on
               {(detail.questions as IExamQuestion[]).map((q, i) => (
                 <div key={i} style={{ background: 'white', borderRadius: 11, border: '1px solid rgba(37,99,235,0.1)', overflow: 'hidden' }}>
                   <div style={{ padding: '5px 12px', background: 'rgba(30,58,138,0.04)', borderBottom: '1px solid rgba(37,99,235,0.07)', display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#1e3a8a' }}>Câu {i + 1}</span>
-                    {q.chapter_title && <span style={{ fontSize: '0.6rem', color: '#94a3b8' }}>{q.chapter_title}</span>}
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#1e3a8a' }}>Câu {i + 1}</span>
+                    {q.chapter_title && <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{q.chapter_title}</span>}
                   </div>
                   <div style={{ padding: '8px 12px', fontSize: '0.82rem', color: '#1e293b', lineHeight: 1.55, borderBottom: q.options ? '1px solid rgba(37,99,235,0.06)' : 'none' }}><LT text={q.question ?? ''} /></div>
                   {q.options && (
@@ -408,9 +408,9 @@ const DetailView: FC<{ detail: ExamDetail; onBack: () => void }> = ({ detail, on
                         const col = OPT_COLORS[key] ?? OPT_COLORS.A;
                         return (
                           <div key={key} className="se-opt-row" style={{ background: isAnswer ? 'rgba(5,150,105,0.07)' : col.bg, border: `1px solid ${isAnswer ? 'rgba(5,150,105,0.2)' : 'transparent'}` }}>
-                            <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: '50%', background: isAnswer ? '#059669' : col.color, color: 'white', fontSize: '0.62rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{key}</span>
+                            <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: '50%', background: isAnswer ? '#059669' : col.color, color: 'white', fontSize: '0.7rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{key}</span>
                             <span style={{ fontSize: '0.78rem', color: isAnswer ? '#059669' : '#334155', fontWeight: isAnswer ? 700 : 400, flex: 1 }}><LT text={val as string} /></span>
-                            {isAnswer && <span style={{ fontSize: '0.6rem', color: '#059669', fontWeight: 800 }}>✓</span>}
+                            {isAnswer && <span style={{ fontSize: '0.7rem', color: '#059669', fontWeight: 800 }}>✓</span>}
                           </div>
                         );
                       })}
@@ -544,7 +544,7 @@ const TeacherSubjectExams: FC = () => {
             <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: 6 }}>
               <ClipboardList size={15} color="#2563eb" /> Đề kiểm tra
             </div>
-            <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: 2 }}>{tenMon} · <span style={{ fontFamily: 'monospace' }}>{maMon}</span></div>
+            <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 2 }}>{tenMon} · <span style={{ fontFamily: 'monospace' }}>{maMon}</span></div>
           </div>
           <button onClick={openChatbot} disabled={openingChat} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 16px', borderRadius: 10, background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', border: 'none', color: 'white', fontSize: '0.78rem', fontWeight: 700, cursor: openingChat ? 'not-allowed' : 'pointer', opacity: openingChat ? 0.7 : 1, flexShrink: 0 }}>
             {openingChat ? '...' : '+ Tạo đề mới'}
@@ -605,7 +605,7 @@ const TeacherSubjectExams: FC = () => {
                   <div key={exam.id} style={{ position: 'relative', overflow: 'hidden', borderBottom: idx < filteredExams.length - 1 ? '1px solid rgba(37,99,235,0.06)' : 'none', animation: `se-fade .3s ease ${idx * 0.05}s both` }}>
                     {/* Ribbon */}
                     <div style={{ position: 'absolute', top: 14, right: -26, width: 96, background: ribbon.bg, boxShadow: `0 2px 6px ${ribbon.shadow}`, transform: 'rotate(45deg)', textAlign: 'center', padding: '4px 0', zIndex: 1, pointerEvents: 'none' }}>
-                      <span style={{ fontSize: '0.5rem', fontWeight: 900, color: 'white', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{ribbon.text}</span>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'white', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{ribbon.text}</span>
                     </div>
 
                     {/* Main row */}
@@ -619,26 +619,26 @@ const TeacherSubjectExams: FC = () => {
                         </div>
                         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
                           {exam.exam_type && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', fontWeight: 700, color: '#c2410c', background: 'rgba(194,65,12,0.08)', borderRadius: 20, padding: '2px 8px', border: '1px solid rgba(194,65,12,0.15)' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', fontWeight: 700, color: '#c2410c', background: 'rgba(194,65,12,0.08)', borderRadius: 20, padding: '2px 8px', border: '1px solid rgba(194,65,12,0.15)' }}>
                               {EXAM_TYPES.find(t => t.value === exam.exam_type)?.label ?? exam.exam_type}
                             </span>
                           )}
                           {exam.question_count != null && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', fontWeight: 700, color: '#1e3a8a', background: 'rgba(30,58,138,0.07)', borderRadius: 20, padding: '2px 8px' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', fontWeight: 700, color: '#1e3a8a', background: 'rgba(30,58,138,0.07)', borderRadius: 20, padding: '2px 8px' }}>
                               <Hash size={9} /> {exam.question_count} câu
                             </span>
                           )}
                           {exam.time_limit != null && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', fontWeight: 700, color: '#7c3aed', background: 'rgba(124,58,237,0.07)', borderRadius: 20, padding: '2px 8px' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', fontWeight: 700, color: '#7c3aed', background: 'rgba(124,58,237,0.07)', borderRadius: 20, padding: '2px 8px' }}>
                               <Clock size={9} /> {exam.time_limit} phút
                             </span>
                           )}
                           {(exam.chapters ?? []).length > 0 && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', fontWeight: 700, color: '#0369a1', background: 'rgba(3,105,161,0.07)', borderRadius: 20, padding: '2px 8px' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', fontWeight: 700, color: '#0369a1', background: 'rgba(3,105,161,0.07)', borderRadius: 20, padding: '2px 8px' }}>
                               <BookOpen size={9} /> {(exam.chapters ?? []).length} chương
                             </span>
                           )}
-                          <span style={{ fontSize: '0.62rem', color: '#94a3b8' }}>{fmtDate(exam.created_at)}</span>
+                          <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{fmtDate(exam.created_at)}</span>
                         </div>
 
                         {/* Assignment strip — click to open detail */}
@@ -648,11 +648,11 @@ const TeacherSubjectExams: FC = () => {
                             onMouseEnter={e => (e.currentTarget.style.background = 'rgba(37,99,235,0.08)')}
                             onMouseLeave={e => (e.currentTarget.style.background = 'rgba(37,99,235,0.04)')}
                           >
-                            <span style={{ fontSize: '0.62rem', fontWeight: 700, borderRadius: 20, padding: '1px 7px', background: aBadge!.bg, color: aBadge!.color }}>{aBadge!.label}</span>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.62rem', color: '#64748b' }}><Users size={9} /> {asgn.student_count} HS</span>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.62rem', color: '#059669' }}><CheckCircle size={9} /> {asgn.submitted_count}/{asgn.student_count} nộp</span>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.62rem', color: '#94a3b8' }}><Clock size={9} /> HN: {fmtDt(asgn.due_at)}</span>
-                            <span style={{ marginLeft: 'auto', fontSize: '0.6rem', color: '#2563eb', fontWeight: 700 }}>Xem chi tiết →</span>
+                            <span style={{ fontSize: '0.7rem', fontWeight: 700, borderRadius: 20, padding: '1px 7px', background: aBadge!.bg, color: aBadge!.color }}>{aBadge!.label}</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', color: '#64748b' }}><Users size={9} /> {asgn.student_count} HS</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', color: '#059669' }}><CheckCircle size={9} /> {asgn.submitted_count}/{asgn.student_count} nộp</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', color: '#94a3b8' }}><Clock size={9} /> HN: {fmtDt(asgn.due_at)}</span>
+                            <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: '#2563eb', fontWeight: 700 }}>Xem chi tiết →</span>
                           </button>
                         )}
                       </div>

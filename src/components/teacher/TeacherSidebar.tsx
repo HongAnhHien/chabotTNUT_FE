@@ -1,7 +1,7 @@
 import { type FC, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import {
-  LayoutDashboard, BookOpen, ClipboardList, MessageCircle,
+  LayoutDashboard, BookOpen, ClipboardList, MessageCircle, GraduationCap,
   ChevronLeft, ChevronRight,
   ChevronRight as ArrowRight, X,
 } from 'lucide-react';
@@ -25,7 +25,8 @@ const NAV_SECTIONS = [
   {
     label: 'Tổng quan',
     items: [
-      { icon: LayoutDashboard, label: 'Dashboard',    path: '/teacher/dashboard' },
+      { icon: LayoutDashboard, label: 'Hồ sơ giảng dạy',    path: '/teacher/dashboard' },
+      { icon: GraduationCap,   label: 'Cố vấn học tập',     path: '/teacher/advisor' },
     ],
   },
   {
@@ -114,7 +115,7 @@ const TeacherSidebar: FC<Props> = ({
                 <div style={{ fontSize: '1rem', fontWeight: 800, color: '#4c1d95', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                   TNUT Learning
                 </div>
-                <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: 2, whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 2, whiteSpace: 'nowrap' }}>
                   Cổng giáo viên · Trợ lý AI
                 </div>
               </div>
@@ -141,7 +142,7 @@ const TeacherSidebar: FC<Props> = ({
               {showExpanded && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 8px 5px' }}>
                   <span style={{
-                    fontSize: '0.62rem', fontWeight: 700, color: '#94a3b8',
+                    fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8',
                     letterSpacing: '0.07em', textTransform: 'uppercase', whiteSpace: 'nowrap',
                   }}>{label}</span>
                   <div style={{ flex: 1, height: 1, background: '#f0f4f8' }} />
@@ -177,7 +178,7 @@ const TeacherSidebar: FC<Props> = ({
                       {showExpanded && <span style={{ flex: 1, textAlign: 'left' }}>{itemLabel}</span>}
                       {showExpanded && soon && (
                         <span style={{
-                          fontSize: '0.52rem', fontWeight: 700, flexShrink: 0,
+                          fontSize: '0.7rem', fontWeight: 700, flexShrink: 0,
                           color: '#f59e0b', background: 'rgba(245,158,11,0.1)',
                           padding: '2px 5px', borderRadius: 4, letterSpacing: '0.04em',
                         }}>Sắp ra</span>

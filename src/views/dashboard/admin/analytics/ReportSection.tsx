@@ -1,8 +1,15 @@
 import { type FC, useEffect, useState } from 'react';
-import { Loader2, ChevronDown, Printer } from 'lucide-react';
+import { Loader2, ChevronDown, Printer, FileBarChart } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AdminApi from '@/infra/admin/admin_api';
 import type { ISubject, IReportResponse } from '@/infra/api/interfaces/IAnalytics';
+
+const MINI_STATS = (report: IReportResponse) => [
+  { label: 'Tin nhắn', value: report.chat.total_messages, tint: '#eff6ff', ink: '#2563eb' },
+  { label: 'Người dùng', value: report.chat.unique_users, tint: '#eef2ff', ink: '#4f46e5' },
+  { label: 'Hữu ích', value: report.chat.helpful_rate ? `${report.chat.helpful_rate.rate}%` : '—', tint: '#f0fdf4', ink: '#16a34a' },
+  { label: 'Đề đã tạo', value: report.chat.exams_created, tint: '#fff7ed', ink: '#ea580c' },
+];
 
 const ReportSection: FC = () => {
   const [subjects,  setSubjects]  = useState<ISubject[]>([]);
@@ -26,95 +33,90 @@ const ReportSection: FC = () => {
   };
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
-      <p className="text-sm font-semibold text-foreground mb-3">Báo cáo học phần tự động</p>
+    <div className="ad-card" style={{ padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(8,145,178,0.1)', color: '#0891b2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <FileBarChart size={14} />
+        </div>
+        <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>Báo cáo học phần tự động</p>
+      </div>
 
-      <div className="flex items-center gap-2 flex-wrap mb-4">
-        <div className="relative">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ position: 'relative' }}>
           <select
             value={subjectId}
             onChange={e => setSubjectId(e.target.value)}
-            className="text-xs border border-border rounded-lg pl-3 pr-7 py-1.5 bg-card text-foreground appearance-none cursor-pointer"
+            className="ad-select"
           >
             <option value="">Chọn môn học...</option>
             {subjects.map(s => (
               <option key={s.id} value={s.ma_mon}>{s.ten_mon} ({s.ma_mon})</option>
             ))}
           </select>
-          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown size={13} color="#94a3b8" style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
         </div>
         <input
           type="number"
           min={1}
           value={days}
           onChange={e => setDays(Number(e.target.value) || 30)}
-          className="text-xs border border-border rounded-lg px-3 py-1.5 bg-card text-foreground w-20"
+          className="ad-input"
+          style={{ width: 76 }}
           title="Số ngày"
         />
-        <button
-          onClick={handleView}
-          disabled={!subjectId || loading}
-          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#2F6B3F] text-white disabled:opacity-50"
-        >
+        <button onClick={handleView} disabled={!subjectId || loading} className="ad-btn-primary">
           Xem báo cáo
         </button>
         {report && (
           <button
             onClick={() => window.print()}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-border text-foreground flex items-center gap-1.5"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', fontWeight: 600, color: '#334155', background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 14px', cursor: 'pointer' }}
           >
-            <Printer className="w-3.5 h-3.5" /> In / Xuất PDF
+            <Printer size={13} /> In / Xuất PDF
           </button>
         )}
       </div>
 
-      {loading && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
+      {loading && <Loader2 size={18} color="#94a3b8" style={{ animation: 'ad-spin 1s linear infinite' }} />}
 
       {report && (
-        <div className="space-y-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <p className="font-bold text-foreground">{report.subject.ten_mon}</p>
-            <p className="text-xs text-muted-foreground">{report.subject.ma_mon}</p>
+            <p style={{ fontWeight: 800, color: '#0f172a', margin: 0, fontSize: '0.92rem' }}>{report.subject.ten_mon}</p>
+            <p style={{ fontSize: '0.74rem', color: '#94a3b8', margin: '2px 0 0' }}>{report.subject.ma_mon}</p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded-lg border border-border p-3">
-              <p className="text-xs text-muted-foreground">Tin nhắn</p>
-              <p className="text-lg font-bold text-foreground">{report.chat.total_messages}</p>
-            </div>
-            <div className="rounded-lg border border-border p-3">
-              <p className="text-xs text-muted-foreground">Người dùng</p>
-              <p className="text-lg font-bold text-foreground">{report.chat.unique_users}</p>
-            </div>
-            <div className="rounded-lg border border-border p-3">
-              <p className="text-xs text-muted-foreground">Hữu ích</p>
-              <p className="text-lg font-bold text-foreground">{report.chat.helpful_rate ?? '—'}%</p>
-            </div>
-            <div className="rounded-lg border border-border p-3">
-              <p className="text-xs text-muted-foreground">Đề đã tạo</p>
-              <p className="text-lg font-bold text-foreground">{report.chat.exams_created}</p>
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10 }}>
+            {MINI_STATS(report).map(s => (
+              <div key={s.label} className="ad-stat-card" style={{ padding: '12px 14px' }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.ink, flexShrink: 0 }} />
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: 0 }}>{s.label}</p>
+                  <p style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>{s.value}</p>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="rounded-lg border border-border p-3">
-            <p className="text-xs font-semibold text-foreground mb-1">Kết quả quiz</p>
+          <div style={{ borderRadius: 12, border: '1px solid #e8edf3', background: '#f8fafc', padding: 14 }}>
+            <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0f172a', margin: '0 0 4px' }}>Kết quả quiz</p>
             {report.quiz.submissions_count === 0 ? (
-              <p className="text-xs text-muted-foreground">Chưa có bài nộp.</p>
+              <p style={{ fontSize: '0.76rem', color: '#94a3b8', margin: 0 }}>Chưa có bài nộp.</p>
             ) : (
-              <p className="text-xs text-muted-foreground">
+              <p style={{ fontSize: '0.76rem', color: '#64748b', margin: 0 }}>
                 {report.quiz.submissions_count} lượt nộp / {report.quiz.assignments_count} đề — điểm TB {report.quiz.avg_score_percent ?? '—'}%
               </p>
             )}
           </div>
 
-          <div className="rounded-lg border border-border p-3">
-            <p className="text-xs font-semibold text-foreground mb-1">Bản đồ vùng rỗng kiến thức</p>
+          <div style={{ borderRadius: 12, border: '1px solid #e8edf3', background: '#f8fafc', padding: 14 }}>
+            <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0f172a', margin: '0 0 6px' }}>Bản đồ vùng rỗng kiến thức</p>
             {report.knowledge_map.knowledge_map.length === 0 ? (
-              <p className="text-xs text-muted-foreground">Chưa có dữ liệu.</p>
+              <p style={{ fontSize: '0.76rem', color: '#94a3b8', margin: 0 }}>Chưa có dữ liệu.</p>
             ) : (
-              <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+              <ul style={{ fontSize: '0.76rem', color: '#64748b', margin: 0, paddingLeft: 18 }}>
                 {report.knowledge_map.knowledge_map.slice(0, 10).map((k, i) => (
-                  <li key={i}>{k.chapter_title} — {k.unique_users} SV, {k.hit_count} lượt</li>
+                  <li key={i} style={{ marginBottom: 2 }}>{k.chapter_title} — {k.unique_users} SV, {k.hit_count} lượt</li>
                 ))}
               </ul>
             )}

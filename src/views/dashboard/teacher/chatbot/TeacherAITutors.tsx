@@ -198,13 +198,13 @@ const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, loading, closing, sessi
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
                 <ClipboardList size={13} color="white" />
-                <span style={{ fontSize: '0.63rem', color: 'white', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Preview đề kiểm tra</span>
+                <span style={{ fontSize: '0.7rem', color: 'white', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Preview đề kiểm tra</span>
               </div>
               <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'white' }}>{isLoading ? 'Đang tải đề...' : (exam.ten_mon || subjectId)}</div>
               <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                <span style={{ fontSize: '0.65rem', color: 'white', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 8px' }}>{exam?.ma_mon ?? subjectId}</span>
-                {!isLoading && <span style={{ fontSize: '0.65rem', color: 'white', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 8px' }}>{editableQs.length} câu</span>}
-                {!isLoading && <span style={{ fontSize: '0.65rem', color: 'white', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 8px' }}>{timeLimit} phút</span>}
+                <span style={{ fontSize: '0.7rem', color: 'white', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 8px' }}>{exam?.ma_mon ?? subjectId}</span>
+                {!isLoading && <span style={{ fontSize: '0.7rem', color: 'white', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 8px' }}>{editableQs.length} câu</span>}
+                {!isLoading && <span style={{ fontSize: '0.7rem', color: 'white', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 8px' }}>{timeLimit} phút</span>}
               </div>
             </div>
             <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -248,7 +248,7 @@ const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, loading, closing, sessi
           {/* Chapters */}
           {(exam.chapters ?? []).length > 0 && (
             <div style={{ background: 'white', borderRadius: 10, border: '1px solid #e2e8f0', padding: '10px 14px' }}>
-              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Chương</div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Chương</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                 {(exam.chapters ?? []).map(ch => (
                   <span key={ch.id} style={{ fontSize: '0.72rem', fontWeight: 600, color: '#475569', background: '#f1f5f9', borderRadius: 20, padding: '2px 10px', border: '1px solid #e2e8f0' }}>{ch.title}</span>
@@ -265,13 +265,13 @@ const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, loading, closing, sessi
                 <div key={i} style={{ background: 'white', borderRadius: 11, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                   {/* Question header */}
                   <div style={{ padding: '6px 12px', background: '#f8fafc', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#334155' }}>Câu {i + 1}</span>
-                    {q.chapter_title && <span style={{ fontSize: '0.6rem', color: '#94a3b8' }}>{q.chapter_title}</span>}
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#334155' }}>Câu {i + 1}</span>
+                    {q.chapter_title && <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{q.chapter_title}</span>}
                   </div>
 
                   {/* Editable question text */}
                   <div style={{ padding: '2px 12px 0', borderBottom: '1px solid #f1f5f9' }}>
-                    <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94a3b8', paddingTop: 7, marginBottom: 3 }}>NỘI DUNG CÂU HỎI</div>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', paddingTop: 7, marginBottom: 3 }}>NỘI DUNG CÂU HỎI</div>
                     <textarea
                       value={q.question}
                       onChange={e => setEditableQs(prev => prev.map((x, j) => j === i ? { ...x, question: e.target.value } : x))}
@@ -283,7 +283,7 @@ const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, loading, closing, sessi
                   {/* Options — fully editable + click to set answer + đổi vị trí */}
                   {q.options && Object.keys(q.options).length > 0 && (
                     <div style={{ padding: '8px 12px 10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94a3b8', marginBottom: 2 }}>ĐÁP ÁN — kéo thả (hoặc dùng mũi tên) để đổi vị trí, click ký hiệu để chọn đáp án đúng</div>
+                      <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', marginBottom: 2 }}>ĐÁP ÁN — kéo thả (hoặc dùng mũi tên) để đổi vị trí, click ký hiệu để chọn đáp án đúng</div>
                       {Object.entries(q.options).map(([key, val], optIdx, arr) => {
                         const isAnswer = key === q.answer;
                         const isDragging = dragOpt?.qIndex === i && dragOpt.key === key;
@@ -312,7 +312,7 @@ const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, loading, closing, sessi
                             <button
                               onClick={() => setEditableQs(prev => prev.map((x, j) => j === i ? { ...x, answer: key } : x))}
                               title={isAnswer ? 'Đang là đáp án đúng' : 'Chọn làm đáp án đúng'}
-                              style={{ flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: isAnswer ? '#16a34a' : '#94a3b8', color: 'white', fontSize: '0.65rem', fontWeight: 800, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .12s' }}
+                              style={{ flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: isAnswer ? '#16a34a' : '#94a3b8', color: 'white', fontSize: '0.7rem', fontWeight: 800, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .12s' }}
                             >
                               {isAnswer ? '✓' : key}
                             </button>
@@ -326,7 +326,7 @@ const ExamPreviewDrawer: FC<ExamPreviewProps> = ({ exam, loading, closing, sessi
                               style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.8rem', color: isAnswer ? '#15803d' : '#334155', fontWeight: isAnswer ? 600 : 400, background: 'transparent', fontFamily: 'inherit', padding: '1px 0' }}
                             />
                             {isAnswer && (
-                              <span style={{ fontSize: '0.6rem', color: '#15803d', fontWeight: 800, whiteSpace: 'nowrap', alignSelf: 'center' }}>Đáp án đúng</span>
+                              <span style={{ fontSize: '0.7rem', color: '#15803d', fontWeight: 800, whiteSpace: 'nowrap', alignSelf: 'center' }}>Đáp án đúng</span>
                             )}
                             {/* Move up/down */}
                             <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
@@ -434,7 +434,7 @@ const SubjectPicker: FC<SubjectPickerProps> = ({ courses, loading, onSelect, onC
                 {selectedSem?.ten_hoc_ky ?? 'Chọn học kỳ'}
               </span>
               {selectedSem && selectedSem.hoc_ky === currentHocKy && (
-                <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#059669', background: 'rgba(5,150,105,0.1)', borderRadius: 20, padding: '2px 7px', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#059669', background: 'rgba(5,150,105,0.1)', borderRadius: 20, padding: '2px 7px', whiteSpace: 'nowrap' }}>
                   Hiện tại
                 </span>
               )}
@@ -454,7 +454,7 @@ const SubjectPicker: FC<SubjectPickerProps> = ({ courses, loading, onSelect, onC
                       {s.ten_hoc_ky}
                     </span>
                     {s.hoc_ky === currentHocKy && (
-                      <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#059669', background: 'rgba(5,150,105,0.09)', borderRadius: 20, padding: '1px 7px' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#059669', background: 'rgba(5,150,105,0.09)', borderRadius: 20, padding: '1px 7px' }}>
                         Hiện tại
                       </span>
                     )}
@@ -481,8 +481,8 @@ const SubjectPicker: FC<SubjectPickerProps> = ({ courses, loading, onSelect, onC
               <div>
                 <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#1e293b' }}>{subject.ten_mon}</div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
-                  <span style={{ fontSize: '0.65rem', color: '#2563eb', fontWeight: 700, background: 'rgba(37,99,235,0.07)', borderRadius: 20, padding: '1px 7px' }}>{subject.ma_mon}</span>
-                  {subject.so_tc !== '0' && <span style={{ fontSize: '0.65rem', color: '#059669', fontWeight: 600 }}>{subject.so_tc} TC</span>}
+                  <span style={{ fontSize: '0.7rem', color: '#2563eb', fontWeight: 700, background: 'rgba(37,99,235,0.07)', borderRadius: 20, padding: '1px 7px' }}>{subject.ma_mon}</span>
+                  {subject.so_tc !== '0' && <span style={{ fontSize: '0.7rem', color: '#059669', fontWeight: 600 }}>{subject.so_tc} TC</span>}
                 </div>
               </div>
             </div>
@@ -963,7 +963,7 @@ const TeacherAITutors: FC = () => {
                     {currentSession.name || 'Cuộc trò chuyện'}
                   </div>
                   {currentSubjectLabel && (
-                    <div style={{ fontSize: '0.65rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>
+                    <div style={{ fontSize: '0.7rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>
                       {currentSubjectLabel}
                     </div>
                   )}

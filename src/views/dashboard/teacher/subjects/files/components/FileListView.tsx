@@ -214,7 +214,7 @@ const FileListView: FC<Props> = ({
       <div className="tdf-list-outer">
         {/* Folder nav */}
         <div className="tdf-folder-col" style={{ background:'#fff', border:'1px solid #e7ecf3', borderRadius:16, padding:10, position:'sticky', top:24 }}>
-          <div style={{ fontSize:10.5, fontWeight:700, letterSpacing:.6, color:'#94a3b8', padding:'6px 10px 8px', textTransform:'uppercase' }}>Thư mục</div>
+          <div style={{ fontSize:11, fontWeight:700, letterSpacing:.6, color:'#94a3b8', padding:'6px 10px 8px', textTransform:'uppercase' }}>Thư mục</div>
           {[
             { id: 'all' as const, name:'Tất cả', count: files.length },
             ...TYPE_ORDER.map(t => ({ id: t, name: TYPE_LABEL[t], count: files.filter(f => f.type === t).length })),
@@ -233,7 +233,7 @@ const FileListView: FC<Props> = ({
         {/* File table */}
         <div style={{ background:'#fff', border:'1px solid #e7ecf3', borderRadius:16, overflow:'hidden' }}>
           {/* Column headers */}
-          <div style={{ display:'flex', alignItems:'center', padding:'11px 18px', borderBottom:'1px solid #f1f5f9', fontSize:10.5, fontWeight:700, letterSpacing:.5, color:'#94a3b8', textTransform:'uppercase' }}>
+          <div style={{ display:'flex', alignItems:'center', padding:'11px 18px', borderBottom:'1px solid #f1f5f9', fontSize:11, fontWeight:700, letterSpacing:.5, color:'#94a3b8', textTransform:'uppercase' }}>
             <span style={{ flex:'1 1 0', minWidth:0 }}>Tên tài liệu</span>
             <span className="tdf-col-type" style={{ width:160, flexShrink:0 }}>Loại tài liệu</span>
             <span className="tdf-col-st"   style={{ width:130, flexShrink:0 }}>Trạng thái</span>

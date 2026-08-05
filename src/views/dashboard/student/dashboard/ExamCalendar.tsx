@@ -108,7 +108,7 @@ const ExamCalendar: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ assig
         <div style={{ padding:'12px 14px', borderBottom:'1px solid #f1f5f9', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0 }}>
           <div>
             <div style={{ fontWeight:800, fontSize:'0.85rem', color:'#1e293b' }}>{selected ? fmtDate(selected) : ''}</div>
-            <div style={{ fontSize:'0.62rem', color:'#94a3b8', marginTop:2 }}>{selectedEvts.length} sự kiện</div>
+            <div style={{ fontSize:'0.7rem', color:'#94a3b8', marginTop:2 }}>{selectedEvts.length} sự kiện</div>
           </div>
           <button onClick={() => setSelected(null)}
             style={{ width:26, height:26, borderRadius:7, border:'1.5px solid #eef0f5', background:'white', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#94a3b8' }}>
@@ -124,7 +124,7 @@ const ExamCalendar: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ assig
                 <div key={type} style={{ borderRadius:10, background:EVT_BG[type], padding:'8px 10px' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:6 }}>
                     <div style={{ width:6, height:6, borderRadius:'50%', background:DOT_COLOR[type], flexShrink:0 }} />
-                    <span style={{ fontSize:'0.62rem', fontWeight:700, color:DOT_COLOR[type] }}>
+                    <span style={{ fontSize:'0.7rem', fontWeight:700, color:DOT_COLOR[type] }}>
                       {EVT_LABEL[type]} · {events.length} {type === 'exam' ? 'môn' : 'bài'}
                     </span>
                   </div>
@@ -139,20 +139,20 @@ const ExamCalendar: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ assig
                           <>
                             <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:5 }}>
                               <div style={{ fontSize:'0.74rem', fontWeight:700, color:'#1e293b', lineHeight:1.4, flex:1 }}>{ev.title}</div>
-                              <span style={{ fontSize:'0.56rem', fontWeight:700, color:'#7c3aed', background:'rgba(124,58,237,0.1)', borderRadius:20, padding:'1px 6px', flexShrink:0, whiteSpace:'nowrap' }}>
+                              <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#7c3aed', background:'rgba(124,58,237,0.1)', borderRadius:20, padding:'1px 6px', flexShrink:0, whiteSpace:'nowrap' }}>
                                 {ev.examMeta.examName}
                               </span>
                             </div>
                             <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
-                              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.66rem', color:'#475569' }}>
+                              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.7rem', color:'#475569' }}>
                                 <Clock size={11} color="#94a3b8" style={{ flexShrink:0 }} />
                                 {ev.examMeta.startTime} – {ev.examMeta.endTime} <span style={{ color:'#94a3b8' }}>({ev.examMeta.duration} phút)</span>
                               </div>
-                              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.66rem', color:'#475569' }}>
+                              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.7rem', color:'#475569' }}>
                                 <MapPin size={11} color="#94a3b8" style={{ flexShrink:0 }} />
                                 {ev.examMeta.room}
                               </div>
-                              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.66rem', color:'#475569' }}>
+                              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.7rem', color:'#475569' }}>
                                 <FileText size={11} color="#94a3b8" style={{ flexShrink:0 }} />
                                 {ev.examMeta.method}
                               </div>
@@ -161,7 +161,7 @@ const ExamCalendar: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ assig
                         ) : (
                           <>
                             <div style={{ fontSize:'0.74rem', fontWeight:600, color:'#1e293b', lineHeight:1.4 }}>{ev.title}</div>
-                            {ev.sub && <div style={{ fontSize:'0.62rem', color:'#94a3b8', marginTop:2 }}>{ev.sub}</div>}
+                            {ev.sub && <div style={{ fontSize:'0.7rem', color:'#94a3b8', marginTop:2 }}>{ev.sub}</div>}
                           </>
                         )}
                       </div>
@@ -190,7 +190,7 @@ const ExamCalendar: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ assig
       {/* Day headers */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:3, marginBottom:4, flexShrink:0 }}>
         {['CN','T2','T3','T4','T5','T6','T7'].map(d => (
-          <div key={d} style={{ textAlign:'center', fontSize:'0.62rem', color:'#94a3b8', fontWeight:700 }}>{d}</div>
+          <div key={d} style={{ textAlign:'center', fontSize:'0.7rem', color:'#94a3b8', fontWeight:700 }}>{d}</div>
         ))}
       </div>
 
@@ -227,7 +227,7 @@ const ExamCalendar: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ assig
         {TYPE_ORDER.map(t => (
           <div key={t} style={{ display:'flex', alignItems:'center', gap:4 }}>
             <div style={{ width:7, height:7, borderRadius:'50%', background:DOT_COLOR[t] }} />
-            <span style={{ fontSize:'0.62rem', color:'#64748b' }}>{EVT_LABEL[t]}</span>
+            <span style={{ fontSize:'0.7rem', color:'#64748b' }}>{EVT_LABEL[t]}</span>
           </div>
         ))}
       </div>

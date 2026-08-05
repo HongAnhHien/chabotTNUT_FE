@@ -52,8 +52,8 @@ const SubjectFileCard: FC<Props> = ({ file, delay = 0, onPreview }) => {
           {file.original_name}
         </div>
         <div style={{ display: "flex", gap: 6, marginTop: 3, alignItems: "center", flexWrap: "wrap" }}>
-          {file.file_size ? <span style={{ fontSize: "0.65rem", color: "#94a3b8" }}>{fmtSize(file.file_size)}</span> : null}
-          {file.uploaded_by ? <span style={{ fontSize: "0.65rem", color: "#94a3b8" }}>· {file.uploaded_by}</span> : null}
+          {file.file_size ? <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{fmtSize(file.file_size)}</span> : null}
+          {file.uploaded_by ? <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>· {file.uploaded_by}</span> : null}
         </div>
       </div>
       <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>

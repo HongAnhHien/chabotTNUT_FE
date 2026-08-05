@@ -130,7 +130,7 @@ const StudentSubjectDetail: FC = () => {
               <BookOpen size={14} />
               Tài liệu môn học
               {files.length > 0 && (
-                <span style={{ fontSize: "0.65rem", fontWeight: 700, background: "rgba(37,99,235,0.1)", color: "#2563eb", borderRadius: 20, padding: "1px 7px" }}>
+                <span style={{ fontSize: "0.7rem", fontWeight: 700, background: "rgba(37,99,235,0.1)", color: "#2563eb", borderRadius: 20, padding: "1px 7px" }}>
                   {files.length}
                 </span>
               )}
@@ -139,7 +139,7 @@ const StudentSubjectDetail: FC = () => {
               <ClipboardList size={14} />
               Bài kiểm tra
               {assignments.length > 0 && (
-                <span style={{ fontSize: "0.65rem", fontWeight: 700, background: "rgba(37,99,235,0.1)", color: "#2563eb", borderRadius: 20, padding: "1px 7px" }}>
+                <span style={{ fontSize: "0.7rem", fontWeight: 700, background: "rgba(37,99,235,0.1)", color: "#2563eb", borderRadius: 20, padding: "1px 7px" }}>
                   {assignments.length}
                 </span>
               )}

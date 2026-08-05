@@ -15,7 +15,7 @@ const StatCard: FC<StatCardProps> = ({ icon: Icon, iconColor, label, value, sub,
       <div style={{ width:34, height:34, borderRadius:9, background:`${iconColor}18`, display:'flex', alignItems:'center', justifyContent:'center' }}>
         <Icon size={17} color={iconColor} />
       </div>
-      {sub && <span style={{ fontSize:'0.62rem', fontWeight:700, color:'#94a3b8', background:'#f8fafc', borderRadius:20, padding:'2px 8px' }}>{sub}</span>}
+      {sub && <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#94a3b8', background:'#f8fafc', borderRadius:20, padding:'2px 8px' }}>{sub}</span>}
     </div>
     <div>
       <div style={{ fontSize:'1.35rem', fontWeight:800, color:'#0f172a', lineHeight:1.1 }}>{value}</div>

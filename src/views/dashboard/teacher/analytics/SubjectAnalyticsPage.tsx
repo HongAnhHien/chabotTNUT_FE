@@ -57,7 +57,7 @@ const ClassAccordion: FC<{ cls: IClassAnalytics; colorIdx: number }> = ({ cls, c
             <span style={{ fontWeight:700, fontSize:'0.88rem', color:'#0f172a' }}>{cls.ten_lop}</span>
             <span style={{ fontSize:'0.7rem', color:'#64748b' }}>{cls.total_students} học sinh</span>
             {cls.attention_count > 0 && (
-              <span style={{ fontSize:'0.66rem', fontWeight:700, color:'#ea580c', background:'rgba(234,88,12,0.1)', borderRadius:20, padding:'1px 8px' }}>
+              <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#ea580c', background:'rgba(234,88,12,0.1)', borderRadius:20, padding:'1px 8px' }}>
                 {cls.attention_count} cần chú ý
               </span>
             )}
@@ -66,7 +66,7 @@ const ClassAccordion: FC<{ cls: IClassAnalytics; colorIdx: number }> = ({ cls, c
             <div style={{ flex:1, height:4, borderRadius:2, background:'#e2e8f0', overflow:'hidden' }}>
               <div style={{ height:'100%', borderRadius:2, width:`${pct}%`, background: pct >= 80 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444', transition:'width .5s ease' }} />
             </div>
-            <span style={{ fontSize:'0.68rem', color:'#64748b', whiteSpace:'nowrap', flexShrink:0 }}>{pct.toFixed(0)}%</span>
+            <span style={{ fontSize:'0.7rem', color:'#64748b', whiteSpace:'nowrap', flexShrink:0 }}>{pct.toFixed(0)}%</span>
           </div>
         </div>
         <ChevronDown size={15} color="#94a3b8" style={{ flexShrink:0, transition:'transform .22s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
@@ -167,8 +167,8 @@ const SubjectAnalyticsPage: FC = () => {
                 <div className="an-progress-fill" style={{ width:`${data.assignments.completion_rate}%`, background: data.assignments.completion_rate >= 80 ? '#22c55e' : data.assignments.completion_rate >= 50 ? '#f59e0b' : '#ef4444' }} />
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', marginTop:5 }}>
-                <span style={{ fontSize:'0.68rem', color:'#94a3b8' }}>{data.assignments.total} bài kiểm tra</span>
-                <span style={{ fontSize:'0.68rem', color:'#94a3b8' }}>{data.assignments.total_submitted} lượt nộp</span>
+                <span style={{ fontSize:'0.7rem', color:'#94a3b8' }}>{data.assignments.total} bài kiểm tra</span>
+                <span style={{ fontSize:'0.7rem', color:'#94a3b8' }}>{data.assignments.total_submitted} lượt nộp</span>
               </div>
             </div>
 
@@ -176,11 +176,11 @@ const SubjectAnalyticsPage: FC = () => {
             {chatSummary && (
               <ChartCard title="Chatbot AI — thống kê">
                 <div className="an-stat-grid">
-                  <StatCard icon={<Users        size={15} color="#2563eb" />} label="Người dùng"  color="#2563eb" value={chatSummary.unique_users} />
+                  <StatCard icon={<Users        size={15} color="#2563eb" />} label="Người dùng"  color="#2563eb" value={chatSummary.unique_users} sub={chatSummary.unique_by_role ? `${chatSummary.unique_by_role.student ?? 0} SV · ${chatSummary.unique_by_role.teacher ?? 0} GV` : undefined} />
                   <StatCard icon={<MessageCircle size={15} color="#7c3aed" />} label="Tin nhắn"    color="#7c3aed" value={chatSummary.total_messages} />
-                  <StatCard icon={<ThumbsUp     size={15} color="#16a34a" />} label="Hữu ích"      color="#16a34a" value={`${chatSummary.helpful_rate}%`} />
-                  <StatCard icon={<Activity     size={15} color="#ea580c" />} label="Đang hoạt động" color="#ea580c" value={chatSummary.active_now} />
-                  {chatSummary.csat && (
+                  <StatCard icon={<ThumbsUp     size={15} color="#16a34a" />} label="Hữu ích"      color="#16a34a" value={chatSummary.helpful_rate ? `${chatSummary.helpful_rate.rate}%` : '—'} sub={chatSummary.helpful_rate ? undefined : 'Chưa có đánh giá'} />
+                  <StatCard icon={<Activity     size={15} color="#ea580c" />} label="Đang hoạt động" color="#ea580c" value={chatSummary.active_now} sub={chatSummary.active_by_role ? `${chatSummary.active_by_role.student ?? 0} SV · ${chatSummary.active_by_role.teacher ?? 0} GV` : undefined} />
+                  {chatSummary.csat && chatSummary.csat.avg_score != null && (
                     <StatCard icon={<Star size={15} color="#d97706" />} label="Đánh giá CSAT" color="#d97706" value={`${chatSummary.csat.avg_score}/${chatSummary.csat.max_score}`} sub={`${chatSummary.csat.total_ratings} lượt`} />
                   )}
                 </div>
@@ -197,8 +197,8 @@ const SubjectAnalyticsPage: FC = () => {
                       <ResponsiveContainer width="100%" height={180}>
                         <BarChart data={ch.score_by_class} margin={{ top:4, right:4, left:-20, bottom:0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                          <XAxis dataKey="label" tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
-                          <YAxis domain={[0,100]} tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} unit="%" />
+                          <XAxis dataKey="label" tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
+                          <YAxis domain={[0,100]} tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} unit="%" />
                           <Tooltip
                             contentStyle={{ fontSize:'0.72rem', borderRadius:8, border:'1px solid #e2e8f0' }}
                             formatter={(v: unknown) => [`${(v as number).toFixed(1)}%`, '']}
@@ -216,8 +216,8 @@ const SubjectAnalyticsPage: FC = () => {
                       <ResponsiveContainer width="100%" height={180}>
                         <BarChart data={ch.attention_by_class} margin={{ top:4, right:4, left:-20, bottom:0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                          <XAxis dataKey="label" tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
-                          <YAxis tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
+                          <XAxis dataKey="label" tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
+                          <YAxis tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
                           <Tooltip
                             contentStyle={{ fontSize:'0.72rem', borderRadius:8, border:'1px solid #e2e8f0' }}
                             formatter={(v: unknown) => [v as number, 'Học sinh']}
@@ -239,8 +239,8 @@ const SubjectAnalyticsPage: FC = () => {
                       <ResponsiveContainer width="100%" height={170}>
                         <BarChart data={ch.score_distribution} margin={{ top:4, right:4, left:-28, bottom:0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                          <XAxis dataKey="label" tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
-                          <YAxis tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
+                          <XAxis dataKey="label" tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
+                          <YAxis tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
                           <Tooltip
                             contentStyle={{ fontSize:'0.72rem', borderRadius:8, border:'1px solid #e2e8f0' }}
                             formatter={(v: unknown) => [v as number, 'Học sinh']}
@@ -260,8 +260,8 @@ const SubjectAnalyticsPage: FC = () => {
                       <ResponsiveContainer width="100%" height={170}>
                         <LineChart data={ch.submission_trend} margin={{ top:4, right:8, left:-28, bottom:0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                          <XAxis dataKey="date" tickFormatter={fmtDay} tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                          <YAxis tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
+                          <XAxis dataKey="date" tickFormatter={fmtDay} tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                          <YAxis tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
                           <Tooltip
                             contentStyle={{ fontSize:'0.72rem', borderRadius:8, border:'1px solid #e2e8f0' }}
                             formatter={(v: unknown) => [v as number, 'Bài nộp']}

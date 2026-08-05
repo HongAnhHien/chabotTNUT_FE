@@ -1,0 +1,276 @@
+file	line	old	new
+src/views/home/Home.tsx	337	fontSize:10	fontSize:11
+src/views/home/Home.tsx	338	fontSize:9	fontSize:11
+src/views/dashboard/admin/analytics/KnowledgeMapSection.tsx	70	fontSize: 9	fontSize: 11
+src/views/dashboard/admin/analytics/KnowledgeMapSection.tsx	71	fontSize: 10	fontSize: 11
+src/views/dashboard/admin/analytics/AnalyticsOverviewSection.tsx	88	fontSize: 9	fontSize: 11
+src/views/dashboard/admin/analytics/AnalyticsOverviewSection.tsx	89	fontSize: 9	fontSize: 11
+src/views/dashboard/admin/analytics/AnalyticsOverviewSection.tsx	108	fontSize: 9	fontSize: 11
+src/views/dashboard/admin/analytics/AnalyticsOverviewSection.tsx	109	fontSize: 9	fontSize: 11
+src/views/dashboard/student/subjects/FilesTab.tsx	59	fontSize: "0.65rem"	fontSize: "0.7rem"
+src/views/dashboard/student/subjects/subjectDetail.styles.ts	15	font-size:0.68rem	font-size:0.7rem
+src/views/dashboard/student/subjects/subjectDetail.styles.ts	66	font-size:0.63rem	font-size:0.7rem
+src/views/dashboard/student/subjects/StudentSubjectDetail.tsx	133	fontSize: "0.65rem"	fontSize: "0.7rem"
+src/views/dashboard/student/subjects/StudentSubjectDetail.tsx	142	fontSize: "0.65rem"	fontSize: "0.7rem"
+src/views/dashboard/student/subjects/StudentSubjects.tsx	68	font-size: 0.68rem	font-size: 0.7rem
+src/views/dashboard/student/subjects/StudentSubjects.tsx	134	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/student/subjects/StudentSubjects.tsx	139	fontSize: '0.5rem'	fontSize: '0.7rem'
+src/views/dashboard/student/subjects/StudentSubjects.tsx	147	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/student/subjects/StudentSubjects.tsx	152	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/student/subjects/StudentSubjects.tsx	157	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/student/subjects/StudentSubjects.tsx	164	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/student/subjects/StudentSubjects.tsx	291	fontSize: '0.58rem'	fontSize: '0.7rem'
+src/views/dashboard/student/subjects/StudentSubjects.tsx	299	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/student/subjects/StudentSubjects.tsx	311	fontSize: '0.58rem'	fontSize: '0.7rem'
+src/views/dashboard/student/dashboard/StatCard.tsx	18	fontSize:'0.62rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ExamCalendar.tsx	111	fontSize:'0.62rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ExamCalendar.tsx	127	fontSize:'0.62rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ExamCalendar.tsx	142	fontSize:'0.56rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ExamCalendar.tsx	147	fontSize:'0.66rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ExamCalendar.tsx	151	fontSize:'0.66rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ExamCalendar.tsx	155	fontSize:'0.66rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ExamCalendar.tsx	164	fontSize:'0.62rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ExamCalendar.tsx	193	fontSize:'0.62rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ExamCalendar.tsx	230	fontSize:'0.62rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/DonutRing.tsx	27	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/DonutRing.tsx	35	fontSize:'0.5rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ActivityHeatmap.tsx	65	fontSize:'0.58rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ActivityHeatmap.tsx	71	fontSize:'0.55rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ActivityHeatmap.tsx	90	fontSize:'0.58rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/ActivityHeatmap.tsx	92	fontSize:'0.58rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/SubjectView.tsx	54	fontSize:'0.65rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/SubjectView.tsx	60	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/SubjectView.tsx	104	fontSize:'0.62rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/SubjectView.tsx	117	fontSize:'0.65rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/SubjectView.tsx	125	fontSize:'0.58rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/SubjectView.tsx	138	fontSize:'0.65rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/SubjectView.tsx	142	fontSize:'0.65rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/SubjectView.tsx	145	fontSize:'0.65rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/SubjectView.tsx	150	fontSize:9	fontSize:11
+src/views/dashboard/student/dashboard/SubjectView.tsx	151	fontSize:9	fontSize:11
+src/views/dashboard/student/dashboard/SubjectView.tsx	182	fontSize:10	fontSize:11
+src/views/dashboard/student/dashboard/SubjectView.tsx	183	fontSize:9	fontSize:11
+src/views/dashboard/student/dashboard/SubjectView.tsx	184	fontSize:9	fontSize:11
+src/views/dashboard/student/dashboard/SubjectView.tsx	189	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/SubjectView.tsx	190	fontSize:9	fontSize:11
+src/views/dashboard/student/dashboard/SubjectView.tsx	191	fontSize:9	fontSize:11
+src/views/dashboard/student/dashboard/SubjectView.tsx	214	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/SubjectView.tsx	219	fontSize:'0.65rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/SubjectView.tsx	256	fontSize:'0.65rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/OverviewView.tsx	89	fontSize:'0.58rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/OverviewView.tsx	97	fontSize:'0.6rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/OverviewView.tsx	107	fontSize:'0.56rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/OverviewView.tsx	143	fontSize:'0.62rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/OverviewView.tsx	145	fontSize:'0.62rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/OverviewView.tsx	176	fontSize:'0.62rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/OverviewView.tsx	198	fontSize:'0.65rem'	fontSize:'0.7rem'
+src/views/dashboard/student/dashboard/dashboard.styles.ts	15	font-size:0.68rem	font-size:0.7rem
+src/views/dashboard/student/dashboard/MiniLineChart.tsx	24	fontSize:9	fontSize:11
+src/views/dashboard/student/dashboard/MiniLineChart.tsx	25	fontSize:9	fontSize:11
+src/views/dashboard/student/assignments/StudentAssignmentExam.tsx	796	fontSize: "0.65rem"	fontSize: "0.7rem"
+src/views/dashboard/student/assignments/StudentAssignmentExam.tsx	805	fontSize: "0.68rem"	fontSize: "0.7rem"
+src/views/dashboard/student/assignments/StudentAssignmentExam.tsx	884	fontSize: "0.68rem"	fontSize: "0.7rem"
+src/views/dashboard/student/assignments/StudentAssignmentExam.tsx	913	fontSize: "0.65rem"	fontSize: "0.7rem"
+src/views/dashboard/student/assignments/StudentAssignmentExam.tsx	974	fontSize: "0.68rem"	fontSize: "0.7rem"
+src/views/dashboard/student/assignments/StudentAssignmentExam.tsx	1045	fontSize: "0.68rem"	fontSize: "0.7rem"
+src/views/dashboard/student/assignments/StudentAssignmentExam.tsx	1060	fontSize: 7	fontSize: 11
+src/views/dashboard/student/assignments/StudentAssignmentExam.tsx	1183	fontSize: "0.65rem"	fontSize: "0.7rem"
+src/views/dashboard/student/assignments/StudentAssignmentExam.tsx	1245	fontSize: "0.65rem"	fontSize: "0.7rem"
+src/views/dashboard/student/schedule/StudentSchedule.tsx	206	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/student/schedule/StudentSchedule.tsx	247	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/student/schedule/StudentSchedule.tsx	274	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/student/schedule/StudentSchedule.tsx	293	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/student/schedule/StudentSchedule.tsx	305	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/student/chatbot/StudentChatbot.tsx	100	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/student/chatbot/StudentChatbot.tsx	101	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/student/chatbot/StudentChatbot.tsx	436	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	157	font-size:.6rem	font-size:0.7rem
+src/views/dashboard/teacher/Teacher_Aspx.tsx	170	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	207	fontSize: '0.67rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	208	fontSize: '0.67rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	209	fontSize: '0.67rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	245	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	246	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	247	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	296	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	301	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	306	fontSize: '0.55rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	334	fontSize: '0.67rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	335	fontSize: '0.67rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	336	fontSize: '0.67rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	371	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	372	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	373	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	508	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	511	fontSize: '0.67rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	609	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	610	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	611	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	612	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	770	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	773	fontSize: '0.67rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	813	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	832	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	837	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	838	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	884	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	885	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	886	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1011	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1043	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1070	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1071	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1085	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1087	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1124	fontSize: '0.52rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1142	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1147	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1152	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1156	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1310	fontSize: '0.67rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1327	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1328	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/Teacher_Aspx.tsx	1419	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/exams/TeacherExamView.tsx	106	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/exams/TeacherExamView.tsx	111	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/exams/TeacherExamView.tsx	157	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/exams/TeacherExamView.tsx	210	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectList.tsx	144	fontSize:'0.58rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectList.tsx	157	fontSize:'0.62rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectList.tsx	178	fontSize:'0.58rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/subjects/SubjectRow.tsx	61	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/subjects/SubjectRow.tsx	63	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/subjects/SubjectRow.tsx	65	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	188	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	194	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	197	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	198	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	228	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	233	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	239	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	246	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	282	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	294	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	323	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	329	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	331	fontSize: '0.58rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	335	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	370	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	378	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	400	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	401	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	411	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	413	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	547	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	608	fontSize: '0.5rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	622	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	627	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	632	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	637	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	641	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	651	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	652	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	653	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	654	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/TeacherSubjectExams.tsx	655	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/subjects/exams/components/ExamDetailView.tsx	157	fontSize: 9	fontSize: 11
+src/views/dashboard/teacher/subjects/exams/components/AssignmentView.tsx	113	fontSize: 10	fontSize: 11
+src/views/dashboard/teacher/subjects/exams/components/AssignmentView.tsx	316	fontSize: 10	fontSize: 11
+src/views/dashboard/teacher/subjects/exams/components/AssignmentView.tsx	318	fontSize: 10	fontSize: 11
+src/views/dashboard/teacher/subjects/files/components/FileListView.tsx	217	fontSize:10.5	fontSize:11
+src/views/dashboard/teacher/subjects/files/components/FileListView.tsx	236	fontSize:10.5	fontSize:11
+src/views/dashboard/teacher/subjects/files/components/DetailModal.tsx	241	fontSize:10.5	fontSize:11
+src/views/dashboard/teacher/subjects/files/components/DetailModal.tsx	255	fontSize:10.5	fontSize:11
+src/views/dashboard/teacher/subjects/files/components/DetailModal.tsx	266	fontSize:10.5	fontSize:11
+src/views/dashboard/teacher/subjects/files/components/RagRail.tsx	52	fontSize:10	fontSize:11
+src/views/dashboard/teacher/class/table/DataTable.tsx	50	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/class/table/DataTable.tsx	63	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/analytics/analytics.styles.ts	44	font-size:0.62rem	font-size:0.7rem
+src/views/dashboard/teacher/analytics/SubjectAnalyticsPage.tsx	60	fontSize:'0.66rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/SubjectAnalyticsPage.tsx	69	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/SubjectAnalyticsPage.tsx	170	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/SubjectAnalyticsPage.tsx	171	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/SubjectAnalyticsPage.tsx	200	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/SubjectAnalyticsPage.tsx	201	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/SubjectAnalyticsPage.tsx	219	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/SubjectAnalyticsPage.tsx	220	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/SubjectAnalyticsPage.tsx	242	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/SubjectAnalyticsPage.tsx	243	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/SubjectAnalyticsPage.tsx	263	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/SubjectAnalyticsPage.tsx	264	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	71	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	72	fontSize:'0.66rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	108	fontSize:'0.66rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	112	fontSize:'0.66rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	135	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	142	fontSize:'0.6rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	202	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	203	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	217	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	218	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	263	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	264	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	306	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	307	fontSize:9	fontSize:11
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	327	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsView.tsx	343	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsPage.tsx	98	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsPage.tsx	201	fontSize:'0.64rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsPage.tsx	205	fontSize:'0.64rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsPage.tsx	210	fontSize:'0.64rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsPage.tsx	243	fontSize:'0.6rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsPage.tsx	248	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsPage.tsx	252	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsPage.tsx	256	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsPage.tsx	289	fontSize:'0.62rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsPage.tsx	293	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsPage.tsx	594	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/analytics/ClassAnalyticsPage.tsx	596	fontSize:'0.68rem'	fontSize:'0.7rem'
+src/views/dashboard/teacher/chatbot/ChatContent.tsx	57	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatContent.tsx	69	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatContent.tsx	141	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatContent.tsx	145	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatContent.tsx	146	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatContent.tsx	166	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatContent.tsx	340	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatContent.tsx	421	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatContent.tsx	449	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatHistory.tsx	64	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatHistory.tsx	71	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatHistory.tsx	103	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatHistory.tsx	107	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/ChatHistory.tsx	131	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	201	fontSize: '0.63rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	205	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	206	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	207	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	251	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	268	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	269	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	274	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	286	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	315	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	329	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	437	fontSize: '0.58rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	457	fontSize: '0.58rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	484	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	485	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/TeacherAITutors.tsx	966	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/views/dashboard/teacher/chatbot/AdvisorChatPage.tsx	327	fontSize: '0.65rem'	fontSize: '0.7rem'
+src/components/admin/AdminSidebar.tsx	122	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/components/admin/AdminSidebar.tsx	149	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/components/student/SubjectFileCard.tsx	55	fontSize: "0.65rem"	fontSize: "0.7rem"
+src/components/student/SubjectFileCard.tsx	56	fontSize: "0.65rem"	fontSize: "0.7rem"
+src/components/student/StudentSidebar.tsx	118	fontSize: '0.58rem'	fontSize: '0.7rem'
+src/components/student/StudentSidebar.tsx	148	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/components/student/StudentSidebar.tsx	184	fontSize: '0.52rem'	fontSize: '0.7rem'
+src/components/student/StudentSidebar.tsx	242	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/components/student/StudentHeader.tsx	101	fontSize: '0.6rem'	fontSize: '0.7rem'
+src/components/student/AssignmentRow.tsx	32	fontSize: "0.62rem"	fontSize: "0.7rem"
+src/components/student/AssignmentRow.tsx	36	fontSize: "0.68rem"	fontSize: "0.7rem"
+src/components/student/AssignmentRow.tsx	38	fontSize: "0.68rem"	fontSize: "0.7rem"
+src/components/student/AssignmentRow.tsx	49	fontSize: "0.6rem"	fontSize: "0.7rem"
+src/components/student/AssignmentRow.tsx	55	fontSize: "0.68rem"	fontSize: "0.7rem"
+src/components/teacher/TeacherSidebar.tsx	117	fontSize: '0.68rem'	fontSize: '0.7rem'
+src/components/teacher/TeacherSidebar.tsx	144	fontSize: '0.62rem'	fontSize: '0.7rem'
+src/components/teacher/TeacherSidebar.tsx	180	fontSize: '0.52rem'	fontSize: '0.7rem'

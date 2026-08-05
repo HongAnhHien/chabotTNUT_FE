@@ -47,7 +47,7 @@ function StudentCard({ student, idx }: { student: ITeacherStudent; idx: number }
       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
     >
       {/* Index */}
-      <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(37,99,235,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.68rem', fontWeight: 700, color: '#94a3b8', flexShrink: 0 }}>
+      <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(37,99,235,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', flexShrink: 0 }}>
         {idx + 1}
       </div>
 
@@ -60,7 +60,7 @@ function StudentCard({ student, idx }: { student: ITeacherStudent; idx: number }
       <div style={{ flex: '1 1 160px', minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e293b' }}>{name || '—'}</span>
-          <span style={{ fontSize: '0.68rem', background: 'rgba(37,99,235,0.08)', color: '#2563eb', borderRadius: 20, padding: '1px 8px', fontWeight: 700, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{student.ma_sinh_vien}</span>
+          <span style={{ fontSize: '0.7rem', background: 'rgba(37,99,235,0.08)', color: '#2563eb', borderRadius: 20, padding: '1px 8px', fontWeight: 700, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{student.ma_sinh_vien}</span>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 2, flexWrap: 'wrap' }}>
           <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{student.ten_lop || student.ma_lop || '—'}</span>

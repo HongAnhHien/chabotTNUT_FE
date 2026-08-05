@@ -29,7 +29,7 @@ const WARN_COLORS: Record<string, string> = {
   'Chưa có đánh giá': '#94a3b8',
 };
 
-const AI_COLORS = ['#7c3aed','#e2e8f0'];
+const AI_COLORS = ['#7c3aed','#94a3b8'];
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
@@ -68,8 +68,8 @@ const AttentionRow: FC<{ student: IAttentionStudent }> = ({ student }) => {
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
           <span style={{ fontWeight:700, fontSize:'0.84rem', color:'#0f172a' }}>{student.ho_ten}</span>
-          <span style={{ fontSize:'0.68rem', color:'#94a3b8' }}>{student.ma_sinh_vien}</span>
-          <span style={{ fontSize:'0.66rem', fontWeight:700, color:w.color, background:w.bg, borderRadius:20, padding:'1px 8px', whiteSpace:'nowrap' }}>
+          <span style={{ fontSize:'0.7rem', color:'#94a3b8' }}>{student.ma_sinh_vien}</span>
+          <span style={{ fontSize:'0.7rem', fontWeight:700, color:w.color, background:w.bg, borderRadius:20, padding:'1px 8px', whiteSpace:'nowrap' }}>
             {w.label}
           </span>
           {student.avg_score > 0 && (
@@ -105,11 +105,11 @@ const ScheduleCard: FC<{ item: IScheduleItem }> = ({ item }) => {
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:7, flexWrap:'wrap' }}>
             <span style={{ fontWeight:700, fontSize:'0.86rem', color:'#0f172a' }}>{item.title}</span>
-            <span style={{ fontSize:'0.66rem', fontWeight:700, color:'#7c3aed', background:'rgba(124,58,237,0.08)', borderRadius:5, padding:'1px 7px' }}>
+            <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#7c3aed', background:'rgba(124,58,237,0.08)', borderRadius:5, padding:'1px 7px' }}>
               {EXAM_TYPE[item.exam_type] ?? item.exam_type}
             </span>
             {overdue && item.pending_count > 0 && (
-              <span style={{ fontSize:'0.66rem', fontWeight:700, color:'#dc2626', background:'rgba(220,38,38,0.08)', borderRadius:5, padding:'1px 7px' }}>
+              <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#dc2626', background:'rgba(220,38,38,0.08)', borderRadius:5, padding:'1px 7px' }}>
                 {item.pending_count} chưa nộp
               </span>
             )}
@@ -132,14 +132,14 @@ const ScheduleCard: FC<{ item: IScheduleItem }> = ({ item }) => {
       </div>
       {open && item.pending_students.length > 0 && (
         <div style={{ borderTop:'1px solid #f1f5f9', background:'#fafbfd', padding:'10px 14px', animation:'an-expand .2s ease both' }}>
-          <div style={{ fontSize:'0.68rem', fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>
+          <div style={{ fontSize:'0.7rem', fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>
             Chưa nộp ({item.pending_students.length})
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
             {item.pending_students.map(s => (
               <div key={s.ma_sinh_vien} style={{ display:'flex', alignItems:'center', gap:8, fontSize:'0.78rem' }}>
                 <div style={{ width:24, height:24, borderRadius:7, background:'rgba(220,38,38,0.08)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                  <span style={{ fontSize:'0.6rem', fontWeight:700, color:'#dc2626' }}>{s.ho_ten.split(' ').pop()?.[0] ?? '?'}</span>
+                  <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#dc2626' }}>{s.ho_ten.split(' ').pop()?.[0] ?? '?'}</span>
                 </div>
                 <span style={{ fontWeight:600, color:'#1e293b' }}>{s.ho_ten}</span>
                 <span style={{ color:'#94a3b8', fontSize:'0.72rem' }}>{s.ma_sinh_vien}</span>
@@ -168,11 +168,11 @@ const ClassAnalyticsView: FC<Props> = ({ data, compact = false }) => {
   const completion  = data.assignments.completion_rate;
   const ch          = data.charts;
   const chartH      = compact ? 150 : 180;
-  // "Chưa có đánh giá" hiển thị đầu tiên (trước "Bình thường") — SV chưa có điểm
-  // là trạng thái trung tính cần thấy ngay, không lẫn giữa các mức cảnh báo.
+  // "Chưa có đánh giá" hiển thị cuối cùng (sau "Rất nguy cơ") — tách biệt khỏi
+  // dải mức độ cảnh báo chính (Bình thường → Rất nguy cơ) đứng liền nhau trước.
   const warningBreakdown = ch
     ? [...ch.warning_breakdown].sort((a, b) =>
-        (a.level === 'chua_danh_gia' ? -1 : 0) - (b.level === 'chua_danh_gia' ? -1 : 0)
+        (a.level === 'chua_danh_gia' ? 1 : 0) - (b.level === 'chua_danh_gia' ? 1 : 0)
       )
     : [];
 
@@ -199,8 +199,8 @@ const ClassAnalyticsView: FC<Props> = ({ data, compact = false }) => {
           <div className="an-progress-fill" style={{ width:`${completion}%`, background: completion >= 80 ? '#22c55e' : completion >= 50 ? '#f59e0b' : '#ef4444' }} />
         </div>
         <div style={{ display:'flex', justifyContent:'space-between', marginTop:5 }}>
-          <span style={{ fontSize:'0.68rem', color:'#94a3b8' }}>{data.assignments.total} bài kiểm tra</span>
-          <span style={{ fontSize:'0.68rem', color:'#94a3b8' }}>{data.assignments.total_submitted} lượt nộp</span>
+          <span style={{ fontSize:'0.7rem', color:'#94a3b8' }}>{data.assignments.total} bài kiểm tra</span>
+          <span style={{ fontSize:'0.7rem', color:'#94a3b8' }}>{data.assignments.total_submitted} lượt nộp</span>
         </div>
       </div>
 
@@ -214,8 +214,8 @@ const ClassAnalyticsView: FC<Props> = ({ data, compact = false }) => {
               <ResponsiveContainer width="100%" height={chartH}>
                 <BarChart data={ch.score_distribution} margin={{ top:4, right:4, left:-28, bottom:0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="label" tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
+                  <XAxis dataKey="label" tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{ fontSize:'0.72rem', borderRadius:8, border:'1px solid #e2e8f0', boxShadow:'0 4px 12px rgba(0,0,0,0.08)' }}
                     formatter={(v: unknown) => [v as number, 'Học sinh']}
@@ -260,8 +260,8 @@ const ClassAnalyticsView: FC<Props> = ({ data, compact = false }) => {
               <ResponsiveContainer width="100%" height={chartH}>
                 <BarChart data={ch.completion_by_type} margin={{ top:4, right:4, left:-20, bottom:0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="label" tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
-                  <YAxis domain={[0,100]} tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} unit="%" />
+                  <XAxis dataKey="label" tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
+                  <YAxis domain={[0,100]} tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} unit="%" />
                   <Tooltip
                     contentStyle={{ fontSize:'0.72rem', borderRadius:8, border:'1px solid #e2e8f0' }}
                     formatter={(v: unknown) => [`${(v as number).toFixed(1)}%`, 'Hoàn thành']}
@@ -290,7 +290,21 @@ const ClassAnalyticsView: FC<Props> = ({ data, compact = false }) => {
                     contentStyle={{ fontSize:'0.72rem', borderRadius:8, border:'1px solid #e2e8f0' }}
                     formatter={(v: unknown) => [v as number, 'Học sinh']}
                   />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize:'0.72rem' }} />
+                  <Legend
+                    content={() => (
+                      <ul style={{ display:'flex', flexWrap:'wrap', justifyContent:'center', gap:'4px 12px', margin:0, padding:'8px 0 0', listStyle:'none' }}>
+                        {warningBreakdown.map(entry => {
+                          const color = WARN_COLORS[entry.label] ?? '#94a3b8';
+                          return (
+                            <li key={entry.label} style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.72rem', color }}>
+                              <span style={{ width:8, height:8, borderRadius:'50%', background: color, flexShrink:0 }} />
+                              {entry.label}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </ChartCard>
@@ -303,8 +317,8 @@ const ClassAnalyticsView: FC<Props> = ({ data, compact = false }) => {
               <ResponsiveContainer width="100%" height={130}>
                 <LineChart data={ch.submission_trend} margin={{ top:4, right:8, left:-28, bottom:0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="date" tickFormatter={fmtDay} tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                  <YAxis tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
+                  <XAxis dataKey="date" tickFormatter={fmtDay} tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{ fontSize:'0.72rem', borderRadius:8, border:'1px solid #e2e8f0' }}
                     formatter={(v: unknown) => [v as number, 'Bài nộp']}
@@ -324,7 +338,7 @@ const ClassAnalyticsView: FC<Props> = ({ data, compact = false }) => {
           <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
             <AlertTriangle size={14} color="#ea580c" />
             <span style={{ fontSize:'0.82rem', fontWeight:700, color:'#1e293b' }}>Học sinh cần chú ý</span>
-            <span style={{ fontSize:'0.68rem', fontWeight:700, color:'#ea580c', background:'rgba(234,88,12,0.1)', borderRadius:20, padding:'1px 8px' }}>
+            <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#ea580c', background:'rgba(234,88,12,0.1)', borderRadius:20, padding:'1px 8px' }}>
               {data.attention_count}
             </span>
           </div>
@@ -340,7 +354,7 @@ const ClassAnalyticsView: FC<Props> = ({ data, compact = false }) => {
           <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
             <CalendarDays size={14} color="#2563eb" />
             <span style={{ fontSize:'0.82rem', fontWeight:700, color:'#1e293b' }}>Lịch bài kiểm tra</span>
-            <span style={{ fontSize:'0.68rem', fontWeight:600, color:'#64748b' }}>{data.schedule.length} bài</span>
+            <span style={{ fontSize:'0.7rem', fontWeight:600, color:'#64748b' }}>{data.schedule.length} bài</span>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {data.schedule.map(item => <ScheduleCard key={item.assignment_id} item={item} />)}

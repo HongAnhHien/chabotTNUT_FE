@@ -56,7 +56,7 @@ const FilesTab: FC<Props> = ({ files, onPreview }) => {
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, background: ts.bg, border: `1px solid ${ts.border}` }}>
                     <span style={{ fontSize: "0.72rem", fontWeight: 800, color: ts.color, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</span>
-                    <span style={{ fontSize: "0.65rem", fontWeight: 600, color: ts.color, opacity: 0.7 }}>{gfiles.length} file</span>
+                    <span style={{ fontSize: "0.7rem", fontWeight: 600, color: ts.color, opacity: 0.7 }}>{gfiles.length} file</span>
                   </div>
                   <div style={{ height: 1, background: "rgba(30,58,138,0.07)", flex: 1 }} />
                 </div>

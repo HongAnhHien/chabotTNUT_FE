@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Eye, EyeOff, LogIn, MessageCircle, BookOpen, GraduationCap, Zap } from 'lucide-react';
+import { Eye, EyeOff, LogIn, MessageCircle, ClipboardList, GraduationCap, CalendarClock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/views/pages/stores/auth_store';
@@ -16,11 +16,13 @@ const loginSchema = z.object({
 });
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-const FEATURES = [
-  { icon: MessageCircle, label: 'Hỏi đáp AI', sub: 'Giải đáp tức thì mọi câu hỏi học thuật' },
-  { icon: BookOpen,      label: 'Ôn tập thông minh', sub: 'Hệ thống flashcard thích ứng cá nhân hoá' },
-  { icon: GraduationCap, label: 'Tư vấn học tập', sub: 'Lộ trình học tập được thiết kế riêng' },
-  { icon: Zap,           label: 'Kiểm tra nhanh', sub: 'Đề thi tự động theo chương trình học' },
+const CHATBOTS = [
+  // Chatbot trợ giảng (chat môn học)
+  { icon: MessageCircle,  label: 'Hỏi đáp bài học',    sub: 'Giải đáp tức thì mọi câu hỏi học thuật theo môn' },
+  { icon: ClipboardList,  label: 'Tạo đề kiểm tra',    sub: 'Sinh đề tự động theo chương trình học' },
+  // Cố vấn học tập (CVHT)
+  { icon: GraduationCap,  label: 'Cố vấn học tập',     sub: 'Tra cứu điểm, thời khoá biểu, lịch thi' },
+  { icon: CalendarClock,  label: 'Tư vấn đăng ký môn', sub: 'Gợi ý môn học, môn tiên quyết mỗi kỳ' },
 ];
 
 const CSS = `
@@ -93,29 +95,29 @@ const Login: FC = () => {
         </div>
 
         {/* Middle: Hero text + features */}
-        <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+        <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div>
-            <div style={{ display: 'inline-block', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#93c5fd', background: 'rgba(147,197,253,0.12)', border: '1px solid rgba(147,197,253,0.25)', borderRadius: 20, padding: '4px 12px', marginBottom: 16 }}>
-              Trợ lý học thuật AI
+            <div style={{ display: 'inline-block', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#93c5fd', background: 'rgba(147,197,253,0.12)', border: '1px solid rgba(147,197,253,0.25)', borderRadius: 20, padding: '4px 12px', marginBottom: 14 }}>
+              2 Chatbot AI hỗ trợ học tập
             </div>
-            <h1 style={{ fontSize: '2.4rem', fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.03em', color: 'white', margin: 0 }}>
+            <h1 style={{ fontSize: '2.1rem', fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.03em', color: 'white', margin: 0 }}>
               Học thông minh hơn<br />
               <span style={{ color: '#60a5fa' }}>cùng AI của TNUT</span>
             </h1>
-            <p style={{ marginTop: 16, fontSize: '0.92rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, maxWidth: 360 }}>
-              Nền tảng học tập tích hợp trí tuệ nhân tạo, được thiết kế riêng cho sinh viên và giảng viên Đại học Kỹ thuật Công nghiệp Thái Nguyên.
+            <p style={{ marginTop: 12, fontSize: '0.88rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, maxWidth: 360 }}>
+              Nền tảng học tập tích hợp 2 hệ thống chatbot AI — hỗ trợ chuyên môn từng môn học và cố vấn học tập toàn diện — dành riêng cho sinh viên và giảng viên Đại học Kỹ thuật Công nghiệp Thái Nguyên.
             </p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {FEATURES.map(({ icon: Icon, label, sub }) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)', transition: 'background .2s' }}>
-                <div style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 10, background: 'rgba(96,165,250,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {CHATBOTS.map(({ icon: Icon, label, sub }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 16px', borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)', transition: 'background .2s' }}>
+                <div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: 10, background: 'rgba(96,165,250,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Icon size={16} color="#93c5fd" strokeWidth={1.8} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white' }}>{label}</div>
-                  <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{sub}</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'white' }}>{label}</div>
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{sub}</div>
                 </div>
               </div>
             ))}
@@ -123,7 +125,7 @@ const Login: FC = () => {
         </div>
 
         {/* Bottom: Stats */}
-        <div style={{ position: 'relative', zIndex: 10, display: 'flex', gap: 32 }}>
+        <div style={{ position: 'relative', zIndex: 10, display: 'flex', gap: 32, marginTop: 20 }}>
           {[{ value: '5.000+', label: 'Sinh viên' }, { value: '98%', label: 'Hài lòng' }, { value: '24/7', label: 'Hỗ trợ' }].map(({ value, label }) => (
             <div key={label}>
               <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#93c5fd' }}>{value}</div>

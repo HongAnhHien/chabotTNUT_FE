@@ -110,7 +110,7 @@ const AssignmentView: FC<Props> = ({ detail, loading, onBack, onAssignMore, onUp
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', lineHeight: 1 }}>{pct}%</div>
-              <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, marginTop: 2 }}>đã nộp</div>
+              <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginTop: 2 }}>đã nộp</div>
             </div>
           </div>
           <div style={{ flex: 1, fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>
@@ -313,9 +313,9 @@ const AssignmentView: FC<Props> = ({ detail, loading, onBack, onAssignMore, onUp
                         {s.status === 'submitted' && s.score !== null && s.total ? (
                           <div style={{ textAlign: 'right', flexShrink: 0 }}>
                             <div style={{ fontSize: 14, fontWeight: 800, lineHeight: 1, color: pctScore !== null && pctScore >= 50 ? '#16a34a' : '#dc2626' }}>
-                              {s.score}<span style={{ fontSize: 10, color: '#94a3b8' }}>/{s.total}</span>
+                              {s.score}<span style={{ fontSize: 11, color: '#94a3b8' }}>/{s.total}</span>
                             </div>
-                            {pctScore !== null && <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>{pctScore}%</div>}
+                            {pctScore !== null && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{pctScore}%</div>}
                           </div>
                         ) : null}
                         <span style={{ fontSize: 11.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: b.bg, color: b.color, flexShrink: 0 }}>

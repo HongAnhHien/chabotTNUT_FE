@@ -12,7 +12,7 @@ const CSS = `
   .sd-heatcal-row { display:flex; gap:14px; align-items:stretch; }
 
   .sd-table { width:100%; border-collapse:collapse; }
-  .sd-table th { text-align:left; font-size:0.68rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.05em; padding:10px 14px; border-bottom:1px solid #f1f5f9; white-space:nowrap; }
+  .sd-table th { text-align:left; font-size:0.7rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.05em; padding:10px 14px; border-bottom:1px solid #f1f5f9; white-space:nowrap; }
   .sd-table td { padding:12px 14px; border-bottom:1px solid #f8fafc; font-size:0.8rem; color:#1e293b; vertical-align:middle; }
   .sd-table tr:last-child td { border-bottom:none; }
   .sd-table tr:hover td { background:rgba(41,102,235,0.025); }

@@ -21,8 +21,8 @@ const MiniLineChart: FC<{ trend: { score_10: number; created_at: string }[] }> =
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-        <XAxis dataKey="date" tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-        <YAxis domain={[0, 10]} tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
+        <XAxis dataKey="date" tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+        <YAxis domain={[0, 10]} tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
         <Tooltip
           contentStyle={{ fontSize:'0.72rem', borderRadius:8, border:'1px solid #eef0f5', boxShadow:'0 4px 12px rgba(0,0,0,0.08)' }}
           formatter={(v: unknown) => [typeof v === 'number' ? v.toFixed(1) : String(v), 'Điểm']}

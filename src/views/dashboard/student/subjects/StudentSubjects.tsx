@@ -65,7 +65,7 @@ const CSS = `
     .ss-container   { padding: 0 14px; }
     .ss-content     { padding: 14px; }
     .ss-page-title  { font-size: 0.95rem; }
-    .ss-page-subtitle { font-size: 0.68rem; }
+    .ss-page-subtitle { font-size: 0.7rem; }
     .ss-header-row  { flex-direction: column; align-items: flex-start; gap: 10px; }
     .ss-sem-drop      { width: 100%; }
     .ss-sem-drop-btn  { width: 100%; justify-content: space-between; }
@@ -131,12 +131,12 @@ const SubjectCard: FC<{
             <div style={{ fontWeight: 800, fontSize: '0.88rem', color: 'white', lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
               {subject.ten_mon}
             </div>
-            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.75)', fontFamily: 'monospace', marginTop: 3, fontWeight: 600 }}>{subject.ma_mon}</div>
+            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.75)', fontFamily: 'monospace', marginTop: 3, fontWeight: 600 }}>{subject.ma_mon}</div>
           </div>
 
           <div style={{ flexShrink: 0, background: 'rgba(255,255,255,0.2)', borderRadius: 10, padding: '4px 9px', border: '1px solid rgba(255,255,255,0.3)', textAlign: 'center' }}>
             <div style={{ fontSize: '0.95rem', fontWeight: 900, color: 'white', lineHeight: 1 }}>{subject.so_tc}</div>
-            <div style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.75)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>TC</div>
+            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.75)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>TC</div>
           </div>
         </div>
       </div>
@@ -144,24 +144,24 @@ const SubjectCard: FC<{
       {/* ── Info section ── */}
       <div style={{ padding: '12px 16px 14px' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.65rem', fontWeight: 600, color: hasFiles ? '#2563eb' : '#94a3b8', background: hasFiles ? 'rgba(37,99,235,0.07)' : 'rgba(148,163,184,0.08)', borderRadius: 20, padding: '3px 9px', border: `1px solid ${hasFiles ? 'rgba(37,99,235,0.15)' : 'rgba(148,163,184,0.15)'}` }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.7rem', fontWeight: 600, color: hasFiles ? '#2563eb' : '#94a3b8', background: hasFiles ? 'rgba(37,99,235,0.07)' : 'rgba(148,163,184,0.08)', borderRadius: 20, padding: '3px 9px', border: `1px solid ${hasFiles ? 'rgba(37,99,235,0.15)' : 'rgba(148,163,184,0.15)'}` }}>
             <FileText size={9} />
             {hasFiles ? `${files.length} tài liệu` : 'Chưa có tài liệu'}
           </span>
           {subject.gv && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.65rem', fontWeight: 600, color: '#7c3aed', background: 'rgba(124,58,237,0.06)', borderRadius: 20, padding: '3px 9px', border: '1px solid rgba(124,58,237,0.14)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.7rem', fontWeight: 600, color: '#7c3aed', background: 'rgba(124,58,237,0.06)', borderRadius: 20, padding: '3px 9px', border: '1px solid rgba(124,58,237,0.14)' }}>
               <User size={9} /> {subject.gv}
             </span>
           )}
           {subject.phong && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.65rem', fontWeight: 600, color: '#0891b2', background: 'rgba(8,145,178,0.06)', borderRadius: 20, padding: '3px 9px', border: '1px solid rgba(8,145,178,0.14)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.7rem', fontWeight: 600, color: '#0891b2', background: 'rgba(8,145,178,0.06)', borderRadius: 20, padding: '3px 9px', border: '1px solid rgba(8,145,178,0.14)' }}>
               <MapPin size={9} /> {subject.phong}
             </span>
           )}
         </div>
 
         {subject.lich_thi && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.68rem', fontWeight: 600, color: '#b45309', background: 'rgba(217,119,6,0.08)', border: '1px solid rgba(217,119,6,0.18)', borderRadius: 10, padding: '6px 10px', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.7rem', fontWeight: 600, color: '#b45309', background: 'rgba(217,119,6,0.08)', border: '1px solid rgba(217,119,6,0.18)', borderRadius: 10, padding: '6px 10px', marginBottom: 12 }}>
             <Calendar size={11} style={{ flexShrink: 0 }} />
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               Thi {subject.lich_thi.ky_thi.toLowerCase()}: {subject.lich_thi.ngay_thi} · {subject.lich_thi.gio_bat_dau} · {subject.lich_thi.phong_thi}
@@ -288,7 +288,7 @@ const StudentSubjects: FC = () => {
                   <Calendar size={12} color="#2563eb" />
                   <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1e293b', whiteSpace: 'nowrap' }}>{currentSem?.ten_hoc_ky ?? 'Chọn học kỳ'}</span>
                   {currentSem?.is_current && (
-                    <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#059669', background: 'rgba(5,150,105,0.1)', borderRadius: 20, padding: '2px 7px', whiteSpace: 'nowrap' }}>Hiện tại</span>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#059669', background: 'rgba(5,150,105,0.1)', borderRadius: 20, padding: '2px 7px', whiteSpace: 'nowrap' }}>Hiện tại</span>
                   )}
                   <ChevronDown size={13} color="#64748b" style={{ transition: 'transform .2s', transform: semDropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                 </button>
@@ -296,7 +296,7 @@ const StudentSubjects: FC = () => {
                 {semDropOpen && (
                   <div className="ss-sem-drop-panel" style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 50, background: 'white', borderRadius: 14, boxShadow: '0 8px 30px rgba(30,58,138,0.15)', border: '1px solid rgba(37,99,235,0.1)', minWidth: 230, overflow: 'hidden', animation: 'ss-fade .15s ease' }}>
                     <div style={{ padding: '8px 14px 6px', borderBottom: '1px solid rgba(37,99,235,0.07)' }}>
-                      <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Chọn học kỳ</span>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Chọn học kỳ</span>
                     </div>
                     {semesters.map(s => (
                       <button
@@ -308,7 +308,7 @@ const StudentSubjects: FC = () => {
                       >
                         <div style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: s.hoc_ky === selectedHk ? '#2563eb' : s.is_current ? '#22c55e' : '#e2e8f0' }} />
                         <span style={{ flex: 1, fontSize: '0.78rem', fontWeight: s.hoc_ky === selectedHk ? 700 : 500, color: s.hoc_ky === selectedHk ? '#1e3a8a' : '#334155' }}>{s.ten_hoc_ky}</span>
-                        {s.is_current && <span style={{ fontSize: '0.58rem', fontWeight: 700, color: '#059669', background: 'rgba(5,150,105,0.09)', borderRadius: 20, padding: '1px 7px' }}>Hiện tại</span>}
+                        {s.is_current && <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#059669', background: 'rgba(5,150,105,0.09)', borderRadius: 20, padding: '1px 7px' }}>Hiện tại</span>}
                       </button>
                     ))}
                   </div>

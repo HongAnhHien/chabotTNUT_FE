@@ -58,11 +58,11 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, 
         <div style={{ flex:'1 1 160px', minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:7, flexWrap:'wrap', marginBottom:6 }}>
             <span style={{ fontWeight:700, fontSize:'0.95rem', color:'#0f172a' }}>{subject.ten_mon}</span>
-            <span style={{ background:color.light, color:color.accent, borderRadius:6, padding:'1px 8px', fontSize:'0.68rem', fontWeight:700 }}>{subject.ma_mon}</span>
+            <span style={{ background:color.light, color:color.accent, borderRadius:6, padding:'1px 8px', fontSize:'0.7rem', fontWeight:700 }}>{subject.ma_mon}</span>
             {subject.so_tc !== '0' && (
-              <span style={{ background:'#f0fdf4', color:'#16a34a', borderRadius:6, padding:'1px 8px', fontSize:'0.68rem', fontWeight:700 }}>{subject.so_tc} TC</span>
+              <span style={{ background:'#f0fdf4', color:'#16a34a', borderRadius:6, padding:'1px 8px', fontSize:'0.7rem', fontWeight:700 }}>{subject.so_tc} TC</span>
             )}
-            <span style={{ fontSize:'0.68rem', color:'#94a3b8' }}>{classes.length} lớp</span>
+            <span style={{ fontSize:'0.7rem', color:'#94a3b8' }}>{classes.length} lớp</span>
           </div>
 
           {/* Mini metrics */}
@@ -90,7 +90,7 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, 
               )}
               {chatSummary && (
                 <span style={{ display:'flex', alignItems:'center', gap:6, fontSize:'0.72rem', color:'#64748b' }}>
-                  <MessageCircle size={11} color="#2563eb" /> {chatSummary.total_messages} tin nhắn · {chatSummary.helpful_rate}% hữu ích
+                  <MessageCircle size={11} color="#2563eb" /> {chatSummary.total_messages} tin nhắn{chatSummary.helpful_rate ? ` · ${chatSummary.helpful_rate.rate}% hữu ích` : ''}
                 </span>
               )}
             </div>
@@ -100,7 +100,7 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, 
         {/* Subject action buttons */}
         <div className="sl-subject-actions" style={{ display:'flex', alignItems:'center', flexWrap:'wrap', gap:6, flexShrink:0 }} onClick={e => e.stopPropagation()}>
           <button onClick={onDetail} className="sl-btn" style={{ background:'rgba(37,99,235,0.07)', border:'1px solid rgba(37,99,235,0.18)', color:'#2563eb' }}>
-            <Info size={13} /> Chi tiết môn
+            <Info size={13} /> Thông kê môn
           </button>
           <button onClick={onFiles} className="sl-btn" style={{ background:'rgba(37,99,235,0.07)', border:'1px solid rgba(37,99,235,0.18)', color:'#2563eb' }}>
             <FileText size={13} /> Tài liệu
@@ -154,7 +154,7 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, 
               {/* Class action buttons */}
               <div className="sl-class-actions" style={{ display:'flex', flexWrap:'wrap', gap:6, flexShrink:0 }}>
                 <button onClick={() => onClsDetail(cls)} className="sl-btn" style={{ background:'#f8fafc', border:'1px solid #e2e8f0', color:'#475569' }}>
-                  <Info size={12} /> Chi tiết lớp
+                  <Info size={12} /> Thống kê lớp
                 </button>
                 <button onClick={() => onStudents(cls)} className="sl-btn" style={{ background:'#f8fafc', border:'1px solid #e2e8f0', color:'#475569' }}>
                   <Users size={12} /> Học sinh

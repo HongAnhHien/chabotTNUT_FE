@@ -29,13 +29,13 @@ const AssignmentRow: FC<Props> = ({ assignment: a, delay = 0 }) => {
         </div>
         <div style={{ display: "flex", gap: 6, marginTop: 4, flexWrap: "wrap", alignItems: "center" }}>
           {examTypeCfg && (
-            <span style={{ fontSize: "0.62rem", fontWeight: 700, borderRadius: 20, padding: "2px 8px", background: examTypeCfg.bg, color: examTypeCfg.color, border: `1px solid ${examTypeCfg.border}` }}>
+            <span style={{ fontSize: "0.7rem", fontWeight: 700, borderRadius: 20, padding: "2px 8px", background: examTypeCfg.bg, color: examTypeCfg.color, border: `1px solid ${examTypeCfg.border}` }}>
               {examTypeCfg.label}
             </span>
           )}
-          <span style={{ fontSize: "0.68rem", color: "#94a3b8" }}>Hạn nộp: {fmtDate(a.due_at)}</span>
+          <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>Hạn nộp: {fmtDate(a.due_at)}</span>
           {a.submitted_at && (
-            <span style={{ fontSize: "0.68rem", color: "#94a3b8" }}>· Đã nộp: {fmtDate(a.submitted_at)}</span>
+            <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>· Đã nộp: {fmtDate(a.submitted_at)}</span>
           )}
         </div>
       </div>
@@ -46,13 +46,13 @@ const AssignmentRow: FC<Props> = ({ assignment: a, delay = 0 }) => {
           <div style={{ fontSize: "1.1rem", fontWeight: 900, lineHeight: 1, color: pct! >= 80 ? "#059669" : pct! >= 50 ? "#d97706" : "#dc2626" }}>
             {a.my_score}/{a.total}
           </div>
-          <div style={{ fontSize: "0.6rem", color: "#94a3b8", marginTop: 2 }}>{pct}%</div>
+          <div style={{ fontSize: "0.7rem", color: "#94a3b8", marginTop: 2 }}>{pct}%</div>
         </div>
       ) : null}
 
       {/* Status badge + action */}
       <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-        <span style={{ fontSize: "0.68rem", fontWeight: 700, borderRadius: 20, padding: "3px 10px", background: cfg.bg, color: cfg.color }}>
+        <span style={{ fontSize: "0.7rem", fontWeight: 700, borderRadius: 20, padding: "3px 10px", background: cfg.bg, color: cfg.color }}>
           {cfg.label}
         </span>
         {sk === "not_started" && (

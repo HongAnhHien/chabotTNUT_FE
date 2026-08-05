@@ -97,8 +97,8 @@ const SubjectPicker: FC<SubjectPickerProps> = ({ subjects, loading, onSelect, on
               <div>
                 <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#1e293b' }}>{subject.ten_mon}</div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
-                  <span style={{ fontSize: '0.65rem', color: '#2563eb', fontWeight: 700, background: 'rgba(37,99,235,0.07)', borderRadius: 20, padding: '1px 7px' }}>{subject.ma_mon}</span>
-                  {subject.so_tc !== '0' && <span style={{ fontSize: '0.65rem', color: '#059669', fontWeight: 600 }}>{subject.so_tc} TC</span>}
+                  <span style={{ fontSize: '0.7rem', color: '#2563eb', fontWeight: 700, background: 'rgba(37,99,235,0.07)', borderRadius: 20, padding: '1px 7px' }}>{subject.ma_mon}</span>
+                  {subject.so_tc !== '0' && <span style={{ fontSize: '0.7rem', color: '#059669', fontWeight: 600 }}>{subject.so_tc} TC</span>}
                 </div>
               </div>
             </div>
@@ -433,7 +433,7 @@ const StudentChatbot: FC = () => {
                   <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>Chatbot cố vấn học tập</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 1 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
-                    <span style={{ fontSize: '0.65rem', color: '#64748b' }}>Trực tuyến · Trả lời 24/7</span>
+                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Trực tuyến · Trả lời 24/7</span>
                   </div>
                 </div>
                 {(currentSession.name || currentSession.subject_id) && (

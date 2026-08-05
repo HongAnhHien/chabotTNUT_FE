@@ -51,13 +51,13 @@ const SubjectView: FC<SubjectViewProps> = ({ data, assignments, maMon, tenMon, l
           <ArrowLeft size={14} />
         </button>
         <div style={{ minWidth:0 }}>
-          <div style={{ fontSize:'0.65rem', color:'#94a3b8', marginBottom:1 }}>Dashboard &rsaquo; Môn học</div>
+          <div style={{ fontSize:'0.7rem', color:'#94a3b8', marginBottom:1 }}>Dashboard &rsaquo; Môn học</div>
           <div style={{ fontWeight:800, fontSize:'0.95rem', color:'#0f172a' }}>{tenMon !== maMon ? tenMon : maMon}</div>
         </div>
 
         {lichThi && (
           <div className="sd-exam-badge" style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:14, flexWrap:'wrap', background:'rgba(124,58,237,0.06)', border:'1px solid rgba(124,58,237,0.18)', borderRadius:12, padding:'8px 14px' }}>
-            <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.68rem', fontWeight:700, color:'#7c3aed' }}>
+            <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.7rem', fontWeight:700, color:'#7c3aed' }}>
               <Calendar size={12} /> {lichThi.ky_thi}
             </span>
             <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.72rem', color:'#475569' }}>
@@ -101,7 +101,7 @@ const SubjectView: FC<SubjectViewProps> = ({ data, assignments, maMon, tenMon, l
                   <span style={{ fontSize:'0.72rem', fontWeight:700, color:'#1e293b' }}>{item.count}</span>
                 </div>
               ))}
-              <div style={{ marginTop:4, fontSize:'0.62rem', color:'#94a3b8' }}>
+              <div style={{ marginTop:4, fontSize:'0.7rem', color:'#94a3b8' }}>
                 Kỳ này: {exams.this_semester.submitted}/{exams.this_semester.exams_created} bài
               </div>
             </div>
@@ -114,7 +114,7 @@ const SubjectView: FC<SubjectViewProps> = ({ data, assignments, maMon, tenMon, l
           <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10, flexShrink:0 }}>
             <span style={{ display:'inline-flex', padding:'4px 14px', borderRadius:20, fontSize:'0.78rem', fontWeight:800, background:lvl.bg, color:lvl.color }}>{lvl.label}</span>
             <div style={{ fontSize:'1.6rem', fontWeight:900, color:'#0f172a', lineHeight:1 }}>{fmt1(progress.avg_score)}</div>
-            <span style={{ fontSize:'0.65rem', color:'#94a3b8', marginTop:6 }}>/10</span>
+            <span style={{ fontSize:'0.7rem', color:'#94a3b8', marginTop:6 }}>/10</span>
           </div>
           <div style={{ flex:1, minHeight:80, position:'relative' }}>
             <div style={{ position:'absolute', inset:0 }}>
@@ -122,7 +122,7 @@ const SubjectView: FC<SubjectViewProps> = ({ data, assignments, maMon, tenMon, l
             </div>
           </div>
           {progress.score_trend.length > 0 && (
-            <div style={{ display:'flex', justifyContent:'space-between', marginTop:4, fontSize:'0.58rem', color:'#94a3b8', flexShrink:0 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginTop:4, fontSize:'0.7rem', color:'#94a3b8', flexShrink:0 }}>
               <span>{fmtDate(progress.score_trend[0].created_at)}</span>
               <span>{fmtDate(progress.score_trend[progress.score_trend.length - 1].created_at)}</span>
             </div>
@@ -135,20 +135,20 @@ const SubjectView: FC<SubjectViewProps> = ({ data, assignments, maMon, tenMon, l
           <div style={{ display:'flex', gap:12, marginBottom:16 }}>
             <div style={{ flex:1, background:'rgba(124,58,237,0.06)', borderRadius:10, padding:'10px 12px' }}>
               <div style={{ fontSize:'1.25rem', fontWeight:800, color:'#7c3aed', lineHeight:1 }}>{chatbot.total_sessions}</div>
-              <div style={{ fontSize:'0.65rem', color:'#7c3aed', opacity:0.75, marginTop:3 }}>Cuộc hội thoại</div>
+              <div style={{ fontSize:'0.7rem', color:'#7c3aed', opacity:0.75, marginTop:3 }}>Cuộc hội thoại</div>
             </div>
             <div style={{ flex:1, background:'rgba(41,102,235,0.06)', borderRadius:10, padding:'10px 12px' }}>
               <div style={{ fontSize:'1.25rem', fontWeight:800, color:'#2966EB', lineHeight:1 }}>{chatbot.total_messages}</div>
-              <div style={{ fontSize:'0.65rem', color:'#2966EB', opacity:0.75, marginTop:3 }}>Câu hỏi đã hỏi</div>
+              <div style={{ fontSize:'0.7rem', color:'#2966EB', opacity:0.75, marginTop:3 }}>Câu hỏi đã hỏi</div>
             </div>
           </div>
-          <div style={{ fontSize:'0.65rem', color:'#94a3b8', marginBottom:4, fontWeight:600 }}>7 ngày gần nhất</div>
+          <div style={{ fontSize:'0.7rem', color:'#94a3b8', marginBottom:4, fontWeight:600 }}>7 ngày gần nhất</div>
           <div style={{ flex:1 }}>
             <ResponsiveContainer width="100%" height={90}>
               <BarChart data={chartDays} margin={{ top:8, right:4, left:-28, bottom:0 }} barSize={18}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(5).replace('-', '/')} tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
+                <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(5).replace('-', '/')} tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{ fontSize:'0.72rem', borderRadius:8, border:'1px solid #eef0f5', boxShadow:'0 4px 12px rgba(0,0,0,0.08)' }}
                   formatter={(v: unknown) => [v as number, 'Câu hỏi']}
@@ -179,16 +179,16 @@ const SubjectView: FC<SubjectViewProps> = ({ data, assignments, maMon, tenMon, l
             margin={{ top:8, right:16, left:-16, bottom:0 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize:10, fill:'#64748b' }} tickLine={false} axisLine={false} />
-            <YAxis yAxisId="count" tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
-            <YAxis yAxisId="score" orientation="right" domain={[0, 10]} tick={{ fontSize:9, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
+            <XAxis dataKey="name" tick={{ fontSize:11, fill:'#64748b' }} tickLine={false} axisLine={false} />
+            <YAxis yAxisId="count" tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
+            <YAxis yAxisId="score" orientation="right" domain={[0, 10]} tick={{ fontSize:11, fill:'#94a3b8' }} tickLine={false} axisLine={false} />
             <Tooltip
               contentStyle={{ fontSize:'0.72rem', borderRadius:8, border:'1px solid #eef0f5', boxShadow:'0 4px 12px rgba(0,0,0,0.08)' }}
               labelStyle={{ color:'#1e293b', fontWeight:700 }}
             />
-            <Legend wrapperStyle={{ fontSize:'0.68rem', paddingTop:8 }} />
-            <ReferenceLine yAxisId="score" y={5} stroke="#fca5a5" strokeDasharray="4 3" label={{ value:'TB', fontSize:9, fill:'#f87171', position:'insideTopRight' }} />
-            <ReferenceLine yAxisId="score" y={8} stroke="#86efac" strokeDasharray="4 3" label={{ value:'Giỏi', fontSize:9, fill:'#4ade80', position:'insideTopRight' }} />
+            <Legend wrapperStyle={{ fontSize:'0.7rem', paddingTop:8 }} />
+            <ReferenceLine yAxisId="score" y={5} stroke="#fca5a5" strokeDasharray="4 3" label={{ value:'TB', fontSize:11, fill:'#f87171', position:'insideTopRight' }} />
+            <ReferenceLine yAxisId="score" y={8} stroke="#86efac" strokeDasharray="4 3" label={{ value:'Giỏi', fontSize:11, fill:'#4ade80', position:'insideTopRight' }} />
             <Bar yAxisId="count" dataKey="Đã nộp" fill="#2966EB" opacity={0.85} radius={[4,4,0,0]} barSize={28} />
             <Bar yAxisId="count" dataKey="Tổng"   fill="#e2e8f0" radius={[4,4,0,0]} barSize={28} />
             <Line yAxisId="score" dataKey="Điểm TB" stroke="#f59e0b" strokeWidth={2} dot={{ r:4, fill:'white', stroke:'#f59e0b', strokeWidth:2 }} activeDot={{ r:6 }} connectNulls />
@@ -211,12 +211,12 @@ const SubjectView: FC<SubjectViewProps> = ({ data, assignments, maMon, tenMon, l
                   <div style={{ flex:1 }}>
                     <div style={{ fontWeight:600, fontSize:'0.78rem', color:'#1e293b' }}>{ch.chapter_title}</div>
                   </div>
-                  <span style={{ display:'inline-flex', padding:'2px 9px', borderRadius:20, fontSize:'0.68rem', fontWeight:700, background:sc.bg, color:sc.color }}>
+                  <span style={{ display:'inline-flex', padding:'2px 9px', borderRadius:20, fontSize:'0.7rem', fontWeight:700, background:sc.bg, color:sc.color }}>
                     {fmt1(ch.score_10)}
                   </span>
                   <button
                     onClick={() => navigate(`/student/chat?context=${encodeURIComponent(ch.chapter_title)}&ma_mon=${maMon}`)}
-                    style={{ padding:'4px 10px', borderRadius:8, border:'none', background:'#2966EB', color:'white', fontSize:'0.65rem', fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }}>
+                    style={{ padding:'4px 10px', borderRadius:8, border:'none', background:'#2966EB', color:'white', fontSize:'0.7rem', fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }}>
                     Ôn tập ngay
                   </button>
                 </div>
@@ -253,7 +253,7 @@ const SubjectView: FC<SubjectViewProps> = ({ data, assignments, maMon, tenMon, l
                       onClick={() => navigate(`/student/assignments/${s.assignment_id}`)}>
                       <td style={{ fontWeight:600 }}>{s.title}</td>
                       <td>
-                        <span style={{ display:'inline-flex', padding:'2px 8px', borderRadius:20, fontSize:'0.65rem', fontWeight:700, background:ec.bg, color:ec.color }}>
+                        <span style={{ display:'inline-flex', padding:'2px 8px', borderRadius:20, fontSize:'0.7rem', fontWeight:700, background:ec.bg, color:ec.color }}>
                           {EXAM_TYPE_LABEL[s.exam_type] ?? s.exam_type}
                         </span>
                       </td>

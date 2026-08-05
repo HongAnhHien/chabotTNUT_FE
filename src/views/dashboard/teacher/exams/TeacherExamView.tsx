@@ -103,12 +103,12 @@ const QuestionCard: FC<{ q: IExamQuestion; idx: number; delay: number }> = ({ q,
             <LT text={q.question ?? '—'} />
           </div>
           {q.chapter_title && (
-            <span style={{ fontSize: '0.62rem', color: '#94a3b8', fontWeight: 500 }}>{q.chapter_title}</span>
+            <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 500 }}>{q.chapter_title}</span>
           )}
         </div>
         {/* Answer badge */}
         {answer && (
-          <span style={{ flexShrink: 0, fontSize: '0.65rem', fontWeight: 800, color: '#059669', background: 'rgba(5,150,105,0.09)', borderRadius: 6, padding: '2px 7px' }}>
+          <span style={{ flexShrink: 0, fontSize: '0.7rem', fontWeight: 800, color: '#059669', background: 'rgba(5,150,105,0.09)', borderRadius: 6, padding: '2px 7px' }}>
             ĐA: {answer}
           </span>
         )}
@@ -154,7 +154,7 @@ const ChapterHeader: FC<{ chapter: IExamChapter; count: number }> = ({ chapter, 
   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '7px 12px', borderRadius: 10, background: 'linear-gradient(135deg,rgba(30,58,138,0.07),rgba(37,99,235,0.04))', border: '1px solid rgba(37,99,235,0.1)' }}>
     <BookOpen size={13} color="#1e3a8a" />
     <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#1e3a8a' }}>{chapter.title}</span>
-    <span style={{ fontSize: '0.65rem', color: '#64748b', marginLeft: 'auto' }}>{count} câu</span>
+    <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: 'auto' }}>{count} câu</span>
   </div>
 );
 
@@ -207,7 +207,7 @@ const TeacherExamView: FC = () => {
               <div key={label} className="tev-stat" style={{ background: bg, border: `1px solid ${color}22` }}>
                 <Icon size={20} color={color} style={{ marginBottom: 6 }} />
                 <div style={{ fontSize: '1.5rem', fontWeight: 800, color, lineHeight: 1 }}>{value}</div>
-                <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600, marginTop: 4 }}>{label}</div>
+                <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, marginTop: 4 }}>{label}</div>
               </div>
             ))}
           </div>

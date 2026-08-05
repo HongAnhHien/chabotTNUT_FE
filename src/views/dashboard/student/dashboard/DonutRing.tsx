@@ -24,7 +24,7 @@ const DonutRing: FC<{ completed: number; pending: number; overdue: number }> = (
           />
           {!isEmpty && (
             <Tooltip
-              contentStyle={{ fontSize:'0.68rem', borderRadius:8, border:'1px solid #eef0f5' }}
+              contentStyle={{ fontSize:'0.7rem', borderRadius:8, border:'1px solid #eef0f5' }}
               formatter={(v: unknown) => [v as number, '']}
             />
           )}
@@ -32,7 +32,7 @@ const DonutRing: FC<{ completed: number; pending: number; overdue: number }> = (
       </ResponsiveContainer>
       <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', pointerEvents:'none' }}>
         <div style={{ fontSize:'1rem', fontWeight:800, color:'#0f172a', lineHeight:1 }}>{rate}%</div>
-        <div style={{ fontSize:'0.5rem', color:'#94a3b8', fontWeight:600, marginTop:2 }}>HT</div>
+        <div style={{ fontSize:'0.7rem', color:'#94a3b8', fontWeight:600, marginTop:2 }}>HT</div>
       </div>
     </div>
   );

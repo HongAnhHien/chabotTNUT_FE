@@ -154,7 +154,7 @@ const CSS = `
     .t-stats-card { padding:.5rem .75rem !important; gap:10px !important; flex-direction:row; }
     .t-stats-icon { width:32px !important; height:32px !important; }
     .t-view-section > span { font-size:.72rem; }
-    .t-cls-badge span { font-size:.6rem !important; padding:1px 5px !important; }
+    .t-cls-badge span { font-size:0.7rem !important; padding:1px 5px !important; }
     .t-cls-row-top { flex-wrap:wrap; gap:3px; }
   }
 `;
@@ -167,7 +167,7 @@ function StatusBadge({ status }: { status: string }) {
   const color = isDone ? '#16a34a' : isCurrent ? '#2563eb' : '#64748b';
   const border= isDone ? '#bbf7d0' : isCurrent ? '#bfdbfe' : '#e2e8f0';
   return (
-    <span style={{ background: bg, color, border: `1px solid ${border}`, borderRadius: 20, padding: '2px 9px', fontSize: '0.68rem', fontWeight: 700, flexShrink: 0 }}>
+    <span style={{ background: bg, color, border: `1px solid ${border}`, borderRadius: 20, padding: '2px 9px', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>
       {status}
     </span>
   );
@@ -204,9 +204,9 @@ const CourseListView: FC<{ courses: ITeacherSubjectWithClasses[]; onNavigate: (u
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>{subject.ten_mon}</div>
               <div style={{ display: 'flex', gap: 6, marginTop: 3, flexWrap: 'wrap' }}>
-                <span style={{ background: 'rgba(37,99,235,0.08)', color: '#2563eb', borderRadius: 20, padding: '1px 8px', fontSize: '0.67rem', fontWeight: 700 }}>{subject.ma_mon}</span>
-                {subject.so_tc !== '0' && <span style={{ background: 'rgba(5,150,105,0.08)', color: '#059669', borderRadius: 20, padding: '1px 8px', fontSize: '0.67rem', fontWeight: 700 }}>{subject.so_tc} TC</span>}
-                <span style={{ background: 'rgba(100,116,139,0.08)', color: '#64748b', borderRadius: 20, padding: '1px 8px', fontSize: '0.67rem', fontWeight: 600 }}>{classes.length} lớp</span>
+                <span style={{ background: 'rgba(37,99,235,0.08)', color: '#2563eb', borderRadius: 20, padding: '1px 8px', fontSize: '0.7rem', fontWeight: 700 }}>{subject.ma_mon}</span>
+                {subject.so_tc !== '0' && <span style={{ background: 'rgba(5,150,105,0.08)', color: '#059669', borderRadius: 20, padding: '1px 8px', fontSize: '0.7rem', fontWeight: 700 }}>{subject.so_tc} TC</span>}
+                <span style={{ background: 'rgba(100,116,139,0.08)', color: '#64748b', borderRadius: 20, padding: '1px 8px', fontSize: '0.7rem', fontWeight: 600 }}>{classes.length} lớp</span>
               </div>
             </div>
             <div className="t-course-btns">
@@ -242,9 +242,9 @@ const CourseListView: FC<{ courses: ITeacherSubjectWithClasses[]; onNavigate: (u
                     <span className="t-cls-lop">{cls.ten_lop}</span>
                   </div>
                   <div style={{ display: 'flex', gap: 10, marginTop: 2, flexWrap: 'wrap' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.68rem', color: '#94a3b8' }}><MapPin size={9} />{cls.phong}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.68rem', color: '#94a3b8' }}><Clock size={9} />{cls.thoi_gian_hoc}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.68rem', color: '#94a3b8' }}><Users size={9} />{cls.sl_dk} SV</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', color: '#94a3b8' }}><MapPin size={9} />{cls.phong}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', color: '#94a3b8' }}><Clock size={9} />{cls.thoi_gian_hoc}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', color: '#94a3b8' }}><Users size={9} />{cls.sl_dk} SV</span>
                   </div>
                 </div>
                 <div className="t-cls-badge"><StatusBadge status={cls.status} /></div>
@@ -293,17 +293,17 @@ const CourseBookshelfView: FC<{ courses: ITeacherSubjectWithClasses[]; onNavigat
                 <div style={{ position: 'absolute', left: 0, top: 4, bottom: 4, width: 6, borderRadius: '4px 0 0 4px', background: 'rgba(255,255,255,0.08)', borderRight: '1px solid rgba(255,255,255,0.12)' }} />
 
                 {/* Class count badge */}
-                <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 8, padding: '2px 6px', fontSize: '0.6rem', fontWeight: 800, color: 'white', alignSelf: 'flex-end' }}>
+                <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 8, padding: '2px 6px', fontSize: '0.7rem', fontWeight: 800, color: 'white', alignSelf: 'flex-end' }}>
                   {classes.length}
                 </div>
 
                 {/* Subject name vertical */}
-                <div style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontSize: '0.68rem', fontWeight: 800, color: 'white', textAlign: 'center', lineHeight: 1.3, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', maxHeight: bookH - 60, overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.03em' }}>
+                <div style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontSize: '0.7rem', fontWeight: 800, color: 'white', textAlign: 'center', lineHeight: 1.3, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', maxHeight: bookH - 60, overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.03em' }}>
                   {subject.ten_mon}
                 </div>
 
                 {/* Code badge */}
-                <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: 6, padding: '2px 5px', fontSize: '0.55rem', fontWeight: 700, color: color.accent, alignSelf: 'stretch', textAlign: 'center' }}>
+                <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: 6, padding: '2px 5px', fontSize: '0.7rem', fontWeight: 700, color: color.accent, alignSelf: 'stretch', textAlign: 'center' }}>
                   {subject.ma_mon}
                 </div>
 
@@ -331,9 +331,9 @@ const CourseBookshelfView: FC<{ courses: ITeacherSubjectWithClasses[]; onNavigat
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'white' }}>{openCourse.subject.ten_mon}</div>
               <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-                <span style={{ background: 'rgba(255,255,255,0.2)', color: 'white', borderRadius: 20, padding: '1px 8px', fontSize: '0.67rem', fontWeight: 700 }}>{openCourse.subject.ma_mon}</span>
-                {openCourse.subject.so_tc !== '0' && <span style={{ background: 'rgba(255,255,255,0.2)', color: 'white', borderRadius: 20, padding: '1px 8px', fontSize: '0.67rem', fontWeight: 700 }}>{openCourse.subject.so_tc} tín chỉ</span>}
-                <span style={{ background: 'rgba(255,255,255,0.2)', color: 'white', borderRadius: 20, padding: '1px 8px', fontSize: '0.67rem', fontWeight: 700 }}>{openCourse.classes.length} lớp</span>
+                <span style={{ background: 'rgba(255,255,255,0.2)', color: 'white', borderRadius: 20, padding: '1px 8px', fontSize: '0.7rem', fontWeight: 700 }}>{openCourse.subject.ma_mon}</span>
+                {openCourse.subject.so_tc !== '0' && <span style={{ background: 'rgba(255,255,255,0.2)', color: 'white', borderRadius: 20, padding: '1px 8px', fontSize: '0.7rem', fontWeight: 700 }}>{openCourse.subject.so_tc} tín chỉ</span>}
+                <span style={{ background: 'rgba(255,255,255,0.2)', color: 'white', borderRadius: 20, padding: '1px 8px', fontSize: '0.7rem', fontWeight: 700 }}>{openCourse.classes.length} lớp</span>
               </div>
             </div>
             <button onClick={() => onDocuments({ ma_mon: openCourse.subject.ma_mon, ten_mon: openCourse.subject.ten_mon })} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.35)', borderRadius: 8, padding: '5px 11px', color: 'white', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
@@ -368,9 +368,9 @@ const CourseBookshelfView: FC<{ courses: ITeacherSubjectWithClasses[]; onNavigat
                     <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{cls.ten_lop}</span>
                   </div>
                   <div style={{ display: 'flex', gap: 10, marginTop: 3, flexWrap: 'wrap' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.68rem', color: '#94a3b8' }}><MapPin size={9} />{cls.phong}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.68rem', color: '#94a3b8' }}><Clock size={9} />{cls.thoi_gian_hoc}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.68rem', color: '#94a3b8' }}><Users size={9} />{cls.sl_dk} SV</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', color: '#94a3b8' }}><MapPin size={9} />{cls.phong}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', color: '#94a3b8' }}><Clock size={9} />{cls.thoi_gian_hoc}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', color: '#94a3b8' }}><Users size={9} />{cls.sl_dk} SV</span>
                   </div>
                 </div>
                 <StatusBadge status={cls.status} />
@@ -505,10 +505,10 @@ const SubjectFilesDrawer: FC<{
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
                 <FileText size={14} color="#93c5fd" />
-                <span style={{ fontSize: '0.68rem', color: '#93c5fd', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Tài liệu môn học</span>
+                <span style={{ fontSize: '0.7rem', color: '#93c5fd', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Tài liệu môn học</span>
               </div>
               <div style={{ fontWeight: 800, fontSize: '1rem', color: 'white', lineHeight: 1.3 }}>{subject.ten_mon}</div>
-              <span style={{ marginTop: 5, display: 'inline-block', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 9px', fontSize: '0.67rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>{subject.ma_mon}</span>
+              <span style={{ marginTop: 5, display: 'inline-block', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 9px', fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>{subject.ma_mon}</span>
             </div>
             <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1rem' }}>✕</button>
           </div>
@@ -606,10 +606,10 @@ const SubjectFilesDrawer: FC<{
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.original_name ?? 'Không tên'}</div>
                     <div style={{ display: 'flex', gap: 6, marginTop: 3, flexWrap: 'wrap', alignItems: 'center' }}>
-                      <span style={{ background: 'rgba(37,99,235,0.08)', color: '#2563eb', borderRadius: 20, padding: '1px 7px', fontSize: '0.62rem', fontWeight: 700 }}>{f.type_label}</span>
-                      {f.is_private && <span style={{ background: 'rgba(220,38,38,0.07)', color: '#dc2626', borderRadius: 20, padding: '1px 7px', fontSize: '0.62rem', fontWeight: 700 }}>Riêng tư</span>}
-                      {f.file_size && <span style={{ fontSize: '0.62rem', color: '#94a3b8' }}>{fmtSize(f.file_size)}</span>}
-                      {f.created_at && <span style={{ fontSize: '0.62rem', color: '#94a3b8' }}>{fmtFileDate(f.created_at)}</span>}
+                      <span style={{ background: 'rgba(37,99,235,0.08)', color: '#2563eb', borderRadius: 20, padding: '1px 7px', fontSize: '0.7rem', fontWeight: 700 }}>{f.type_label}</span>
+                      {f.is_private && <span style={{ background: 'rgba(220,38,38,0.07)', color: '#dc2626', borderRadius: 20, padding: '1px 7px', fontSize: '0.7rem', fontWeight: 700 }}>Riêng tư</span>}
+                      {f.file_size && <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{fmtSize(f.file_size)}</span>}
+                      {f.created_at && <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{fmtFileDate(f.created_at)}</span>}
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
@@ -767,10 +767,10 @@ const SubjectAiFilesDrawer: FC<{
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
                 <Sparkles size={14} color="#c4b5fd" />
-                <span style={{ fontSize: '0.68rem', color: '#c4b5fd', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Tài liệu Model Train AI</span>
+                <span style={{ fontSize: '0.7rem', color: '#c4b5fd', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Tài liệu Model Train AI</span>
               </div>
               <div style={{ fontWeight: 800, fontSize: '1rem', color: 'white', lineHeight: 1.3 }}>{subject.ten_mon}</div>
-              <span style={{ marginTop: 5, display: 'inline-block', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 9px', fontSize: '0.67rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>{subject.ma_mon}</span>
+              <span style={{ marginTop: 5, display: 'inline-block', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '1px 9px', fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>{subject.ma_mon}</span>
             </div>
             <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1rem' }}>✕</button>
           </div>
@@ -810,7 +810,7 @@ const SubjectAiFilesDrawer: FC<{
               {/* ── Chọn từ tài liệu đã có ── */}
               <div>
                 <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#7c3aed', marginBottom: 6, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                  Chọn từ tài liệu môn học {selectedIds.size > 0 && <span style={{ background: '#7c3aed', color: 'white', borderRadius: 20, padding: '1px 7px', fontSize: '0.62rem', marginLeft: 5 }}>{selectedIds.size}</span>}
+                  Chọn từ tài liệu môn học {selectedIds.size > 0 && <span style={{ background: '#7c3aed', color: 'white', borderRadius: 20, padding: '1px 7px', fontSize: '0.7rem', marginLeft: 5 }}>{selectedIds.size}</span>}
                 </div>
                 {loadingSF ? (
                   <div style={{ fontSize: '0.75rem', color: '#a78bfa', padding: '6px 0' }}>Đang tải...</div>
@@ -829,13 +829,13 @@ const SubjectAiFilesDrawer: FC<{
                           style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 10px', borderRadius: 9, border: `1.5px solid ${selected ? 'rgba(124,58,237,0.5)' : 'rgba(124,58,237,0.12)'}`, background: selected ? 'rgba(124,58,237,0.06)' : 'rgba(255,255,255,0.7)', cursor: 'pointer', transition: 'border .15s, background .15s' }}
                         >
                           <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${selected ? '#7c3aed' : '#cbd5e1'}`, background: selected ? '#7c3aed' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all .15s' }}>
-                            {selected && <span style={{ color: 'white', fontSize: '0.6rem', lineHeight: 1 }}>✓</span>}
+                            {selected && <span style={{ color: 'white', fontSize: '0.7rem', lineHeight: 1 }}>✓</span>}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.original_name ?? 'Không tên'}</div>
                             <div style={{ display: 'flex', gap: 5, marginTop: 2 }}>
-                              <span style={{ background: 'rgba(37,99,235,0.08)', color: '#2563eb', borderRadius: 20, padding: '0 6px', fontSize: '0.6rem', fontWeight: 700 }}>{f.type_label}</span>
-                              {f.file_size && <span style={{ fontSize: '0.6rem', color: '#94a3b8' }}>{fmtSize(f.file_size)}</span>}
+                              <span style={{ background: 'rgba(37,99,235,0.08)', color: '#2563eb', borderRadius: 20, padding: '0 6px', fontSize: '0.7rem', fontWeight: 700 }}>{f.type_label}</span>
+                              {f.file_size && <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{fmtSize(f.file_size)}</span>}
                             </div>
                           </div>
                         </div>
@@ -881,9 +881,9 @@ const SubjectAiFilesDrawer: FC<{
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.original_name ?? 'Không tên'}</div>
                   <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' }}>
-                    <span style={{ background: 'rgba(124,58,237,0.08)', color: '#7c3aed', borderRadius: 20, padding: '1px 7px', fontSize: '0.62rem', fontWeight: 700 }}>{f.type_label || f.type}</span>
-                    <span style={{ background: sc.bg, color: sc.color, borderRadius: 20, padding: '1px 7px', fontSize: '0.62rem', fontWeight: 700 }}>{extStatus || 'pending'}</span>
-                    {f.created_at && <span style={{ fontSize: '0.62rem', color: '#94a3b8' }}>{fmtFileDate(f.created_at)}</span>}
+                    <span style={{ background: 'rgba(124,58,237,0.08)', color: '#7c3aed', borderRadius: 20, padding: '1px 7px', fontSize: '0.7rem', fontWeight: 700 }}>{f.type_label || f.type}</span>
+                    <span style={{ background: sc.bg, color: sc.color, borderRadius: 20, padding: '1px 7px', fontSize: '0.7rem', fontWeight: 700 }}>{extStatus || 'pending'}</span>
+                    {f.created_at && <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{fmtFileDate(f.created_at)}</span>}
                   </div>
                   {f.external_response && (
                     <div style={{ marginTop: 5, fontSize: '0.7rem', color: '#64748b', background: 'rgba(124,58,237,0.04)', borderRadius: 7, padding: '4px 8px', border: '1px solid rgba(124,58,237,0.08)' }}>
@@ -1008,7 +1008,7 @@ const SubjectExamsDrawer: FC<{ subject: { ma_mon: string; ten_mon: string }; onC
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
                 <ClipboardList size={13} color="#93c5fd" />
-                <span style={{ fontSize: '0.65rem', color: '#93c5fd', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Danh sách đề kiểm tra</span>
+                <span style={{ fontSize: '0.7rem', color: '#93c5fd', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Danh sách đề kiểm tra</span>
               </div>
               <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'white' }}>{subject.ten_mon}</div>
               <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{subject.ma_mon}</div>
@@ -1040,7 +1040,7 @@ const SubjectExamsDrawer: FC<{ subject: { ma_mon: string; ten_mon: string }; onC
                   { label: 'Xác nhận lúc', value: fmtDate(detail.confirmed_at) },
                 ].map(({ label, value }) => (
                   <div key={label} style={{ background: '#f8faff', borderRadius: 10, padding: '8px 12px', border: '1px solid rgba(37,99,235,0.07)' }}>
-                    <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700, marginBottom: 3 }}>{label}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, marginBottom: 3 }}>{label}</div>
                     <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#1e293b' }}>{String(value)}</div>
                   </div>
                 ))}
@@ -1067,8 +1067,8 @@ const SubjectExamsDrawer: FC<{ subject: { ma_mon: string; ten_mon: string }; onC
                       <div key={i} style={{ background: 'white', borderRadius: 11, border: '1px solid rgba(37,99,235,0.1)', overflow: 'hidden' }}>
                         {/* Question header */}
                         <div style={{ padding: '5px 12px', background: 'linear-gradient(135deg,rgba(30,58,138,0.06),rgba(37,99,235,0.04))', borderBottom: '1px solid rgba(37,99,235,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#1e3a8a' }}>Câu {i + 1}</span>
-                          {q.chapter_title && <span style={{ fontSize: '0.6rem', color: '#94a3b8' }}>{q.chapter_title}</span>}
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#1e3a8a' }}>Câu {i + 1}</span>
+                          {q.chapter_title && <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{q.chapter_title}</span>}
                         </div>
                         {/* Question text */}
                         <div style={{ padding: '8px 12px', fontSize: '0.82rem', color: '#1e293b', lineHeight: 1.55, borderBottom: q.options ? '1px solid rgba(37,99,235,0.06)' : 'none' }}>
@@ -1082,9 +1082,9 @@ const SubjectExamsDrawer: FC<{ subject: { ma_mon: string; ten_mon: string }; onC
                               const col = OPT_COLORS[key] ?? OPT_COLORS.A;
                               return (
                                 <div key={key} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, padding: '5px 8px', borderRadius: 7, background: isAnswer ? 'rgba(5,150,105,0.07)' : col.bg, border: `1px solid ${isAnswer ? 'rgba(5,150,105,0.2)' : 'transparent'}` }}>
-                                  <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: '50%', background: isAnswer ? '#059669' : col.color, color: 'white', fontSize: '0.62rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{key}</span>
+                                  <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: '50%', background: isAnswer ? '#059669' : col.color, color: 'white', fontSize: '0.7rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{key}</span>
                                   <span style={{ fontSize: '0.78rem', color: isAnswer ? '#059669' : '#334155', fontWeight: isAnswer ? 700 : 400, lineHeight: 1.4, flex: 1 }}>{val}</span>
-                                  {isAnswer && <span style={{ fontSize: '0.6rem', color: '#059669', fontWeight: 800, whiteSpace: 'nowrap' }}>✓ Đáp án</span>}
+                                  {isAnswer && <span style={{ fontSize: '0.7rem', color: '#059669', fontWeight: 800, whiteSpace: 'nowrap' }}>✓ Đáp án</span>}
                                 </div>
                               );
                             })}
@@ -1121,7 +1121,7 @@ const SubjectExamsDrawer: FC<{ subject: { ma_mon: string; ten_mon: string }; onC
 
                   {/* ── Diagonal ribbon ── */}
                   <div style={{ position: 'absolute', top: 14, right: -26, width: 96, background: ribbon.bg, boxShadow: `0 2px 6px ${ribbon.shadow}`, transform: 'rotate(45deg)', textAlign: 'center', padding: '4px 0', zIndex: 1, pointerEvents: 'none' }}>
-                    <span style={{ fontSize: '0.52rem', fontWeight: 900, color: 'white', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{ribbon.text}</span>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'white', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{ribbon.text}</span>
                   </div>
 
                   {/* ── Info section ── */}
@@ -1139,21 +1139,21 @@ const SubjectExamsDrawer: FC<{ subject: { ma_mon: string; ten_mon: string }; onC
                       {/* Meta chips */}
                       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                         {exam.question_count != null && (
-                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#1e3a8a', background: 'rgba(30,58,138,0.07)', borderRadius: 20, padding: '2px 8px' }}>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#1e3a8a', background: 'rgba(30,58,138,0.07)', borderRadius: 20, padding: '2px 8px' }}>
                             {exam.question_count} câu
                           </span>
                         )}
                         {exam.time_limit != null && (
-                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#7c3aed', background: 'rgba(124,58,237,0.07)', borderRadius: 20, padding: '2px 8px' }}>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#7c3aed', background: 'rgba(124,58,237,0.07)', borderRadius: 20, padding: '2px 8px' }}>
                             {exam.time_limit} phút
                           </span>
                         )}
                         {(exam.chapters ?? []).length > 0 && (
-                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#0369a1', background: 'rgba(3,105,161,0.07)', borderRadius: 20, padding: '2px 8px' }}>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#0369a1', background: 'rgba(3,105,161,0.07)', borderRadius: 20, padding: '2px 8px' }}>
                             {exam.chapters!.length} chương
                           </span>
                         )}
-                        <span style={{ fontSize: '0.65rem', color: '#94a3b8', padding: '2px 0' }}>{fmtDate(exam.created_at)}</span>
+                        <span style={{ fontSize: '0.7rem', color: '#94a3b8', padding: '2px 0' }}>{fmtDate(exam.created_at)}</span>
                       </div>
                     </div>
                   </div>
@@ -1307,7 +1307,7 @@ const TeacherAspx: FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <Bell size={15} color="#2563eb" />
                 <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#1e3a8a' }}>Thông báo</span>
-                {unreadCount > 0 && <span style={{ background: '#2563eb', color: 'white', borderRadius: 20, padding: '1px 7px', fontSize: '0.67rem', fontWeight: 700 }}>{unreadCount}</span>}
+                {unreadCount > 0 && <span style={{ background: '#2563eb', color: 'white', borderRadius: 20, padding: '1px 7px', fontSize: '0.7rem', fontWeight: 700 }}>{unreadCount}</span>}
               </div>
               {unreadCount > 0 && (
                 <span onClick={() => markAllRead()} style={{ fontSize: '0.72rem', color: '#2563eb', cursor: 'pointer', fontWeight: 600 }}>Đọc tất cả</span>
@@ -1324,8 +1324,8 @@ const TeacherAspx: FC = () => {
                 return (
                   <div key={n.id} className="t-notif" onClick={() => unread && markRead(n.id)} style={{ cursor: unread ? 'pointer' : 'default' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                      <span style={{ background: `${meta.color}18`, color: meta.color, border: `1px solid ${meta.color}30`, borderRadius: 20, padding: '1px 7px', fontSize: '0.62rem', fontWeight: 700 }}>{meta.tag}</span>
-                      <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{notifTimeAgo(n.created_at)}</span>
+                      <span style={{ background: `${meta.color}18`, color: meta.color, border: `1px solid ${meta.color}30`, borderRadius: 20, padding: '1px 7px', fontSize: '0.7rem', fontWeight: 700 }}>{meta.tag}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{notifTimeAgo(n.created_at)}</span>
                       {unread && <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', background: '#2563eb', flexShrink: 0 }} />}
                     </div>
                     <div style={{ fontSize: '0.78rem', color: '#1e293b', lineHeight: 1.45, fontWeight: unread ? 600 : 400 }}>{n.title}</div>
@@ -1416,7 +1416,7 @@ const TeacherAspx: FC = () => {
                           boxShadow: isSel ? '0 4px 14px rgba(37,99,235,0.3)' : 'none',
                         }}
                       >
-                        {isCur && !isSel && <span style={{ marginRight: 4, fontSize: '0.6rem', color: '#2563eb' }}>●</span>}
+                        {isCur && !isSel && <span style={{ marginRight: 4, fontSize: '0.7rem', color: '#2563eb' }}>●</span>}
                         {sem.ten_hoc_ky}
                       </button>
                     );

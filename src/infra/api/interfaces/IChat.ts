@@ -165,10 +165,18 @@ export interface IRatingResponse {
 
 export interface IAnalyticsSummary {
   unique_users: number;
+  unique_by_role?: { student?: number; teacher?: number };
   total_messages: number;
-  helpful_rate: number;
+  // null khi chưa có lượt like/dislike nào; có data thì là object kèm `count`
+  // (cỡ mẫu) — UI nên hiện kèm (n=count) để người xem tự đánh giá độ tin cậy.
+  helpful_rate: { rate: number; count: number } | null;
   active_now: number;
-  csat?: { total_ratings: number; avg_score: number; max_score: number } | null;
+  active_by_role?: { student?: number; teacher?: number };
+  // Chỉ có ở advisor/analytics/summary (CVHT) — % câu trả lời có cá nhân hoá theo hồ sơ
+  // SV. Đã verify với backend thật: cùng dạng object {rate,count} như helpful_rate,
+  // KHÔNG phải số đơn thuần.
+  personalization_rate?: { rate: number; count: number } | null;
+  csat?: { total_ratings: number; avg_score: number | null; max_score: number } | null;
 }
 
 export interface IAnalyticsSummaryResponse {

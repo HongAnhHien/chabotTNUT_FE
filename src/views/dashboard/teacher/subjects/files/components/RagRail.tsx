@@ -49,7 +49,7 @@ const RagRail: FC<Props> = ({
             </svg>
             <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
               <div style={{ fontSize:22, fontWeight:800, color:'#0f172a', lineHeight:1 }}>{ragPct}%</div>
-              <div style={{ fontSize:10, color:'#94a3b8', fontWeight:600, marginTop:2 }}>gửi AI</div>
+              <div style={{ fontSize:11, color:'#94a3b8', fontWeight:600, marginTop:2 }}>gửi AI</div>
             </div>
           </div>
           <div style={{ flex:1, fontSize:12.5, color:'#64748b', lineHeight:1.55 }}>

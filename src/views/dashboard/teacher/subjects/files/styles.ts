@@ -129,7 +129,7 @@ const CSS = `
   .tdf-layout-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
 
   /* ── File list folder+table grid ─────────────────── */
-  .tdf-list-outer { display:grid; grid-template-columns:220px minmax(0,1fr); gap:16px; align-items:start; }
+  .tdf-list-outer { display:grid; grid-template-columns:264px minmax(0,1fr); gap:16px; align-items:start; }
 
   /* ── File table responsive columns ───────────────── */
   /* (classes used for responsive-only overrides; default styles stay inline) */

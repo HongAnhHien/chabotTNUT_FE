@@ -62,13 +62,13 @@ const ActivityHeatmap: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ as
       <div style={{ display:'flex', marginLeft:24, marginBottom:3 }}>
         {columns.map((_, w) => {
           const mo = monthLabels.find(ml => ml.col === w);
-          return <div key={w} style={{ width:cell + GAP, fontSize:'0.58rem', color:'#94a3b8', flexShrink:0 }}>{mo?.label ?? ''}</div>;
+          return <div key={w} style={{ width:cell + GAP, fontSize:'0.7rem', color:'#94a3b8', flexShrink:0 }}>{mo?.label ?? ''}</div>;
         })}
       </div>
       <div style={{ display:'flex', gap:3, alignItems:'flex-start' }}>
         <div style={{ display:'flex', flexDirection:'column', gap:GAP }}>
           {['','T2','','T4','','T6',''].map((l, i) => (
-            <div key={i} style={{ height:cell, width:18, fontSize:'0.55rem', color:'#94a3b8', display:'flex', alignItems:'center', justifyContent:'flex-end', paddingRight:3 }}>{l}</div>
+            <div key={i} style={{ height:cell, width:18, fontSize:'0.7rem', color:'#94a3b8', display:'flex', alignItems:'center', justifyContent:'flex-end', paddingRight:3 }}>{l}</div>
           ))}
         </div>
         <div style={{ display:'flex', gap:GAP }}>
@@ -87,9 +87,9 @@ const ActivityHeatmap: FC<{ assignments: IStudentAssignmentListItem[] }> = ({ as
         </div>
       </div>
       <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:6, justifyContent:'flex-end' }}>
-        <span style={{ fontSize:'0.58rem', color:'#94a3b8' }}>Ít hơn</span>
+        <span style={{ fontSize:'0.7rem', color:'#94a3b8' }}>Ít hơn</span>
         {HEAT_COLORS.map((c, i) => <div key={i} style={{ width:10, height:10, borderRadius:2, background:c }} />)}
-        <span style={{ fontSize:'0.58rem', color:'#94a3b8' }}>Nhiều hơn</span>
+        <span style={{ fontSize:'0.7rem', color:'#94a3b8' }}>Nhiều hơn</span>
       </div>
     </div>
   );

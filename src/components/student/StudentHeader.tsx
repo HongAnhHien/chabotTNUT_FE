@@ -98,7 +98,7 @@ const StudentHeader: FC<Props> = ({
             position: 'absolute', top: -5, right: -5,
             minWidth: 17, height: 17, borderRadius: 99,
             background: '#ef4444', color: 'white',
-            fontSize: '0.6rem', fontWeight: 800,
+            fontSize: '0.7rem', fontWeight: 800,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '0 4px', border: '2px solid white',
           }}>{unreadCount}</span>

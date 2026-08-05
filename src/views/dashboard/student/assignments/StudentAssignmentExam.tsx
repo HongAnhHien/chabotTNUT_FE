@@ -793,7 +793,7 @@ const StudentAssignmentExam: FC = () => {
                         </span>
                         {q.chapter_title && (
                           <span
-                            style={{ fontSize: "0.65rem", color: "#94a3b8" }}
+                            style={{ fontSize: "0.7rem", color: "#94a3b8" }}
                           >
                             {q.chapter_title}
                           </span>
@@ -802,7 +802,7 @@ const StudentAssignmentExam: FC = () => {
                       {hasSubmitted && myAns && (
                         <span
                           style={{
-                            fontSize: "0.68rem",
+                            fontSize: "0.7rem",
                             fontWeight: 700,
                             display: "flex",
                             alignItems: "center",
@@ -881,7 +881,7 @@ const StudentAssignmentExam: FC = () => {
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                fontSize: "0.68rem",
+                                fontSize: "0.7rem",
                                 fontWeight: 800,
                                 color: "white",
                                 background: circleColor,
@@ -910,7 +910,7 @@ const StudentAssignmentExam: FC = () => {
                             {hasSubmitted && isAnswer && (
                               <span
                                 style={{
-                                  fontSize: "0.65rem",
+                                  fontSize: "0.7rem",
                                   color: "#059669",
                                   fontWeight: 800,
                                   whiteSpace: "nowrap",
@@ -971,7 +971,7 @@ const StudentAssignmentExam: FC = () => {
             >
               <div
                 style={{
-                  fontSize: "0.68rem",
+                  fontSize: "0.7rem",
                   fontWeight: 700,
                   color: "#64748b",
                   marginBottom: 8,
@@ -1042,7 +1042,7 @@ const StudentAssignmentExam: FC = () => {
                         border: `1.5px solid ${borderColor}`,
                         background: bg,
                         color,
-                        fontSize: "0.68rem",
+                        fontSize: "0.7rem",
                         fontWeight: 700,
                         cursor: "pointer",
                         display: "flex",
@@ -1057,7 +1057,7 @@ const StudentAssignmentExam: FC = () => {
                             position: "absolute",
                             top: 1,
                             right: 2,
-                            fontSize: 7,
+                            fontSize: 11,
                             color: "#059669",
                             lineHeight: 1,
                           }}
@@ -1180,7 +1180,7 @@ const StudentAssignmentExam: FC = () => {
                         borderRadius: "50%",
                         background: "rgba(217,119,6,0.13)",
                         color: "#d97706",
-                        fontSize: "0.65rem",
+                        fontSize: "0.7rem",
                         fontWeight: 800,
                         display: "flex",
                         alignItems: "center",
@@ -1242,7 +1242,7 @@ const StudentAssignmentExam: FC = () => {
                   borderRadius: "50%",
                   background: "rgba(217,119,6,0.12)",
                   color: "#d97706",
-                  fontSize: "0.65rem",
+                  fontSize: "0.7rem",
                   fontWeight: 800,
                   display: "flex",
                   alignItems: "center",

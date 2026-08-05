@@ -1,6 +1,7 @@
 import axiosInstance from '@/infra/api/conflig/axiosInstance';
 import { API_ENDPOINTS } from '@/infra/api/conflig/apiEndpoints';
 import { storage, STORAGE_KEYS } from '@/helper/storage';
+import { checkProxyError } from '@/infra/api/checkProxyError';
 import type {
   ICreateSessionResponse,
   ISessionsResponse,
@@ -167,6 +168,7 @@ class ChatApi {
     const res = await axiosInstance.get<IAnalyticsSummaryResponse>(API_ENDPOINTS.CHAT.ANALYTICS_SUMMARY, {
       params: subjectId ? { subject_id: subjectId } : undefined,
     });
+    checkProxyError(res.data.data);
     return res.data;
   }
 }

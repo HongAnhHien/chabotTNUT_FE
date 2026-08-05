@@ -154,7 +154,7 @@ const ExamDetailView: FC<Props> = ({ exam, loading, onBack, onAssign }) => {
                     </span>
                   )}
                   <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12.5, color: '#16a34a', fontWeight: 600 }}>
-                    <span style={{ width: 16, height: 16, borderRadius: 5, background: '#16a34a', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 9, fontWeight: 800 }}>✓</span>
+                    <span style={{ width: 16, height: 16, borderRadius: 5, background: '#16a34a', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 800 }}>✓</span>
                     Đáp án đúng
                   </span>
                 </div>

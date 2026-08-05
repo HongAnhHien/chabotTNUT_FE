@@ -18,6 +18,9 @@ const WARN_CFG = {
   nhe:         { color:'#d97706', bg:'rgba(217,119,6,0.09)',  cls:'warn-yellow', label:'Cần chú ý' },
 } as const;
 const STATUS_OK = { color:'#16a34a', bg:'rgba(22,163,74,0.09)', label:'Bình thường' };
+// avg_score === null nghĩa là SV chưa có bài nộp nào để tính điểm — khác với
+// "Bình thường" (đã có điểm và ổn), khớp đúng logic scoreWarningLevel() bên backend.
+const STATUS_NO_DATA = { color:'#64748b', bg:'rgba(100,116,139,0.08)', label:'Chưa có đánh giá' };
 
 const AI_USAGE_CFG: Record<string, { label: string; bg: string; color: string }> = {
   high: { label:'Tích cực',  bg:'rgba(124,58,237,0.09)', color:'#7c3aed' },
@@ -56,13 +59,13 @@ const StudentListHeader: FC = () => (
     <div>Học sinh</div>
     <div>Tiến độ bài tập</div>
     <div>Trợ lý AI</div>
-    <div>Trạng thái</div>
+    <div>Đánh giá</div>
   </div>
 );
 
 const StudentRow: FC<{ student: ITeacherStudent; idx: number }> = ({ student, idx }) => {
   const w = student.warning_level ? WARN_CFG[student.warning_level] : null;
-  const status = w ?? STATUS_OK;
+  const status = w ?? (student.avg_score == null ? STATUS_NO_DATA : STATUS_OK);
   const pct = student.total_assignments
     ? Math.round(((student.total_assignments - (student.pending_assignments ?? 0)) / student.total_assignments) * 100)
     : null;
@@ -95,7 +98,7 @@ const StudentRow: FC<{ student: ITeacherStudent; idx: number }> = ({ student, id
       {/* Tiến độ bài tập */}
       <div style={{ flex:'0 1 170px', minWidth:130 }}>
         <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5, gap:8 }}>
-          <span style={{ fontSize:'0.68rem', color:'#94a3b8', fontWeight:500 }}>Bài tập</span>
+          <span style={{ fontSize:'0.7rem', color:'#94a3b8', fontWeight:500 }}>Bài tập</span>
           <span style={{ fontSize:'0.75rem', fontWeight:700, color: pct !== null ? progressColor(pct) : '#94a3b8' }}>
             {pct !== null ? `${pct}%` : '—'}
           </span>
@@ -198,16 +201,16 @@ const AssignmentCard: FC<{ item: IScheduleItem; idx: number }> = ({ item, idx })
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:7, flexWrap:'wrap' }}>
             <span style={{ fontWeight:700, fontSize:'0.86rem', color:'#0f172a' }}>{item.title}</span>
-            <span style={{ fontSize:'0.64rem', fontWeight:700, color:'#7c3aed', background:'rgba(124,58,237,0.08)', borderRadius:5, padding:'1px 7px' }}>
+            <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#7c3aed', background:'rgba(124,58,237,0.08)', borderRadius:5, padding:'1px 7px' }}>
               {EXAM_TYPE[item.exam_type] ?? item.exam_type}
             </span>
             {overdue && item.pending_count > 0 && (
-              <span style={{ fontSize:'0.64rem', fontWeight:700, color:'#dc2626', background:'rgba(220,38,38,0.08)', borderRadius:5, padding:'1px 7px' }}>
+              <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#dc2626', background:'rgba(220,38,38,0.08)', borderRadius:5, padding:'1px 7px' }}>
                 {item.pending_count} chưa nộp
               </span>
             )}
             {!overdue && (
-              <span style={{ fontSize:'0.64rem', fontWeight:700, color:'#16a34a', background:'rgba(22,163,74,0.08)', borderRadius:5, padding:'1px 7px' }}>
+              <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#16a34a', background:'rgba(22,163,74,0.08)', borderRadius:5, padding:'1px 7px' }}>
                 Đang mở
               </span>
             )}
@@ -240,20 +243,20 @@ const AssignmentCard: FC<{ item: IScheduleItem; idx: number }> = ({ item, idx })
               </svg>
               <div style={{ position:'absolute', textAlign:'center' }}>
                 <div style={{ fontSize:'1.15rem', fontWeight:800, color:'#2563eb', lineHeight:1 }}>{pct}%</div>
-                <div style={{ fontSize:'0.6rem', color:'#94a3b8' }}>đã nộp</div>
+                <div style={{ fontSize:'0.7rem', color:'#94a3b8' }}>đã nộp</div>
               </div>
             </div>
             <div style={{ display:'flex', gap:10, flexWrap:'wrap', flex:1 }}>
               <div className="an-stat-card" style={{ padding:'10px 14px', flex:'1 1 120px' }}>
-                <div style={{ fontSize:'0.68rem', color:'#94a3b8' }}>Đã nộp</div>
+                <div style={{ fontSize:'0.7rem', color:'#94a3b8' }}>Đã nộp</div>
                 <div style={{ fontSize:'1.15rem', fontWeight:800, color:'#16a34a' }}>{item.submitted}</div>
               </div>
               <div className="an-stat-card" style={{ padding:'10px 14px', flex:'1 1 120px' }}>
-                <div style={{ fontSize:'0.68rem', color:'#94a3b8' }}>Chưa nộp</div>
+                <div style={{ fontSize:'0.7rem', color:'#94a3b8' }}>Chưa nộp</div>
                 <div style={{ fontSize:'1.15rem', fontWeight:800, color:'#dc2626' }}>{notSubmitted}</div>
               </div>
               <div className="an-stat-card" style={{ padding:'10px 14px', flex:'1 1 120px' }}>
-                <div style={{ fontSize:'0.68rem', color:'#94a3b8' }}>Thời hạn</div>
+                <div style={{ fontSize:'0.7rem', color:'#94a3b8' }}>Thời hạn</div>
                 <div style={{ fontSize:'0.95rem', fontWeight:800, color:left.color }}>{left.label}</div>
               </div>
             </div>
@@ -286,11 +289,11 @@ const AssignmentCard: FC<{ item: IScheduleItem; idx: number }> = ({ item, idx })
                   return (
                     <div key={s.ma_sinh_vien} style={{ display:'flex', alignItems:'center', gap:10, padding:'7px 10px', background:'white', borderRadius:8, border:'1px solid #f1f5f9', flexWrap:'wrap' }}>
                       <div style={{ width:26, height:26, borderRadius:7, background:'rgba(220,38,38,0.08)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                        <span style={{ fontSize:'0.62rem', fontWeight:800, color:'#dc2626' }}>{initials(s.ho_ten)}</span>
+                        <span style={{ fontSize:'0.7rem', fontWeight:800, color:'#dc2626' }}>{initials(s.ho_ten)}</span>
                       </div>
                       <div style={{ flex:'1 1 140px', minWidth:0 }}>
                         <div style={{ fontSize:'0.8rem', fontWeight:600, color:'#1e293b' }}>{s.ho_ten}</div>
-                        <div style={{ fontSize:'0.68rem', color:'#94a3b8' }}>{s.ma_sinh_vien}</div>
+                        <div style={{ fontSize:'0.7rem', color:'#94a3b8' }}>{s.ma_sinh_vien}</div>
                       </div>
                       <button
                         onClick={() => handleRemindOne(s.ma_sinh_vien)}
@@ -591,9 +594,9 @@ const ClassAnalyticsPage: FC = () => {
                   <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                     <CalendarDays size={14} color="#2563eb" />
                     <span style={{ fontSize:'0.82rem', fontWeight:700, color:'#1e293b' }}>Bài kiểm tra đã giao</span>
-                    <span style={{ fontSize:'0.68rem', color:'#64748b', background:'#f1f5f9', borderRadius:20, padding:'1px 8px' }}>{data.schedule.length} bài</span>
+                    <span style={{ fontSize:'0.7rem', color:'#64748b', background:'#f1f5f9', borderRadius:20, padding:'1px 8px' }}>{data.schedule.length} bài</span>
                     {data.schedule.some(s => isPast(s.due_at) && s.pending_count > 0) && (
-                      <span style={{ fontSize:'0.68rem', fontWeight:700, color:'#dc2626', background:'rgba(220,38,38,0.08)', borderRadius:20, padding:'1px 8px', display:'flex', alignItems:'center', gap:3 }}>
+                      <span style={{ fontSize:'0.7rem', fontWeight:700, color:'#dc2626', background:'rgba(220,38,38,0.08)', borderRadius:20, padding:'1px 8px', display:'flex', alignItems:'center', gap:3 }}>
                         <AlertTriangle size={10} />Có bài chưa nộp
                       </span>
                     )}

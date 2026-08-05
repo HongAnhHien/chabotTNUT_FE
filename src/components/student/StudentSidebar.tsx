@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router';
 import {
   LayoutDashboard, BookOpen, MessageCircle,
   ChevronLeft, ChevronRight,
-  ChevronRight as ArrowRight, X, CalendarDays, BarChart2,
+  ChevronRight as ArrowRight, X, CalendarDays,
 } from 'lucide-react';
 import logoTNUT from '@/assets/logo_tnut/logo_tnut.png';
 
@@ -34,7 +34,6 @@ const NAV_SECTIONS = [
       { icon: BookOpen,      label: 'Môn học',      path: '/student/subjects' },
       { icon: MessageCircle, label: 'Chatbot AI',   path: '/student/chat' },
       { icon: CalendarDays,  label: 'Lịch học',     path: '/student/schedule' },
-      { icon: BarChart2,     label: 'Kết quả học',  path: '/student/grades',    soon: true },
     ],
   },
 ];
@@ -115,7 +114,7 @@ const StudentSidebar: FC<Props> = ({
                 <div style={{ fontSize: '0.73rem', fontWeight: 800, color: '#1e3a8a', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                   TNUT Learning
                 </div>
-                <div style={{ fontSize: '0.58rem', color: '#94a3b8', marginTop: 2, whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: 2, whiteSpace: 'nowrap' }}>
                   Cổng sinh viên · Trợ lý AI
                 </div>
               </div>
@@ -145,7 +144,7 @@ const StudentSidebar: FC<Props> = ({
                   padding: '8px 8px 5px',
                 }}>
                   <span style={{
-                    fontSize: '0.62rem', fontWeight: 700, color: '#94a3b8',
+                    fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8',
                     letterSpacing: '0.07em', textTransform: 'uppercase', whiteSpace: 'nowrap',
                   }}>{label}</span>
                   <div style={{ flex: 1, height: 1, background: '#f0f4f8' }} />
@@ -181,7 +180,7 @@ const StudentSidebar: FC<Props> = ({
                       {showExpanded && <span style={{ flex: 1, textAlign: 'left' }}>{itemLabel}</span>}
                       {showExpanded && soon && (
                         <span style={{
-                          fontSize: '0.52rem', fontWeight: 700, flexShrink: 0,
+                          fontSize: '0.7rem', fontWeight: 700, flexShrink: 0,
                           color: '#f59e0b', background: 'rgba(245,158,11,0.1)',
                           padding: '2px 5px', borderRadius: 4, letterSpacing: '0.04em',
                         }}>Sắp ra</span>
@@ -239,7 +238,7 @@ const StudentSidebar: FC<Props> = ({
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>{userName ?? 'Sinh viên'}</div>
                   {userCode && (
-                    <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: 1, fontWeight: 500 }}>{userCode}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 1, fontWeight: 500 }}>{userCode}</div>
                   )}
                 </div>
                 <ArrowRight size={13} color="#cbd5e1" style={{ flexShrink: 0 }} />

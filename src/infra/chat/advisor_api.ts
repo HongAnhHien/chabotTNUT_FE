@@ -1,6 +1,7 @@
 import axiosInstance from '@/infra/api/conflig/axiosInstance';
 import { API_ENDPOINTS } from '@/infra/api/conflig/apiEndpoints';
 import { storage, STORAGE_KEYS } from '@/helper/storage';
+import { checkProxyError } from '@/infra/api/checkProxyError';
 import type { IChatSession, IFeedbackResponse, IRatingResponse, IAnalyticsSummaryResponse } from '@/infra/api/interfaces/IChat';
 import type {
   ICreateAdvisorSessionResponse,
@@ -12,6 +13,15 @@ import type {
   IAdvisorSSEEvent,
   IAdvisorSSEDoneEvent,
   IAdvisorTrendResponse,
+  IPortalStudentInfoResponse,
+  IUserHistoryResponse,
+  ILastRecommendationResponse,
+  IClassRiskResponse,
+  IAdoptionRateResponse,
+  IRiskOverviewResponse,
+  IStudentActivityResponse,
+  ITopKeywordsResponse,
+  ITopicGroupsResponse,
 } from '@/infra/api/interfaces/IAdvisor';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
@@ -159,6 +169,7 @@ class AdvisorApi {
 
   async getAnalyticsSummary(): Promise<IAnalyticsSummaryResponse> {
     const res = await axiosInstance.get<IAnalyticsSummaryResponse>(API_ENDPOINTS.ADVISOR.ANALYTICS_SUMMARY);
+    checkProxyError(res.data.data);
     return res.data;
   }
 
@@ -166,6 +177,76 @@ class AdvisorApi {
     const res = await axiosInstance.get<IAdvisorTrendResponse>(API_ENDPOINTS.ADVISOR.ANALYTICS_TREND, {
       params: days ? { days } : undefined,
     });
+    checkProxyError(res.data.data);
+    return res.data;
+  }
+
+  // ── Dashboard CVHT — Tầng 1/2/3 (xem DASHBOARD_CVHT.md) ─
+  // Nhóm Portal-based (student-info/class-risk/adoption-rate/risk-overview) không
+  // cần session_id CVHT — BE tự lấy Portal access_token qua PortalService.
+  async getPortalStudentInfo(maSv: string): Promise<IPortalStudentInfoResponse> {
+    const res = await axiosInstance.get<IPortalStudentInfoResponse>(API_ENDPOINTS.ADVISOR.PORTAL_STUDENT_INFO, {
+      params: { ma_sv: maSv },
+    });
+    checkProxyError(res.data.data);
+    return res.data;
+  }
+
+  async getClassRisk(): Promise<IClassRiskResponse> {
+    const res = await axiosInstance.get<IClassRiskResponse>(API_ENDPOINTS.ADVISOR.CLASS_RISK);
+    checkProxyError(res.data.data);
+    return res.data;
+  }
+
+  async getAdoptionRate(): Promise<IAdoptionRateResponse> {
+    const res = await axiosInstance.get<IAdoptionRateResponse>(API_ENDPOINTS.ADVISOR.ADOPTION_RATE);
+    checkProxyError(res.data.data);
+    return res.data;
+  }
+
+  async getRiskOverview(): Promise<IRiskOverviewResponse> {
+    const res = await axiosInstance.get<IRiskOverviewResponse>(API_ENDPOINTS.ADVISOR.RISK_OVERVIEW);
+    checkProxyError(res.data.data);
+    return res.data;
+  }
+
+  async getUserHistory(userId: string, limit?: number): Promise<IUserHistoryResponse> {
+    const res = await axiosInstance.get<IUserHistoryResponse>(API_ENDPOINTS.ADVISOR.USER_HISTORY, {
+      params: { user_id: userId, ...(limit ? { limit } : {}) },
+    });
+    checkProxyError(res.data.data);
+    return res.data;
+  }
+
+  async getStudentActivity(days?: number): Promise<IStudentActivityResponse> {
+    const res = await axiosInstance.get<IStudentActivityResponse>(API_ENDPOINTS.ADVISOR.STUDENT_ACTIVITY, {
+      params: days ? { days } : undefined,
+    });
+    checkProxyError(res.data.data);
+    return res.data;
+  }
+
+  async getTopKeywords(days?: number, limit?: number): Promise<ITopKeywordsResponse> {
+    const res = await axiosInstance.get<ITopKeywordsResponse>(API_ENDPOINTS.ADVISOR.TOP_KEYWORDS, {
+      params: { ...(days ? { days } : {}), ...(limit ? { limit } : {}) },
+    });
+    checkProxyError(res.data.data);
+    return res.data;
+  }
+
+  async getTopicGroups(days?: number): Promise<ITopicGroupsResponse> {
+    const res = await axiosInstance.get<ITopicGroupsResponse>(API_ENDPOINTS.ADVISOR.TOPIC_GROUPS, {
+      params: days ? { days } : undefined,
+    });
+    checkProxyError(res.data.data);
+    return res.data;
+  }
+
+  async getLastRecommendation(userId: string): Promise<ILastRecommendationResponse> {
+    const res = await axiosInstance.get<ILastRecommendationResponse>(API_ENDPOINTS.ADVISOR.LAST_RECOMMENDATION, {
+      params: { user_id: userId },
+    });
+    checkProxyError(res.data.data);
     return res.data;
   }
 }

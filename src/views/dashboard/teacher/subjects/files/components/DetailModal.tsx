@@ -238,7 +238,7 @@ const DetailModal: FC<Props> = ({ file, onClose, onEdit, onSend, onDelete, sendi
 
             {/* File info */}
             <div>
-              <div style={{ fontSize:10.5, fontWeight:700, letterSpacing:.6, color:'#94a3b8', marginBottom:10, textTransform:'uppercase' }}>Thông tin tài liệu</div>
+              <div style={{ fontSize:11, fontWeight:700, letterSpacing:.6, color:'#94a3b8', marginBottom:10, textTransform:'uppercase' }}>Thông tin tài liệu</div>
               <div style={{ display:'flex', flexDirection:'column' }}>
                 {infoRows.map(row => (
                   <div key={row.k} style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:8, padding:'7px 0', borderBottom:'1px solid #f1f5f9', fontSize:13 }}>
@@ -252,7 +252,7 @@ const DetailModal: FC<Props> = ({ file, onClose, onEdit, onSend, onDelete, sendi
             {/* RAG section — only if sent to AI */}
             {hasRag && (
               <div>
-                <div style={{ fontSize:10.5, fontWeight:700, letterSpacing:.6, color:'#94a3b8', marginBottom:10, textTransform:'uppercase' }}>Trạng thái RAG</div>
+                <div style={{ fontSize:11, fontWeight:700, letterSpacing:.6, color:'#94a3b8', marginBottom:10, textTransform:'uppercase' }}>Trạng thái RAG</div>
                 <RagPipeline file={file} />
                 {(file.page_count != null || file.chunk_count != null || file.token_count != null) && (
                   <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8, marginTop:10 }}>
@@ -263,7 +263,7 @@ const DetailModal: FC<Props> = ({ file, onClose, onEdit, onSend, onDelete, sendi
                     ].map(s => (
                       <div key={s.label} style={{ background:'#fff', border:'1px solid #eef2f7', borderRadius:10, padding:'9px 6px', textAlign:'center' }}>
                         <div style={{ fontSize:16, fontWeight:800, color:s.color, lineHeight:1 }}>{s.v}</div>
-                        <div style={{ fontSize:10.5, color:'#94a3b8', fontWeight:600, marginTop:2 }}>{s.label}</div>
+                        <div style={{ fontSize:11, color:'#94a3b8', fontWeight:600, marginTop:2 }}>{s.label}</div>
                       </div>
                     ))}
                   </div>

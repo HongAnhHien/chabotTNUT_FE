@@ -61,14 +61,14 @@ const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onNewChat, o
           {!collapsed && (
             <>
               <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 500 }}>Chưa có cuộc trò chuyện</div>
-              <div style={{ fontSize: '0.68rem', color: '#cbd5e1', marginTop: 3 }}>Nhấn "Hội thoại mới" để bắt đầu</div>
+              <div style={{ fontSize: '0.7rem', color: '#cbd5e1', marginTop: 3 }}>Nhấn "Hội thoại mới" để bắt đầu</div>
             </>
           )}
         </div>
       ) : (
         <div style={{ padding: collapsed ? '0 6px' : '0 8px' }}>
           {!collapsed && (
-            <div style={{ padding: '8px 4px 4px', fontSize: '0.6rem', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            <div style={{ padding: '8px 4px 4px', fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               Gần đây
             </div>
           )}
@@ -100,11 +100,11 @@ const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onNewChat, o
                         </div>
                         <div style={{ display: 'flex', gap: 5, marginTop: 1 }}>
                           {s.subject_id && (
-                            <span style={{ fontSize: '0.6rem', color: '#3b82f6', fontWeight: 700, background: 'rgba(59,130,246,0.08)', borderRadius: 20, padding: '0 6px' }}>
+                            <span style={{ fontSize: '0.7rem', color: '#3b82f6', fontWeight: 700, background: 'rgba(59,130,246,0.08)', borderRadius: 20, padding: '0 6px' }}>
                               {s.subject_id}
                             </span>
                           )}
-                          {s.updated_at && <span style={{ fontSize: '0.6rem', color: '#94a3b8' }}>{fmtDate(s.updated_at)}</span>}
+                          {s.updated_at && <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{fmtDate(s.updated_at)}</span>}
                         </div>
                       </div>
                       <button onClick={e => { e.stopPropagation(); onDeleteSession(s.id); }} style={{
@@ -128,7 +128,7 @@ const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onNewChat, o
     <div style={{
       flexShrink: 0, padding: collapsed ? '8px 0' : '8px 14px', borderTop: '1px solid rgba(30,58,138,0.07)',
       display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start',
-      gap: 6, fontSize: '0.65rem', color: '#94a3b8',
+      gap: 6, fontSize: '0.7rem', color: '#94a3b8',
     }}>
       <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
       {!collapsed && `${sessions.length} lượt hỏi học kỳ này`}

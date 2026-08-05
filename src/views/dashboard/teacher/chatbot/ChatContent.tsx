@@ -54,7 +54,7 @@ const EQCard: FC<{ q: IExamQuestion; idx: number }> = ({ q, idx }) => {
         <div style={{ flex: 1, minWidth: 0, fontSize: '0.82rem', fontWeight: 600, color: '#1e293b', lineHeight: 1.4 }}>
           <LT text={q.question ?? '—'} />
         </div>
-        {answer && <span style={{ flexShrink: 0, fontSize: '0.62rem', fontWeight: 800, color: '#059669', background: 'rgba(5,150,105,0.09)', borderRadius: 5, padding: '2px 6px' }}>ĐA: {answer}</span>}
+        {answer && <span style={{ flexShrink: 0, fontSize: '0.7rem', fontWeight: 800, color: '#059669', background: 'rgba(5,150,105,0.09)', borderRadius: 5, padding: '2px 6px' }}>ĐA: {answer}</span>}
         <div style={{ flexShrink: 0, color: '#94a3b8' }}>{open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}</div>
       </div>
       {open && (
@@ -66,7 +66,7 @@ const EQCard: FC<{ q: IExamQuestion; idx: number }> = ({ q, idx }) => {
               const ok = k === answer;
               return (
                 <div key={k} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: '0.78rem' }}>
-                  <div style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 800, background: ok ? 'rgba(5,150,105,0.12)' : 'rgba(37,99,235,0.07)', color: ok ? '#059669' : '#2563eb' }}>{k}</div>
+                  <div style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 800, background: ok ? 'rgba(5,150,105,0.12)' : 'rgba(37,99,235,0.07)', color: ok ? '#059669' : '#2563eb' }}>{k}</div>
                   <span style={{ flex: 1, color: ok ? '#059669' : '#334155', fontWeight: ok ? 700 : 400, lineHeight: 1.4 }}><LT text={val} /></span>
                   {ok && <CheckCircle size={12} color="#059669" style={{ flexShrink: 0, marginTop: 2 }} />}
                 </div>
@@ -138,12 +138,12 @@ const ExamModal: FC<{ examId: string; onClose: () => void }> = ({ examId, onClos
               <div style={{ fontWeight: 800, fontSize: '0.88rem', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {loading ? 'Đang tải...' : (exam?.ten_mon ?? 'Đề kiểm tra')}
               </div>
-              {exam?.ma_mon && <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>{exam.ma_mon}</div>}
+              {exam?.ma_mon && <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>{exam.ma_mon}</div>}
             </div>
             {!loading && exam && (
               <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
-                {exam.time_limit && <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}><Clock size={10} /> {exam.time_limit} phút</div>}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}><Hash size={10} /> {questions.length} câu</div>
+                {exam.time_limit && <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}><Clock size={10} /> {exam.time_limit} phút</div>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.7rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}><Hash size={10} /> {questions.length} câu</div>
               </div>
             )}
           </div>
@@ -163,7 +163,7 @@ const ExamModal: FC<{ examId: string; onClose: () => void }> = ({ examId, onClos
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8, padding: '6px 10px', borderRadius: 9, background: 'linear-gradient(135deg,rgba(30,58,138,0.07),rgba(37,99,235,0.04))', border: '1px solid rgba(37,99,235,0.1)' }}>
                       <BookOpen size={12} color="#1e3a8a" />
                       <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e3a8a' }}>{chapter.title}</span>
-                      <span style={{ fontSize: '0.62rem', color: '#64748b', marginLeft: 'auto' }}>{qs.length} câu</span>
+                      <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: 'auto' }}>{qs.length} câu</span>
                     </div>
                   )}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -337,7 +337,7 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', sessionI
                                 background: expanded ? 'rgba(37,99,235,0.1)' : 'rgba(37,99,235,0.05)',
                                 border: '1px solid rgba(37,99,235,0.15)',
                                 color: msg.content ? '#2563eb' : '#94a3b8',
-                                fontSize: '0.68rem', fontWeight: 700,
+                                fontSize: '0.7rem', fontWeight: 700,
                                 cursor: msg.content ? 'pointer' : 'not-allowed',
                                 flexShrink: 0, opacity: msg.content ? 1 : 0.5,
                               }}
@@ -418,30 +418,35 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', sessionI
                           {msg.role === 'assistant' && !msg.isStreaming && (
                             <>
                               <button onClick={() => handleCopy(msg.content, msg.id)}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '3px 5px', borderRadius: 5, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.68rem' }}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '3px 5px', borderRadius: 5, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.7rem' }}
                                 title="Sao chép"
                               >
                                 {copiedId === msg.id ? <Check size={11} color="#059669" /> : <Copy size={11} />}
                               </button>
-                              <button
-                                onClick={() => onFeedback(msg.id, msg.messageId, 'like')}
-                                disabled={!!msg.feedback}
-                                style={{ background: 'none', border: 'none', cursor: msg.feedback ? 'default' : 'pointer', padding: '3px 5px', borderRadius: 5, color: msg.feedback === 'like' ? '#2563eb' : '#94a3b8', opacity: msg.feedback && msg.feedback !== 'like' ? 0.4 : 1, display: 'flex', alignItems: 'center' }}
-                                title="Hữu ích"
-                              >
-                                <ThumbsUp size={11} />
-                              </button>
-                              <button
-                                onClick={() => onFeedback(msg.id, msg.messageId, 'dislike')}
-                                disabled={!!msg.feedback}
-                                style={{ background: 'none', border: 'none', cursor: msg.feedback ? 'default' : 'pointer', padding: '3px 5px', borderRadius: 5, color: msg.feedback === 'dislike' ? '#dc2626' : '#94a3b8', opacity: msg.feedback && msg.feedback !== 'dislike' ? 0.4 : 1, display: 'flex', alignItems: 'center' }}
-                                title="Không hữu ích"
-                              >
-                                <ThumbsDown size={11} />
-                              </button>
+                              {/* Like/dislike — chỉ student được phép gửi, teacher gọi API sẽ bị 403 */}
+                              {role === 'student' && (
+                                <>
+                                  <button
+                                    onClick={() => onFeedback(msg.id, msg.messageId, 'like')}
+                                    disabled={!!msg.feedback}
+                                    style={{ background: 'none', border: 'none', cursor: msg.feedback ? 'default' : 'pointer', padding: '3px 5px', borderRadius: 5, color: msg.feedback === 'like' ? '#2563eb' : '#94a3b8', opacity: msg.feedback && msg.feedback !== 'like' ? 0.4 : 1, display: 'flex', alignItems: 'center' }}
+                                    title="Hữu ích"
+                                  >
+                                    <ThumbsUp size={11} />
+                                  </button>
+                                  <button
+                                    onClick={() => onFeedback(msg.id, msg.messageId, 'dislike')}
+                                    disabled={!!msg.feedback}
+                                    style={{ background: 'none', border: 'none', cursor: msg.feedback ? 'default' : 'pointer', padding: '3px 5px', borderRadius: 5, color: msg.feedback === 'dislike' ? '#dc2626' : '#94a3b8', opacity: msg.feedback && msg.feedback !== 'dislike' ? 0.4 : 1, display: 'flex', alignItems: 'center' }}
+                                    title="Không hữu ích"
+                                  >
+                                    <ThumbsDown size={11} />
+                                  </button>
+                                </>
+                              )}
                             </>
                           )}
-                          <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{fmtTime(msg.timestamp)}</span>
+                          <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{fmtTime(msg.timestamp)}</span>
                         </div>
 
                         {/* Exam action buttons — teacher only */}
