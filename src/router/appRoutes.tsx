@@ -14,6 +14,7 @@ const ErrorPage = lazy(() => import("@views/misc/Error"));
 // Hub hệ sinh thái
 const AtlasHub = lazy(() => import("@views/atlas/AtlasHub"));
 const CmsMaterials = lazy(() => import("@views/cms/CmsMaterials"));
+const LabanMap = lazy(() => import("@views/laban/LabanMap"));
 
 // Admin
 const Dashboard       = lazy(() => import("@views/dashboard/Dashboard"));
@@ -70,6 +71,16 @@ export const appRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={STAFF_ROLES}>
         <CmsMaterials />
+      </ProtectedRoute>
+    ),
+  },
+
+  // ── La bàn nghề nghiệp — Bản đồ CTĐT (mọi vai đã đăng nhập) ──
+  {
+    path: "/laban",
+    element: (
+      <ProtectedRoute>
+        <LabanMap />
       </ProtectedRoute>
     ),
   },

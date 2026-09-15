@@ -110,12 +110,11 @@ export const ATLAS_APPS: AtlasApp[] = [
   {
     key: "la-ban",
     name: "La bàn nghề nghiệp",
-    desc: "Định vị năng lực & lộ trình nghề 5–10 năm.",
+    desc: "Bản đồ CTĐT, PLO, lộ trình 5 giai đoạn & nghề đích.",
     icon: Compass,
     roles: ALL,
-    status: "soon",
-    phase: "GĐ2",
-    to: () => "/atlas",
+    status: "available",
+    to: () => "/laban",
   },
   {
     key: "diem-danh",
