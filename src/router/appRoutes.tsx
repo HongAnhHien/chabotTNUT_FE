@@ -2,6 +2,7 @@
 import { lazy } from "react";
 import { Navigate, type RouteObject } from "react-router";
 import ProtectedRoute from "./protect_router";
+import { ROLES, STAFF_ROLES } from "@/constants/roles";
 
 const BlankLayout   = lazy(() => import("@core/layouts/BlankLayout"));
 const AdminLayoutPage = lazy(() => import("@layouts/AdminLayoutPage"));
@@ -74,7 +75,7 @@ export const appRoutes: RouteObject[] = [
   {
     path: "/student",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute allowedRoles={[ROLES.STUDENT, ROLES.ADMIN]}>
         <StudentLayout />
       </ProtectedRoute>
     ),
@@ -102,7 +103,7 @@ export const appRoutes: RouteObject[] = [
   {
     path: "/student/assignments/:id",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute allowedRoles={[ROLES.STUDENT, ROLES.ADMIN]}>
         <BlankLayout>
           <StudentAssignmentExam />
         </BlankLayout>
@@ -114,7 +115,7 @@ export const appRoutes: RouteObject[] = [
   {
     path: "/teacher",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute allowedRoles={STAFF_ROLES}>
         <TeacherLayout />
       </ProtectedRoute>
     ),

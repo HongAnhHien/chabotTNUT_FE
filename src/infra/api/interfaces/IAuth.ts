@@ -4,7 +4,7 @@ export interface IAuthUser {
   username: string;
   name: string;
   email: string;
-  role: 'student' | 'admin' | string;
+  role: 'student' | 'teacher' | 'admin' | 'khoa' | 'truong' | string;
   portal_code?: string;
 }
 
