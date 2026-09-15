@@ -15,6 +15,7 @@ const ErrorPage = lazy(() => import("@views/misc/Error"));
 const AtlasHub = lazy(() => import("@views/atlas/AtlasHub"));
 const CmsMaterials = lazy(() => import("@views/cms/CmsMaterials"));
 const LabanMap = lazy(() => import("@views/laban/LabanMap"));
+const NoiTruManage = lazy(() => import("@views/noitru/NoiTruManage"));
 
 // Admin
 const Dashboard       = lazy(() => import("@views/dashboard/Dashboard"));
@@ -81,6 +82,16 @@ export const appRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute>
         <LabanMap />
+      </ProtectedRoute>
+    ),
+  },
+
+  // ── Quản lý nội trú (Trường / Admin — dữ liệu cá nhân SV) ──
+  {
+    path: "/noitru",
+    element: (
+      <ProtectedRoute allowedRoles={[ROLES.TRUONG, ROLES.ADMIN]}>
+        <NoiTruManage />
       </ProtectedRoute>
     ),
   },

@@ -139,12 +139,11 @@ export const ATLAS_APPS: AtlasApp[] = [
   {
     key: "noi-tru",
     name: "Quản lý nội trú",
-    desc: "Ký túc xá, phòng ở, sinh viên lưu trú.",
+    desc: "Ký túc xá: toà nhà, phòng ở, sinh viên lưu trú.",
     icon: Building2,
-    roles: ORG,
-    status: "soon",
-    phase: "GĐ5",
-    to: () => "/atlas",
+    roles: [ROLES.TRUONG, ROLES.ADMIN],
+    status: "available",
+    to: () => "/noitru",
   },
 ];
 
