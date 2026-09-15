@@ -51,9 +51,8 @@ const Login: FC = () => {
     clearError();
     const ok = await login(values);
     if (ok) {
-      const role = useAuthStore.getState().user?.role;
-      const dest = role === 'admin' ? '/admin/dashboard' : role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
-      navigate(from ?? dest, { replace: true });
+      // Sau đăng nhập → hub Atlas (hub tự điều hướng theo vai, hỗ trợ cả khoa/trường)
+      navigate(from ?? '/atlas', { replace: true });
     }
   };
 

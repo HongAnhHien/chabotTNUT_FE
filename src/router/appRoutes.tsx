@@ -11,6 +11,9 @@ const TeacherLayout  = lazy(() => import("@/layouts/TeacherLayout"));
 
 const ErrorPage = lazy(() => import("@views/misc/Error"));
 
+// Hub hệ sinh thái
+const AtlasHub = lazy(() => import("@views/atlas/AtlasHub"));
+
 // Admin
 const Dashboard       = lazy(() => import("@views/dashboard/Dashboard"));
 const ManageUsers     = lazy(() => import("@views/dashboard/admin/manage_users"));
@@ -49,6 +52,16 @@ const TeacherAdvisorStudentDetail  = lazy(() => import("@views/dashboard/teacher
 export const appRoutes: RouteObject[] = [
   // Landing
   { path: "/", element: <Navigate to="/login" replace /> },
+
+  // ── Atlas Hub — trang chủ hệ sinh thái (mọi vai đã đăng nhập) ──
+  {
+    path: "/atlas",
+    element: (
+      <ProtectedRoute>
+        <AtlasHub />
+      </ProtectedRoute>
+    ),
+  },
 
   // ── Admin ──────────────────────────────────────────────
   {
