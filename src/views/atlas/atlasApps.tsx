@@ -11,6 +11,7 @@ import {
   Network,
   ShieldCheck,
   School,
+  FolderTree,
   type LucideIcon,
 } from "lucide-react";
 import { ROLES, type Role } from "@/constants/roles";
@@ -68,6 +69,15 @@ export const ATLAS_APPS: AtlasApp[] = [
     roles: ALL,
     status: "available",
     to: workspace,
+  },
+  {
+    key: "cms",
+    name: "CMS học liệu",
+    desc: "Quản lý tài liệu theo Khoa · Bộ môn · Học phần.",
+    icon: FolderTree,
+    roles: STAFF,
+    status: "available",
+    to: () => "/cms",
   },
   {
     key: "quan-tri",

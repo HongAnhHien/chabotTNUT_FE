@@ -13,6 +13,7 @@ const ErrorPage = lazy(() => import("@views/misc/Error"));
 
 // Hub hệ sinh thái
 const AtlasHub = lazy(() => import("@views/atlas/AtlasHub"));
+const CmsMaterials = lazy(() => import("@views/cms/CmsMaterials"));
 
 // Admin
 const Dashboard       = lazy(() => import("@views/dashboard/Dashboard"));
@@ -59,6 +60,16 @@ export const appRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute>
         <AtlasHub />
+      </ProtectedRoute>
+    ),
+  },
+
+  // ── CMS học liệu (cán bộ) ──
+  {
+    path: "/cms",
+    element: (
+      <ProtectedRoute allowedRoles={STAFF_ROLES}>
+        <CmsMaterials />
       </ProtectedRoute>
     ),
   },
