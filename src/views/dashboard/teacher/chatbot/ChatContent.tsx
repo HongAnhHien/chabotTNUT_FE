@@ -8,6 +8,9 @@ import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import 'katex/dist/katex.min.css';
 import katex from 'katex';
+import 'katex/contrib/mhchem'; // hỗ trợ công thức hoá học \ce{...} (cân bằng phương trình)
+import SpeakButton from '@/components/learning/SpeakButton';
+import FunctionPlot from '@/components/learning/FunctionPlot';
 import ChatApi from '@/infra/chat/chat_api';
 import type { IExamQuestion, IExamChapter } from '@/infra/api/interfaces/IChat';
 import type { ChatMessage } from './types';
@@ -206,7 +209,11 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', sessionI
   // Custom ReactMarkdown renderer: `GET /api/exam/{id}` → opens modal
   const mdComponents = useMemo(() => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    code: ({ children, ...props }: any) => {
+    code: ({ children, className, ...props }: any) => {
+      // Khối ```plot``` → vẽ đồ thị hàm số
+      if (typeof className === 'string' && className.includes('language-plot')) {
+        return <FunctionPlot source={String(children ?? '')} />;
+      }
       const text = String(children ?? '').trim();
       const match = text.match(EXAM_API_RE);
       if (match) {
@@ -228,7 +235,14 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', sessionI
           </button>
         );
       }
-      return <code {...props}>{children}</code>;
+      return <code className={className} {...props}>{children}</code>;
+    },
+    // Bỏ lớp <pre> khi là đồ thị để không bị bọc trong khung code
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pre: ({ children }: any) => {
+      const cls = children?.props?.className;
+      if (typeof cls === 'string' && cls.includes('language-plot')) return <>{children}</>;
+      return <pre>{children}</pre>;
     },
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), []);
@@ -423,6 +437,7 @@ const ChatContent = ({ messages, isStreaming = false, role = 'teacher', sessionI
                               >
                                 {copiedId === msg.id ? <Check size={11} color="#059669" /> : <Copy size={11} />}
                               </button>
+                              <SpeakButton text={msg.content} />
                               {/* Like/dislike — chỉ student được phép gửi, teacher gọi API sẽ bị 403 */}
                               {role === 'student' && (
                                 <>
