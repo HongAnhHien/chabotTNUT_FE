@@ -119,12 +119,11 @@ export const ATLAS_APPS: AtlasApp[] = [
   {
     key: "diem-danh",
     name: "Điểm danh thông minh",
-    desc: "Điểm danh AI + app giảng viên trên di động.",
+    desc: "Điểm danh camera AI theo lớp & thời khoá biểu.",
     icon: Camera,
     roles: STAFF,
-    status: "soon",
-    phase: "GĐ3",
-    to: () => "/atlas",
+    status: "available",
+    to: () => "/diem-danh",
   },
   {
     key: "elearning",

@@ -16,6 +16,7 @@ const AtlasHub = lazy(() => import("@views/atlas/AtlasHub"));
 const CmsMaterials = lazy(() => import("@views/cms/CmsMaterials"));
 const LabanMap = lazy(() => import("@views/laban/LabanMap"));
 const NoiTruManage = lazy(() => import("@views/noitru/NoiTruManage"));
+const DiemDanhManage = lazy(() => import("@views/diemdanh/DiemDanhManage"));
 const ElearningCatalog = lazy(() => import("@views/elearning/ElearningCatalog"));
 
 // Admin
@@ -93,6 +94,16 @@ export const appRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={[ROLES.TRUONG, ROLES.ADMIN]}>
         <NoiTruManage />
+      </ProtectedRoute>
+    ),
+  },
+
+  // ── Điểm danh thông minh (Giảng viên / Khoa / Trường / Admin) ──
+  {
+    path: "/diem-danh",
+    element: (
+      <ProtectedRoute allowedRoles={[ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN]}>
+        <DiemDanhManage />
       </ProtectedRoute>
     ),
   },
