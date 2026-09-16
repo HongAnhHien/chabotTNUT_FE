@@ -16,6 +16,7 @@ const AtlasHub = lazy(() => import("@views/atlas/AtlasHub"));
 const CmsMaterials = lazy(() => import("@views/cms/CmsMaterials"));
 const LabanMap = lazy(() => import("@views/laban/LabanMap"));
 const NoiTruManage = lazy(() => import("@views/noitru/NoiTruManage"));
+const ElearningCatalog = lazy(() => import("@views/elearning/ElearningCatalog"));
 
 // Admin
 const Dashboard       = lazy(() => import("@views/dashboard/Dashboard"));
@@ -92,6 +93,16 @@ export const appRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={[ROLES.TRUONG, ROLES.ADMIN]}>
         <NoiTruManage />
+      </ProtectedRoute>
+    ),
+  },
+
+  // ── RIAT E-learning (mọi vai đã đăng nhập) ──
+  {
+    path: "/elearning",
+    element: (
+      <ProtectedRoute>
+        <ElearningCatalog />
       </ProtectedRoute>
     ),
   },

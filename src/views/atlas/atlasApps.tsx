@@ -129,12 +129,11 @@ export const ATLAS_APPS: AtlasApp[] = [
   {
     key: "elearning",
     name: "RIAT E-learning",
-    desc: "Khoá bồi dưỡng năng lực hướng nghiệp.",
+    desc: "Đăng ký khoá bồi dưỡng năng lực hướng nghiệp.",
     icon: BookOpen,
     roles: ALL,
-    status: "soon",
-    phase: "GĐ4",
-    to: () => "/atlas",
+    status: "available",
+    to: () => "/elearning",
   },
   {
     key: "noi-tru",
