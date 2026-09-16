@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FC } from "react";
 import { Link } from "react-router";
-import { ArrowLeft, Compass, Loader2, GitBranch, Star, Target, Route as RouteIcon, X, MapPin } from "lucide-react";
+import { ArrowLeft, Compass, Loader2, GitBranch, Star, Target, Route as RouteIcon, X, MapPin, Briefcase } from "lucide-react";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 import { useAuthStore } from "@/views/pages/stores/auth_store";
 
@@ -11,6 +11,8 @@ interface GiaiDoan { giai_doan: number; ten: string; thoi_diem?: string | null; 
 interface Nghe { ten_vi: string; mo_ta?: string | null; nhom_nganh?: string | null; do_hot?: number | null; plo_can: string[]; }
 interface Curriculum { nganh: { id: string; ma_nganh: string; ten_nganh: string; khoa_tuyen?: string | null; tong_tc?: number | null; }; khoi: string[]; plo: Plo[]; hoc_phan: HocPhan[]; giai_doan: GiaiDoan[]; nghe: Nghe[]; }
 interface DinhVi { available: boolean; message?: string; gpa_10?: number | null; gpa_4?: number | null; tc_tich_luy?: number | null; canh_cao?: string; completed: string[]; mon_no: string[]; da_hoc_count: number; }
+interface AdvisorCareer { ten_vi: string; do_hot?: number | null; match_percent: number; plo_co: string[]; plo_thieu: string[]; goi_y_mon: { ma_mon: string; ten_mon?: string | null; hoc_ky?: number | null; plo: string }[]; }
+interface TuVanNghe { available: boolean; message?: string; achieved_plo?: string[]; careers?: AdvisorCareer[]; }
 
 const STT = {
   done:   { label: "✓ Đã học", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300", edge: "border-l-4 !border-l-emerald-500" },
@@ -39,6 +41,8 @@ const LabanMap: FC = () => {
   const [selected, setSelected] = useState<HocPhan | null>(null);
   const [pos, setPos] = useState<DinhVi | null>(null);
   const [posLoading, setPosLoading] = useState(false);
+  const [advisor, setAdvisor] = useState<TuVanNghe | null>(null);
+  const [advisorLoading, setAdvisorLoading] = useState(false);
 
   useEffect(() => {
     axiosInstance.get("/laban/nganh")
@@ -57,6 +61,7 @@ const LabanMap: FC = () => {
     setLoadingCur(true);
     setSelected(null);
     setPos(null);
+    setAdvisor(null);
     axiosInstance.get(`/laban/nganh/${nganhId}/curriculum`)
       .then((res) => setCur(res.data?.data ?? null))
       .catch(() => setError("Không tải được bản đồ CTĐT."))
@@ -89,6 +94,15 @@ const LabanMap: FC = () => {
     if (pos.completed.includes(h.ma_mon)) return "done";
     if (pos.mon_no.includes(h.ma_mon)) return "no";
     return h.tien_quyet_ma.every((m) => pos.completed.includes(m)) ? "ready" : "locked";
+  };
+
+  const loadAdvisor = () => {
+    setAdvisorLoading(true);
+    setAdvisor(null);
+    axiosInstance.get("/laban/tu-van-nghe", { params: { nganh_id: nganhId } })
+      .then((r) => setAdvisor(r.data?.data ?? null))
+      .catch(() => setAdvisor({ available: false, message: "Không lấy được cố vấn nghề." }))
+      .finally(() => setAdvisorLoading(false));
   };
 
   return (
@@ -137,10 +151,16 @@ const LabanMap: FC = () => {
                   <span>{cur.hoc_phan.length} học phần · {cur.plo.length} PLO</span>
                 </p>
               </div>
-              <button onClick={loadPos} disabled={posLoading}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50">
-                <MapPin className="h-4 w-4" /> {posLoading ? "Đang định vị…" : "Định vị của tôi"}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={loadPos} disabled={posLoading}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50">
+                  <MapPin className="h-4 w-4" /> {posLoading ? "Đang định vị…" : "Định vị của tôi"}
+                </button>
+                <button onClick={loadAdvisor} disabled={advisorLoading}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-teal-600 bg-white px-3.5 py-2 text-sm font-semibold text-teal-700 transition hover:bg-teal-50 disabled:opacity-50 dark:border-teal-500/50 dark:bg-slate-900 dark:text-teal-300 dark:hover:bg-teal-500/10">
+                  <Briefcase className="h-4 w-4" /> {advisorLoading ? "Đang phân tích…" : "Cố vấn nghề nghiệp"}
+                </button>
+              </div>
             </div>
 
             {/* L2 — Định vị sinh viên (dữ liệu điểm thật từ Portal) */}
@@ -306,6 +326,49 @@ const LabanMap: FC = () => {
                   ))}
                 </ul>
               </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* L3 — Cố vấn nghề nghiệp */}
+      {advisor && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" onClick={() => setAdvisor(null)}>
+          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
+          <div className="relative z-10 max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setAdvisor(null)} className="absolute right-4 top-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"><X className="h-5 w-5" /></button>
+            <div className="flex items-center gap-2 text-lg font-bold"><Briefcase className="h-5 w-5 text-teal-600" /> Cố vấn nghề nghiệp</div>
+            {!advisor.available ? (
+              <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">{advisor.message}</p>
+            ) : (
+              <>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Xếp hạng theo mức khớp giữa năng lực bạn đã tích luỹ và yêu cầu từng nghề — chỉ dựa trên dữ liệu học vụ thật của bạn.</p>
+                <div className="mt-4 flex flex-col gap-4">
+                  {advisor.careers?.map((c) => (
+                    <div key={c.ten_vi} className="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{c.ten_vi}</h3>
+                          {c.do_hot != null && <span className="flex text-amber-500">{Array.from({ length: Math.min(5, c.do_hot) }).map((_, i) => <Star key={i} className="h-3 w-3 fill-current" />)}</span>}
+                        </div>
+                        <span className="shrink-0 text-lg font-bold tabular-nums text-teal-700 dark:text-teal-300">{c.match_percent}%</span>
+                      </div>
+                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"><div className="h-full rounded-full bg-teal-500" style={{ width: `${c.match_percent}%` }} /></div>
+                      {c.plo_co.length > 0 && <div className="mt-3 text-xs"><span className="font-semibold text-emerald-600">Đã có: </span>{c.plo_co.map((p) => <span key={p} title={ploMap[p]} className="mr-1 inline-block rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">{p}</span>)}</div>}
+                      {c.plo_thieu.length > 0 && <div className="mt-1.5 text-xs"><span className="font-semibold text-amber-600">Còn thiếu: </span>{c.plo_thieu.map((p) => <span key={p} title={ploMap[p]} className="mr-1 inline-block rounded bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">{p}</span>)}</div>}
+                      {c.goi_y_mon.length > 0 && (
+                        <div className="mt-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50">
+                          <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Gợi ý học để lấp khoảng trống</div>
+                          <ul className="mt-1.5 flex flex-col gap-1 text-sm">
+                            {c.goi_y_mon.map((m) => <li key={m.ma_mon} className="flex items-center gap-2"><span className="font-mono text-xs text-slate-500">{m.ma_mon}</span> <span className="flex-1 truncate">{m.ten_mon}</span> <span className="shrink-0 rounded bg-teal-50 px-1.5 py-0.5 text-[10px] text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">{m.plo}</span></li>)}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {(advisor.careers?.length ?? 0) === 0 && <p className="text-sm text-slate-400">Ngành này chưa khai báo nghề đích trong La bàn.</p>}
+                </div>
+              </>
             )}
           </div>
         </div>
