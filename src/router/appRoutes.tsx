@@ -18,6 +18,8 @@ const LabanMap = lazy(() => import("@views/laban/LabanMap"));
 const NoiTruManage = lazy(() => import("@views/noitru/NoiTruManage"));
 const DiemDanhManage = lazy(() => import("@views/diemdanh/DiemDanhManage"));
 const EnrollFace = lazy(() => import("@views/diemdanh/EnrollFace"));
+const QuetDienThoai = lazy(() => import("@views/diemdanh/QuetDienThoai"));
+const WebGISView = lazy(() => import("@views/webgis/WebGISView"));
 const ElearningCatalog = lazy(() => import("@views/elearning/ElearningCatalog"));
 
 // Admin
@@ -113,6 +115,24 @@ export const appRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={[ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN]}>
         <EnrollFace />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/diem-danh/quet/:buoiId",
+    element: (
+      <ProtectedRoute allowedRoles={[ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN]}>
+        <QuetDienThoai />
+      </ProtectedRoute>
+    ),
+  },
+
+  // ── WebGIS Atlas TNUT (cán bộ) ──
+  {
+    path: "/webgis",
+    element: (
+      <ProtectedRoute allowedRoles={[ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN]}>
+        <WebGISView />
       </ProtectedRoute>
     ),
   },

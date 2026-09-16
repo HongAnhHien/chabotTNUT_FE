@@ -9,6 +9,7 @@ import {
   BookOpen,
   Building2,
   Network,
+  Map,
   ShieldCheck,
   School,
   FolderTree,
@@ -133,6 +134,15 @@ export const ATLAS_APPS: AtlasApp[] = [
     roles: ALL,
     status: "available",
     to: () => "/elearning",
+  },
+  {
+    key: "webgis",
+    name: "WebGIS Atlas TNUT",
+    desc: "Bản đồ số: cơ sở, phân bố sinh viên ngoại trú.",
+    icon: Map,
+    roles: STAFF,
+    status: "available",
+    to: () => "/webgis",
   },
   {
     key: "noi-tru",

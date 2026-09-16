@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FC } from "react";
 import { Link } from "react-router";
-import { ArrowLeft, Camera, Loader2, CheckCircle2, Clock, XCircle, FileText, Users, RefreshCcw, PlayCircle, Lock, ScanFace, Download } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, CheckCircle2, Clock, XCircle, FileText, Users, RefreshCcw, PlayCircle, Lock, ScanFace, Download, Smartphone } from "lucide-react";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 
 // ── Kiểu dữ liệu (khớp API /diem-danh & /teacher) ──
@@ -187,7 +187,10 @@ const DiemDanhManage: FC = () => {
                 <div className="font-semibold">{buoi.ma_mon} · {buoi.ten_lop ?? buoi.lop}</div>
                 <div className="text-xs text-slate-500 dark:text-slate-400">Phòng {buoi.phong ?? "—"} · {buoi.ngay}{buoi.tiet ? ` · tiết ${buoi.tiet}` : ""} · {buoi.trang_thai === "dang_mo" ? "đang mở" : "đã đóng"}</div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {buoi.trang_thai === "dang_mo" && (
+                  <Link to={`/diem-danh/quet/${buoi.id}`} className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"><Smartphone className="h-4 w-4" /> Điểm danh ĐT</Link>
+                )}
                 <button onClick={() => xuatBuoiExcel(buoi, banGhi)} className="inline-flex items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-sm font-medium text-teal-700 hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-teal-300"><Download className="h-4 w-4" /> Xuất Excel</button>
                 {buoi.trang_thai === "dang_mo" ? (
                   <button onClick={dongBuoi} disabled={busy} className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-700"><Lock className="h-4 w-4" /> Đóng buổi</button>
