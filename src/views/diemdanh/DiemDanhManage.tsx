@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FC } from "react";
 import { Link } from "react-router";
-import { ArrowLeft, Camera, Loader2, CheckCircle2, Clock, XCircle, FileText, Users, RefreshCcw, PlayCircle, Lock, ScanFace } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, CheckCircle2, Clock, XCircle, FileText, Users, RefreshCcw, PlayCircle, Lock, ScanFace, Download } from "lucide-react";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 
 // ── Kiểu dữ liệu (khớp API /diem-danh & /teacher) ──
@@ -27,6 +27,45 @@ const STATUS: Record<TrangThai, { label: string; cls: string; icon: FC<{ classNa
   phep:   { label: "Có phép", cls: "bg-slate-100 text-slate-600 dark:bg-slate-700/40 dark:text-slate-300", icon: FileText },
 };
 const CYCLE: TrangThai[] = ["co_mat", "muon", "vang", "phep"];
+
+// ── Xuất Excel (.xls qua bảng HTML — không thêm thư viện, mở được bằng Excel) ──
+const esc = (s: unknown) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+function downloadXls(filename: string, tableHtml: string) {
+  const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>${tableHtml}</body></html>`;
+  const blob = new Blob(["﻿" + html], { type: "application/vnd.ms-excel;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function xuatBuoiExcel(buoi: Buoi, banGhi: BanGhi[]) {
+  const fmtTime = (t?: string | null) => (t ? new Date(t).toLocaleString("vi-VN") : "");
+  const rows = [...banGhi]
+    .sort((a, b) => (a.ma_sinh_vien ?? "").localeCompare(b.ma_sinh_vien ?? ""))
+    .map((b, i) => `<tr>
+      <td>${i + 1}</td><td>${esc(b.ma_sinh_vien)}</td><td>${esc(b.ho_ten)}</td><td>${esc(b.ma_lop)}</td>
+      <td>${esc(STATUS[b.trang_thai]?.label ?? b.trang_thai)}</td><td>${esc(fmtTime(b.thoi_diem))}</td>
+      <td>${esc(b.sua_tay ? "GV sửa tay" : b.nguon === "camera_ai" ? "Camera AI" : b.nguon)}</td><td>${esc(b.ghi_chu)}</td>
+    </tr>`).join("");
+
+  const meta = `<table border="0">
+    <tr><td colspan="8"><b>BẢNG ĐIỂM DANH · PIAI-TNUT</b></td></tr>
+    <tr><td>Môn</td><td>${esc(buoi.ma_mon)}</td><td>Lớp</td><td>${esc(buoi.ten_lop ?? buoi.lop)}</td><td>Phòng</td><td>${esc(buoi.phong)}</td><td>Ngày</td><td>${esc(buoi.ngay)}${buoi.tiet ? " · tiết " + esc(buoi.tiet) : ""}</td></tr>
+    <tr><td>Tổng SV</td><td>${buoi.tong_sv}</td><td>Có mặt</td><td>${buoi.so_co_mat + buoi.so_muon}</td><td>Muộn</td><td>${buoi.so_muon}</td><td>Vắng / Phép</td><td>${buoi.so_vang} / ${buoi.so_phep}</td></tr>
+    <tr><td>Tỉ lệ có mặt</td><td>${buoi.ty_le_co_mat}%</td></tr>
+  </table><br/>`;
+
+  const table = `<table border="1">
+    <thead><tr><th>STT</th><th>Mã SV</th><th>Họ tên</th><th>Lớp</th><th>Trạng thái</th><th>Thời điểm</th><th>Nguồn</th><th>Ghi chú</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  const safe = (s?: string | null) => (s ?? "").replace(/[^\w-]+/g, "");
+  downloadXls(`diemdanh_${safe(buoi.ma_mon)}_${safe(buoi.lop ?? buoi.ten_lop)}_${safe(buoi.ngay)}.xls`, meta + table);
+}
 
 const Stat: FC<{ label: string; value: number | string; tone?: string }> = ({ label, value, tone }) => (
   <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -148,11 +187,14 @@ const DiemDanhManage: FC = () => {
                 <div className="font-semibold">{buoi.ma_mon} · {buoi.ten_lop ?? buoi.lop}</div>
                 <div className="text-xs text-slate-500 dark:text-slate-400">Phòng {buoi.phong ?? "—"} · {buoi.ngay}{buoi.tiet ? ` · tiết ${buoi.tiet}` : ""} · {buoi.trang_thai === "dang_mo" ? "đang mở" : "đã đóng"}</div>
               </div>
-              {buoi.trang_thai === "dang_mo" ? (
-                <button onClick={dongBuoi} disabled={busy} className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-700"><Lock className="h-4 w-4" /> Đóng buổi</button>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-500 dark:bg-slate-800"><Lock className="h-4 w-4" /> Đã đóng</span>
-              )}
+              <div className="flex items-center gap-2">
+                <button onClick={() => xuatBuoiExcel(buoi, banGhi)} className="inline-flex items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-sm font-medium text-teal-700 hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-teal-300"><Download className="h-4 w-4" /> Xuất Excel</button>
+                {buoi.trang_thai === "dang_mo" ? (
+                  <button onClick={dongBuoi} disabled={busy} className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-700"><Lock className="h-4 w-4" /> Đóng buổi</button>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-500 dark:bg-slate-800"><Lock className="h-4 w-4" /> Đã đóng</span>
+                )}
+              </div>
             </div>
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat label="Tổng SV" value={buoi.tong_sv} />
