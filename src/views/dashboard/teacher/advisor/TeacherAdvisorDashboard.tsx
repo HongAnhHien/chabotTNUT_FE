@@ -1,10 +1,10 @@
 import { type FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Users, MessageCircle, AlertTriangle, GraduationCap, Loader2, ChevronRight, ShieldAlert } from 'lucide-react';
+import { Users, MessageCircle, AlertTriangle, GraduationCap, Loader2, ChevronRight, ShieldAlert, Activity, Hash, Layers } from 'lucide-react';
 import AdvisorApi from '@/infra/chat/advisor_api';
 import { ProxyPermissionError } from '@/infra/api/checkProxyError';
-import type { IClassRiskResponse, IAdoptionRateResponse, IRiskOverviewResponse } from '@/infra/api/interfaces/IAdvisor';
+import type { IClassRiskResponse, IAdoptionRateResponse, IRiskOverviewResponse, IStudentActivityResponse, ITopKeywordsResponse, ITopicGroupsResponse } from '@/infra/api/interfaces/IAdvisor';
 import { riskTheme, RISK_THEME } from './riskTheme';
 import CSS from './advisor.styles';
 
@@ -13,11 +13,20 @@ function initials(name: string) {
   return (parts.pop()?.[0] ?? '?').toUpperCase();
 }
 
+function fmtTime(s?: string | null) {
+  if (!s) return '';
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? s : d.toLocaleString('vi-VN');
+}
+
 const TeacherAdvisorDashboard: FC = () => {
   const navigate = useNavigate();
   const [classRisk, setClassRisk] = useState<IClassRiskResponse['data'] | null>(null);
   const [adoption,  setAdoption]  = useState<IAdoptionRateResponse['data'] | null>(null);
   const [overview,  setOverview]  = useState<IRiskOverviewResponse['data'] | null>(null);
+  const [activity,  setActivity]  = useState<IStudentActivityResponse['data'] | null>(null);
+  const [keywords,  setKeywords]  = useState<ITopKeywordsResponse['data']['keywords']>([]);
+  const [topics,    setTopics]    = useState<ITopicGroupsResponse['data']['groups']>([]);
   const [error,     setError]     = useState<string | null>(null);
   const [loading,   setLoading]   = useState(true);
 
@@ -34,7 +43,13 @@ const TeacherAdvisorDashboard: FC = () => {
 
     const adoptionPromise = AdvisorApi.getAdoptionRate().then(a => setAdoption(a.data));
 
-    Promise.allSettled([classRiskPromise, adoptionPromise])
+    // Tầng 3 — thống kê sử dụng chatbot (đọc analytics.db nội bộ, nhanh & không đụng Portal).
+    // Best-effort: lỗi/thiếu quyền một mục không được làm hỏng dashboard chính.
+    const activityPromise = AdvisorApi.getStudentActivity().then(a => setActivity(a.data)).catch(() => {});
+    const keywordsPromise = AdvisorApi.getTopKeywords(30, 12).then(k => setKeywords(k.data.keywords ?? [])).catch(() => {});
+    const topicsPromise   = AdvisorApi.getTopicGroups().then(t => setTopics(t.data.groups ?? [])).catch(() => {});
+
+    Promise.allSettled([classRiskPromise, adoptionPromise, activityPromise, keywordsPromise, topicsPromise])
       .then(results => {
         for (const r of results) {
           if (r.status === 'rejected' && r.reason instanceof ProxyPermissionError) {
@@ -99,7 +114,8 @@ const TeacherAdvisorDashboard: FC = () => {
 
   const students = [...(classRisk.students ?? [])].sort((a, b) => b.risk.score - a.risk.score);
 
-  const atRiskPct = overview ? overview.at_risk_rate : (summary.can_tu_van_som + summary.nguy_co_cao) / classRisk.total * 100;
+  const atRiskCount = (summary.can_tu_van_som ?? 0) + (summary.nguy_co_cao ?? 0);
+  const atRiskPct = classRisk.total > 0 ? atRiskCount / classRisk.total * 100 : 0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -118,6 +134,11 @@ const TeacherAdvisorDashboard: FC = () => {
             <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)' }}>
               Học kỳ {classRisk.nhhk} · {classRisk.total} sinh viên phụ trách
             </p>
+            {overview?.last_updated && (
+              <p style={{ margin: '3px 0 0', fontSize: '0.7rem', color: 'rgba(255,255,255,0.7)' }}>
+                Dữ liệu rủi ro cập nhật lúc {fmtTime(overview.last_updated)}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -151,8 +172,8 @@ const TeacherAdvisorDashboard: FC = () => {
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500 }}>SV nguy cơ</div>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.15, letterSpacing: '-0.02em' }}>{overview ? `${overview.at_risk_rate}%` : `${atRiskPct.toFixed(1)}%`}</div>
-            {overview && <div style={{ fontSize: '0.7rem', color: '#ea580c', fontWeight: 600 }}>{overview.at_risk_count} SV</div>}
+            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.15, letterSpacing: '-0.02em' }}>{atRiskPct.toFixed(1)}%</div>
+            {classRisk.total > 0 && <div style={{ fontSize: '0.7rem', color: '#ea580c', fontWeight: 600 }}>{atRiskCount} SV</div>}
           </div>
         </div>
       </div>
@@ -224,6 +245,73 @@ const TeacherAdvisorDashboard: FC = () => {
           </div>
         </div>
       </div>
+
+      {/* ── Tầng 3 · Thống kê sử dụng chatbot ── */}
+      {(activity || keywords.length > 0 || topics.length > 0) && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+          {/* Mức độ hoạt động */}
+          {activity && (
+            <div className="adv-card" style={{ padding: 20 }}>
+              <p style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', margin: '0 0 12px' }}>
+                <Activity size={15} color="#4f46e5" /> Mức độ dùng chatbot ({activity.period_days} ngày)
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {[
+                  { b: activity.active,     c: '#059669', bg: '#f0fdf4' },
+                  { b: activity.occasional, c: '#d97706', bg: '#fffbeb' },
+                  { b: activity.low,        c: '#ea580c', bg: '#fff7ed' },
+                  { b: activity.unused,     c: '#64748b', bg: '#f8fafc' },
+                ].map((x, i) => (
+                  <div key={i} style={{ background: x.bg, borderRadius: 12, padding: '10px 12px' }}>
+                    <div style={{ fontSize: '1.3rem', fontWeight: 800, color: x.c, lineHeight: 1.1 }}>{x.b.count}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>{x.b.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Từ khoá hỏi nhiều */}
+          {keywords.length > 0 && (
+            <div className="adv-card" style={{ padding: 20 }}>
+              <p style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', margin: '0 0 12px' }}>
+                <Hash size={15} color="#2563eb" /> Từ khoá sinh viên hỏi nhiều
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                {keywords.map((k, i) => (
+                  <span key={i} style={{ fontSize: '0.76rem', fontWeight: 600, color: '#334155', background: '#eef2ff', borderRadius: 20, padding: '5px 11px' }}>
+                    {k.term} <span style={{ color: '#4f46e5', fontWeight: 800 }}>{k.count}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Nhóm chủ đề */}
+          {topics.length > 0 && (
+            <div className="adv-card" style={{ padding: 20 }}>
+              <p style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', margin: '0 0 12px' }}>
+                <Layers size={15} color="#7c3aed" /> Nhóm chủ đề hỏi
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {(() => {
+                  const max = Math.max(...topics.map(t => t.count), 1);
+                  return topics.map((t, i) => (
+                    <div key={i}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', color: '#334155', fontWeight: 600 }}>
+                        <span>{t.group}</span><span style={{ color: '#7c3aed' }}>{t.count}</span>
+                      </div>
+                      <div style={{ height: 6, borderRadius: 99, background: '#f1f5f9', marginTop: 4, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${t.count / max * 100}%`, background: 'linear-gradient(90deg,#7c3aed,#a855f7)' }} />
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
