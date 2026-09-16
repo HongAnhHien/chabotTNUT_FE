@@ -17,6 +17,7 @@ const CmsMaterials = lazy(() => import("@views/cms/CmsMaterials"));
 const LabanMap = lazy(() => import("@views/laban/LabanMap"));
 const NoiTruManage = lazy(() => import("@views/noitru/NoiTruManage"));
 const DiemDanhManage = lazy(() => import("@views/diemdanh/DiemDanhManage"));
+const EnrollFace = lazy(() => import("@views/diemdanh/EnrollFace"));
 const ElearningCatalog = lazy(() => import("@views/elearning/ElearningCatalog"));
 
 // Admin
@@ -104,6 +105,14 @@ export const appRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={[ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN]}>
         <DiemDanhManage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/diem-danh/enroll",
+    element: (
+      <ProtectedRoute allowedRoles={[ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN]}>
+        <EnrollFace />
       </ProtectedRoute>
     ),
   },

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FC } from "react";
 import { Link } from "react-router";
-import { ArrowLeft, Camera, Loader2, CheckCircle2, Clock, XCircle, FileText, Users, RefreshCcw, PlayCircle, Lock } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, CheckCircle2, Clock, XCircle, FileText, Users, RefreshCcw, PlayCircle, Lock, ScanFace } from "lucide-react";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 
 // ── Kiểu dữ liệu (khớp API /diem-danh & /teacher) ──
@@ -128,10 +128,11 @@ const DiemDanhManage: FC = () => {
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="mb-5 flex items-center gap-3">
         <Link to="/atlas" className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"><ArrowLeft className="h-4 w-4" /></Link>
-        <div>
+        <div className="flex-1">
           <h1 className="flex items-center gap-2 text-lg font-bold"><Camera className="h-5 w-5 text-teal-600" /> Điểm danh thông minh</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">Điểm danh theo lớp học phần &amp; thời khoá biểu. Camera AI tự cập nhật; giảng viên chỉnh tay khi cần.</p>
         </div>
+        <Link to="/diem-danh/enroll" className="inline-flex items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-xs font-semibold text-teal-700 hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-teal-300"><ScanFace className="h-4 w-4" /> Đăng ký khuôn mặt</Link>
       </div>
 
       {error && <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">{error}</div>}
