@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FC } from "react";
 import { Link } from "react-router";
-import { ArrowLeft, Compass, Loader2, GitBranch, Star, Target, Route as RouteIcon, X } from "lucide-react";
+import { ArrowLeft, Compass, Loader2, GitBranch, Star, Target, Route as RouteIcon, X, MapPin } from "lucide-react";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 import { useAuthStore } from "@/views/pages/stores/auth_store";
 
@@ -10,6 +10,15 @@ interface HocPhan { ma_mon: string; ten_mon?: string | null; khoi: number; nhom?
 interface GiaiDoan { giai_doan: number; ten: string; thoi_diem?: string | null; muc_tieu?: string | null; hoc_phan_ma: string[]; plo_codes: string[]; du_an?: string | null; career_action?: string | null; }
 interface Nghe { ten_vi: string; mo_ta?: string | null; nhom_nganh?: string | null; do_hot?: number | null; plo_can: string[]; }
 interface Curriculum { nganh: { id: string; ma_nganh: string; ten_nganh: string; khoa_tuyen?: string | null; tong_tc?: number | null; }; khoi: string[]; plo: Plo[]; hoc_phan: HocPhan[]; giai_doan: GiaiDoan[]; nghe: Nghe[]; }
+interface DinhVi { available: boolean; message?: string; gpa_10?: number | null; gpa_4?: number | null; tc_tich_luy?: number | null; canh_cao?: string; completed: string[]; mon_no: string[]; da_hoc_count: number; }
+
+const STT = {
+  done:   { label: "✓ Đã học", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300", edge: "border-l-4 !border-l-emerald-500" },
+  no:     { label: "Nợ",       badge: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",          edge: "border-l-4 !border-l-rose-500" },
+  ready:  { label: "Sẵn sàng", badge: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300",          edge: "border-l-4 !border-l-blue-400" },
+  locked: { label: "Chưa đủ",  badge: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",         edge: "opacity-60" },
+} as const;
+type Stt = keyof typeof STT;
 
 const KHOI_STYLE = [
   { ring: "ring-blue-500/25", bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-700 dark:text-blue-300", dot: "bg-blue-500" },
@@ -28,6 +37,8 @@ const LabanMap: FC = () => {
   const [loadingCur, setLoadingCur] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<HocPhan | null>(null);
+  const [pos, setPos] = useState<DinhVi | null>(null);
+  const [posLoading, setPosLoading] = useState(false);
 
   useEffect(() => {
     axiosInstance.get("/laban/nganh")
@@ -45,6 +56,7 @@ const LabanMap: FC = () => {
     if (!nganhId) return;
     setLoadingCur(true);
     setSelected(null);
+    setPos(null);
     axiosInstance.get(`/laban/nganh/${nganhId}/curriculum`)
       .then((res) => setCur(res.data?.data ?? null))
       .catch(() => setError("Không tải được bản đồ CTĐT."))
@@ -63,6 +75,21 @@ const LabanMap: FC = () => {
     g.forEach((arr) => arr.sort((a, b) => (a.hoc_ky ?? 0) - (b.hoc_ky ?? 0)));
     return g;
   }, [cur]);
+
+  const loadPos = () => {
+    setPosLoading(true);
+    axiosInstance.get("/laban/dinh-vi")
+      .then((r) => setPos(r.data?.data ?? null))
+      .catch(() => setPos({ available: false, message: "Không lấy được định vị.", completed: [], mon_no: [], da_hoc_count: 0 }))
+      .finally(() => setPosLoading(false));
+  };
+
+  const statusOf = (h: HocPhan): Stt | null => {
+    if (!pos?.available) return null;
+    if (pos.completed.includes(h.ma_mon)) return "done";
+    if (pos.mon_no.includes(h.ma_mon)) return "no";
+    return h.tien_quyet_ma.every((m) => pos.completed.includes(m)) ? "ready" : "locked";
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
@@ -110,7 +137,33 @@ const LabanMap: FC = () => {
                   <span>{cur.hoc_phan.length} học phần · {cur.plo.length} PLO</span>
                 </p>
               </div>
+              <button onClick={loadPos} disabled={posLoading}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50">
+                <MapPin className="h-4 w-4" /> {posLoading ? "Đang định vị…" : "Định vị của tôi"}
+              </button>
             </div>
+
+            {/* L2 — Định vị sinh viên (dữ liệu điểm thật từ Portal) */}
+            {pos && !pos.available && (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">{pos.message}</div>
+            )}
+            {pos?.available && (
+              <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                  <div><div className="text-lg font-bold tabular-nums">{pos.gpa_10 ?? "—"}</div><div className="text-xs text-slate-500">GPA hệ 10</div></div>
+                  <div><div className="text-lg font-bold tabular-nums">{pos.gpa_4 ?? "—"}</div><div className="text-xs text-slate-500">GPA hệ 4</div></div>
+                  <div><div className="text-lg font-bold tabular-nums">{pos.tc_tich_luy ?? "—"}</div><div className="text-xs text-slate-500">TC tích luỹ</div></div>
+                  <div><div className="text-lg font-bold tabular-nums">{pos.da_hoc_count}</div><div className="text-xs text-slate-500">Môn đã đạt</div></div>
+                  {pos.canh_cao && <div className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">⚠ {pos.canh_cao}</div>}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-3 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-slate-800">
+                  <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Đã học</span>
+                  <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-blue-400" /> Sẵn sàng học</span>
+                  <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-slate-400" /> Chưa đủ tiên quyết</span>
+                  <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-rose-500" /> Đang nợ</span>
+                </div>
+              </div>
+            )}
 
             {loadingCur && <div className="mt-4 flex items-center gap-2 text-slate-400"><Loader2 className="h-4 w-4 animate-spin" /> Đang tải bản đồ…</div>}
 
@@ -134,15 +187,19 @@ const LabanMap: FC = () => {
                           <span className="ml-auto text-xs font-normal opacity-70">{byKhoi[k].length}</span>
                         </div>
                         <div className="flex flex-col gap-2">
-                          {byKhoi[k].map((h) => (
+                          {byKhoi[k].map((h) => {
+                            const stt = statusOf(h);
+                            return (
                             <button
                               key={h.ma_mon}
                               onClick={() => setSelected(h)}
-                              className={`rounded-xl border bg-white p-3 text-left text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ring-1 ${st.ring} border-slate-100 dark:border-slate-800 dark:bg-slate-900`}
+                              className={`rounded-xl border bg-white p-3 text-left text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ring-1 ${st.ring} border-slate-100 dark:border-slate-800 dark:bg-slate-900 ${stt ? STT[stt].edge : ""}`}
                             >
                               <div className="flex items-center justify-between gap-2">
                                 <span className="font-mono text-xs text-slate-500 dark:text-slate-400">{h.ma_mon}</span>
-                                <span className="text-[10px] text-slate-400">Kỳ {h.hoc_ky ?? "—"}</span>
+                                {stt
+                                  ? <span className={`rounded px-1.5 py-0.5 text-[9px] font-semibold ${STT[stt].badge}`}>{STT[stt].label}</span>
+                                  : <span className="text-[10px] text-slate-400">Kỳ {h.hoc_ky ?? "—"}</span>}
                               </div>
                               <div className="mt-0.5 font-medium leading-snug">{h.ten_mon}</div>
                               <div className="mt-1.5 flex flex-wrap items-center gap-1">
@@ -152,7 +209,8 @@ const LabanMap: FC = () => {
                                 {h.tien_quyet_ma.length > 0 && <span className="text-[10px] text-slate-400">◂ {h.tien_quyet_ma.join(", ")}</span>}
                               </div>
                             </button>
-                          ))}
+                            );
+                          })}
                           {byKhoi[k].length === 0 && <p className="px-1 py-2 text-xs text-slate-400">—</p>}
                         </div>
                       </div>
