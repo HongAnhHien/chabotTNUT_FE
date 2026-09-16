@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState, type FC } from "react";
+import { useEffect, useMemo, useState, type FC, type FormEvent } from "react";
 import { Link } from "react-router";
-import { ArrowLeft, Compass, Loader2, GitBranch, Star, Target, Route as RouteIcon, X, MapPin, Briefcase } from "lucide-react";
+import { ArrowLeft, Compass, Loader2, GitBranch, Star, Target, Route as RouteIcon, X, MapPin, Briefcase, MessageCircle, Send } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 import { useAuthStore } from "@/views/pages/stores/auth_store";
 
@@ -13,6 +15,7 @@ interface Curriculum { nganh: { id: string; ma_nganh: string; ten_nganh: string;
 interface DinhVi { available: boolean; message?: string; gpa_10?: number | null; gpa_4?: number | null; tc_tich_luy?: number | null; canh_cao?: string; completed: string[]; mon_no: string[]; da_hoc_count: number; }
 interface AdvisorCareer { ten_vi: string; do_hot?: number | null; match_percent: number; plo_co: string[]; plo_thieu: string[]; goi_y_mon: { ma_mon: string; ten_mon?: string | null; hoc_ky?: number | null; plo: string }[]; }
 interface TuVanNghe { available: boolean; message?: string; achieved_plo?: string[]; careers?: AdvisorCareer[]; }
+interface ChatMsg { role: "user" | "assistant"; content: string; }
 
 const STT = {
   done:   { label: "✓ Đã học", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300", edge: "border-l-4 !border-l-emerald-500" },
@@ -43,6 +46,10 @@ const LabanMap: FC = () => {
   const [posLoading, setPosLoading] = useState(false);
   const [advisor, setAdvisor] = useState<TuVanNghe | null>(null);
   const [advisorLoading, setAdvisorLoading] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMsgs, setChatMsgs] = useState<ChatMsg[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatSending, setChatSending] = useState(false);
 
   useEffect(() => {
     axiosInstance.get("/laban/nganh")
@@ -62,6 +69,8 @@ const LabanMap: FC = () => {
     setSelected(null);
     setPos(null);
     setAdvisor(null);
+    setChatMsgs([]);
+    setChatOpen(false);
     axiosInstance.get(`/laban/nganh/${nganhId}/curriculum`)
       .then((res) => setCur(res.data?.data ?? null))
       .catch(() => setError("Không tải được bản đồ CTĐT."))
@@ -103,6 +112,31 @@ const LabanMap: FC = () => {
       .then((r) => setAdvisor(r.data?.data ?? null))
       .catch(() => setAdvisor({ available: false, message: "Không lấy được cố vấn nghề." }))
       .finally(() => setAdvisorLoading(false));
+  };
+
+  const openChat = () => {
+    setChatOpen(true);
+    if (chatMsgs.length === 0) {
+      setChatMsgs([{ role: "assistant", content: "Chào bạn 👋 Mình là **Cố vấn nghề nghiệp TNUT**. Bạn có thể hỏi kiểu *“em nên theo hướng nào?”* hay *“để làm kỹ sư vi mạch em cần học gì?”* — mình tư vấn dựa trên chương trình đào tạo và kết quả học tập thật của bạn." }]);
+    }
+  };
+
+  const sendChat = async (e?: FormEvent) => {
+    e?.preventDefault();
+    const text = chatInput.trim();
+    if (!text || chatSending) return;
+    const next: ChatMsg[] = [...chatMsgs, { role: "user", content: text }];
+    setChatMsgs(next);
+    setChatInput("");
+    setChatSending(true);
+    try {
+      const r = await axiosInstance.post("/laban/tu-van-chat", { nganh_id: nganhId, message: text, history: chatMsgs.slice(-6) });
+      setChatMsgs([...next, { role: "assistant", content: r.data?.data?.reply ?? "…" }]);
+    } catch {
+      setChatMsgs([...next, { role: "assistant", content: "Xin lỗi, có lỗi khi gọi cố vấn. Bạn thử lại nhé." }]);
+    } finally {
+      setChatSending(false);
+    }
   };
 
   return (
@@ -159,6 +193,10 @@ const LabanMap: FC = () => {
                 <button onClick={loadAdvisor} disabled={advisorLoading}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-teal-600 bg-white px-3.5 py-2 text-sm font-semibold text-teal-700 transition hover:bg-teal-50 disabled:opacity-50 dark:border-teal-500/50 dark:bg-slate-900 dark:text-teal-300 dark:hover:bg-teal-500/10">
                   <Briefcase className="h-4 w-4" /> {advisorLoading ? "Đang phân tích…" : "Cố vấn nghề nghiệp"}
+                </button>
+                <button onClick={openChat}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
+                  <MessageCircle className="h-4 w-4" /> Hỏi cố vấn nghề
                 </button>
               </div>
             </div>
@@ -370,6 +408,36 @@ const LabanMap: FC = () => {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* L3+ — Chatbot hội thoại tư vấn nghề */}
+      {chatOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4" onClick={() => setChatOpen(false)}>
+          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
+          <div className="relative z-10 flex h-[82vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:h-[70vh] sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+              <div className="flex items-center gap-2 font-semibold"><MessageCircle className="h-5 w-5 text-teal-600" /> Cố vấn nghề nghiệp AI</div>
+              <button onClick={() => setChatOpen(false)} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="flex-1 space-y-3 overflow-y-auto p-4">
+              {chatMsgs.map((m, i) => (
+                <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm ${m.role === "user" ? "bg-teal-600 text-white" : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100"}`}>
+                    {m.role === "assistant"
+                      ? <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-headings:my-1"><ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown></div>
+                      : <span className="whitespace-pre-wrap">{m.content}</span>}
+                  </div>
+                </div>
+              ))}
+              {chatSending && <div className="flex justify-start"><div className="rounded-2xl bg-slate-100 px-3.5 py-2 text-sm text-slate-400 dark:bg-slate-800"><Loader2 className="mr-1 inline h-4 w-4 animate-spin" /> đang soạn…</div></div>}
+            </div>
+            <form onSubmit={sendChat} className="flex gap-2 border-t border-slate-200 p-3 dark:border-slate-800">
+              <input value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Hỏi về nghề nghiệp, hướng đi…"
+                className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              <button type="submit" disabled={chatSending} className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50"><Send className="h-4 w-4" /></button>
+            </form>
           </div>
         </div>
       )}
