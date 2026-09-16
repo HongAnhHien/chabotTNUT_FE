@@ -42,7 +42,7 @@ export const handleApiError = (error: unknown, showToast = true): IApiError => {
   if (axiosError?.request) {
     const networkError: IApiError = {
       success: false,
-      message: 'Không thể kết nối đến server. Vui lòng kiểm tra mạng.',
+      message: 'Chưa kết nối được máy chủ hệ thống. Máy chủ có thể đang tắt/khởi động lại — vui lòng thử lại sau, hoặc liên hệ phòng CNTT nếu kéo dài.',
       statusCode: 0,
     };
     if (showToast) toast.error(networkError.message);

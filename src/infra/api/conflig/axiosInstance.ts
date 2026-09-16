@@ -267,7 +267,7 @@ axiosInstance.interceptors.response.use(
     // ============================================
     if (!error.response) {
       toast.error(
-        "Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng."
+        "Chưa kết nối được máy chủ hệ thống. Máy chủ có thể đang tắt/khởi động lại — vui lòng thử lại sau, hoặc liên hệ phòng CNTT nếu kéo dài."
       );
       return Promise.reject(error);
     }
