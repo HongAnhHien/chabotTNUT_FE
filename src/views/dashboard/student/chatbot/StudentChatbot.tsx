@@ -7,6 +7,7 @@ import ChatHistory from '@/views/dashboard/teacher/chatbot/ChatHistory';
 import ChatContent from '@/views/dashboard/teacher/chatbot/ChatContent';
 import ChatInput from '@/views/dashboard/teacher/chatbot/ChatInput';
 import RatingCard from '@/views/dashboard/teacher/chatbot/RatingCard';
+import StudyProgressPanel from '@/views/dashboard/student/chatbot/StudyProgressPanel';
 import type { ChatMessage } from '@/views/dashboard/teacher/chatbot/types';
 
 import ChatApi from '@/infra/chat/chat_api';
@@ -209,6 +210,9 @@ const StudentChatbot: FC = () => {
       setLoadingSubjects(false);
     }
   }, []);
+
+  // Nạp danh sách môn ngay khi vào trang để panel "Mức thành thạo" có dữ liệu.
+  useEffect(() => { loadSubjects(); }, [loadSubjects]);
 
   const handleNewChat = () => {
     if (subjects.length === 0) loadSubjects();
@@ -506,6 +510,9 @@ const StudentChatbot: FC = () => {
             </div>
           )}
         </div>
+
+        {/* ── Panel tiến độ học tập (cá nhân hoá) — hiện khi đang trong 1 cuộc trò chuyện ── */}
+        {currentSession && <StudyProgressPanel subjects={subjects} />}
       </div>
 
       {/* ── Subject picker modal ── */}
