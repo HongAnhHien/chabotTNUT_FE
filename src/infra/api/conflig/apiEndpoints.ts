@@ -169,4 +169,8 @@ export const API_ENDPOINTS = {
   FILES: {
     DOWNLOAD: (fileId: string) => `/files/${fileId}/download`,
   },
+
+  OCR: {
+    EXTRACT: '/ocr', // đọc ảnh đề → text (AI vision)
+  },
 } as const;
