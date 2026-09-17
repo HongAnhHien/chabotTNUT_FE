@@ -47,12 +47,9 @@ const Login: FC = () => {
     defaultValues: { username: '', password: '' },
   });
 
-  // Tài khoản mẫu để bấm điền nhanh (demo/pilot).
+  // Chỉ tài khoản DEMO (admin local) — KHÔNG để mật khẩu thật của GV/SV.
   const SAMPLE_ACCOUNTS: { label: string; u: string; p: string }[] = [
-    { label: 'Quản trị (admin)', u: 'admin', p: 'admin123' },
-    { label: 'Giáo viên', u: '40102', p: 'hai123' },
-    { label: 'Sinh viên K60', u: 'k245520207032', p: '09092006' },
-    { label: 'Sinh viên K61', u: 'k255520207218', p: '20070803' },
+    { label: 'Tài khoản demo', u: 'admin', p: 'admin123' },
   ];
   const fillAccount = (u: string, p: string) => {
     setValue('username', u, { shouldValidate: true });
@@ -275,7 +272,7 @@ const Login: FC = () => {
             {/* Tài khoản mẫu — bấm để điền nhanh (demo/pilot) */}
             <div style={{ marginTop: '1rem', border: '1px solid #e5e7eb', borderRadius: 12, padding: '0.85rem 1rem', background: '#f8fafc' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', marginBottom: 8 }}>
-                Tài khoản mẫu <span style={{ fontWeight: 400, color: '#94a3b8' }}>(bấm để điền nhanh)</span>
+                Tài khoản demo <span style={{ fontWeight: 400, color: '#94a3b8' }}>(bấm để điền nhanh)</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {SAMPLE_ACCOUNTS.map((a) => (
