@@ -52,6 +52,7 @@ const Login: FC = () => {
   const SAMPLE_ACCOUNTS: { label: string; u: string; p: string }[] = [
     { label: 'Quản trị (admin)', u: 'admin', p: 'admin123' },
     { label: 'Giáo viên', u: '40102', p: 'hai123' },
+    { label: 'Sinh viên K59', u: 'K235520207027', p: '0378891141' },
     { label: 'Sinh viên K60', u: 'k245520207032', p: '09092006' },
     { label: 'Sinh viên K61', u: 'k255520207218', p: '20070803' },
   ];
