@@ -38,6 +38,18 @@ export interface ISubjectMasteryResponse {
   data: Record<string, ISubjectMastery>;
 }
 
+export interface IStudyStats {
+  streak: number;
+  week: {
+    bai_da_hoc: number;
+    do_chinh_xac: number | null;   // % · null nếu chưa có quiz tuần này
+    thoi_gian_giay: number;         // giây (từ thời gian làm quiz)
+    so_voi_tuan_truoc: number;      // %
+    bars: { d: string; v: number }[];
+  };
+}
+export interface IStudyStatsResponse { success: boolean; data: IStudyStats; }
+
 class StudentApi {
   async getAssignments(): Promise<IStudentAssignmentsResponse> {
     const res = await axiosInstance.get<IStudentAssignmentsResponse>(
@@ -87,6 +99,11 @@ class StudentApi {
 
   async getSubjectMastery(): Promise<ISubjectMasteryResponse> {
     const res = await axiosInstance.get<ISubjectMasteryResponse>(API_ENDPOINTS.STUDENT.MASTERY);
+    return res.data;
+  }
+
+  async getStudyStats(): Promise<IStudyStatsResponse> {
+    const res = await axiosInstance.get<IStudyStatsResponse>(API_ENDPOINTS.STUDENT.STUDY_STATS);
     return res.data;
   }
 

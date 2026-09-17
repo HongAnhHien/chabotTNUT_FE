@@ -1,7 +1,7 @@
 import { type FC, useEffect, useState } from 'react';
 import { Flame, Check } from 'lucide-react';
 import type { IStudentSubject } from '@/infra/api/interfaces/IStudent';
-import StudentApi, { type ISubjectMastery } from '@/infra/student/student_api';
+import StudentApi, { type ISubjectMastery, type IStudyStats } from '@/infra/student/student_api';
 
 // Panel "Tiến độ học tập" bên phải khung chat SV — thể hiện cá nhân hoá học tập:
 // streak · thống kê tuần · mức thành thạo từng môn · lộ trình hôm nay.
@@ -19,10 +19,12 @@ function barColor(p: number): string {
   return '#c0392b';
 }
 
-const WEEK = [
-  { d: 'T2', v: 30 }, { d: 'T3', v: 52 }, { d: 'T4', v: 44 },
-  { d: 'T5', v: 70 }, { d: 'T6', v: 38 }, { d: 'T7', v: 18 }, { d: 'CN', v: 86 },
-];
+function fmtThoiGian(giay: number): string {
+  if (!giay) return '—';
+  const phut = Math.round(giay / 60);
+  if (phut < 60) return `${phut}p`;
+  return `${Math.floor(phut / 60)}g ${phut % 60}p`;
+}
 const ROADMAP = [
   { t: 'Ổn định nghĩa đạo hàm', done: true },
   { t: 'Quy tắc chuỗi — lý thuyết', done: true },
@@ -39,9 +41,13 @@ const Stat: FC<{ v: string; l: string; tone?: string }> = ({ v, l, tone }) => (
 
 const StudyProgressPanel: FC<Props> = ({ subjects }) => {
   const [mst, setMst] = useState<Record<string, ISubjectMastery>>({});
+  const [stats, setStats] = useState<IStudyStats | null>(null);
   useEffect(() => {
     StudentApi.getSubjectMastery().then(r => setMst(r.data ?? {})).catch(() => {});
+    StudentApi.getStudyStats().then(r => setStats(r.data)).catch(() => {});
   }, []);
+  const wk = stats?.week;
+  const barMax = Math.max(1, ...(wk?.bars ?? []).map(b => b.v));
   const mastery = subjects.slice(0, 8).map(s => ({ ma: s.ma_mon, ten: s.ten_mon, info: mst[s.ma_mon] as ISubjectMastery | undefined }));
 
   return (
@@ -54,31 +60,31 @@ const StudyProgressPanel: FC<Props> = ({ subjects }) => {
       `}</style>
 
       <div style={{ fontSize: '0.6rem', fontWeight: 600, color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 20, padding: '3px 10px', alignSelf: 'flex-start', lineHeight: 1.4 }}>
-        Mức thành thạo: <b style={{ color: '#0e8f63' }}>dữ liệu thật</b> · streak/tuần/lộ trình: mẫu
+Thành thạo · streak · tuần: <b style={{ color: '#0e8f63' }}>dữ liệu thật</b> · lộ trình hôm nay: mẫu
       </div>
 
       {/* Streak */}
       <div style={{ background: 'linear-gradient(135deg,#0e8f63,#12b981)', borderRadius: 16, padding: '16px', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 10px 24px -12px rgba(16,185,129,.5)' }}>
         <div>
-          <div style={{ fontSize: '1.9rem', fontWeight: 800, lineHeight: 1 }}>12</div>
+          <div style={{ fontSize: '1.9rem', fontWeight: 800, lineHeight: 1 }}>{stats?.streak ?? 0}</div>
           <div style={{ fontSize: '0.74rem', opacity: 0.92, marginTop: 3 }}>ngày học liên tục</div>
         </div>
         <Flame size={30} color="#fff" fill="rgba(255,255,255,.35)" />
       </div>
 
-      {/* Tuần này */}
+      {/* Tuần này — THẬT */}
       <div className="sai-card">
-        <p className="sai-h">Tuần này</p>
+        <p className="sai-h">Tuần này <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0, color: '#0e8f63' }}>· dữ liệu thật</span></p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <Stat v="47" l="bài đã học" />
-          <Stat v="86%" l="độ chính xác" tone="#0e8f63" />
-          <Stat v="5g 20p" l="thời gian học" />
-          <Stat v="+9%" l="so với tuần trước" tone="#0e7c8a" />
+          <Stat v={String(wk?.bai_da_hoc ?? 0)} l="hoạt động học" />
+          <Stat v={wk?.do_chinh_xac != null ? `${wk.do_chinh_xac}%` : '—'} l="độ chính xác" tone="#0e8f63" />
+          <Stat v={fmtThoiGian(wk?.thoi_gian_giay ?? 0)} l="thời gian làm quiz" />
+          <Stat v={`${(wk?.so_voi_tuan_truoc ?? 0) >= 0 ? '+' : ''}${wk?.so_voi_tuan_truoc ?? 0}%`} l="so với tuần trước" tone="#0e7c8a" />
         </div>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 5, marginTop: 12, height: 46 }}>
-          {WEEK.map((w, i) => (
+          {(wk?.bars ?? []).map((w, i) => (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: '100%', maxWidth: 16, height: `${w.v}%`, minHeight: 4, borderRadius: 4, background: i === WEEK.length - 1 ? '#0e8f63' : '#cfe6e9' }} />
+              <div style={{ width: '100%', maxWidth: 16, height: `${Math.round((w.v / barMax) * 100)}%`, minHeight: 3, borderRadius: 4, background: w.v > 0 ? '#0e8f63' : '#e6edf2' }} />
               <span style={{ fontSize: '0.56rem', color: '#94a3b8' }}>{w.d}</span>
             </div>
           ))}
