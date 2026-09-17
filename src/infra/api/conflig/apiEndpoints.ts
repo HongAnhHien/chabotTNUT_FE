@@ -173,4 +173,8 @@ export const API_ENDPOINTS = {
   OCR: {
     EXTRACT: '/ocr', // đọc ảnh đề → text (AI vision)
   },
+
+  STT: {
+    TRANSCRIBE: '/stt', // nói → text (Whisper)
+  },
 } as const;

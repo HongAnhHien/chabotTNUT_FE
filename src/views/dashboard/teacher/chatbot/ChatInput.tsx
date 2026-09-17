@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import SymbolPicker from './SymbolPicker';
 import OcrApi from '@/infra/ocr/ocr_api';
+import SttApi from '@/infra/stt/stt_api';
 
 // Web Speech API (Chrome/Edge) — không có sẵn trong type DOM mặc định
 interface ISpeechRecognition {
@@ -58,10 +59,15 @@ const ChatInput = ({
   const [ocrLoading, setOcrLoading] = useState(false);
   const [showSymbols, setShowSymbols] = useState(false);
   const [listening, setListening] = useState(false);
+  const [sttLoading, setSttLoading] = useState(false);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const recogRef = useRef<ISpeechRecognition | null>(null);
   const baseTextRef = useRef('');
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+  const webTextRef = useRef(''); // bản Web Speech tạm (xem trước + dự phòng nếu Whisper lỗi)
   const tools = role === 'teacher' ? TEACHER_TOOLS : STUDENT_TOOLS;
 
   useEffect(() => {
@@ -120,41 +126,101 @@ const ChatInput = ({
     }
   };
 
-  // Nhập bằng giọng nói (Web Speech API — Chrome/Edge). Đổ chữ vào ô chat theo thời gian thực.
-  const toggleMic = () => {
-    if (listening) { recogRef.current?.stop(); return; }
-    if (!SpeechRecognitionCtor) {
-      toast.error('Trình duyệt chưa hỗ trợ nói-thành-chữ. Hãy dùng Chrome hoặc Edge.');
-      return;
-    }
-    const rec = new SpeechRecognitionCtor();
-    rec.lang = 'vi-VN';
-    rec.continuous = true;
-    rec.interimResults = true;
-    baseTextRef.current = text ? text + ' ' : '';
-    rec.onresult = (e) => {
-      let finalStr = '', interim = '';
-      for (let i = 0; i < e.results.length; i++) {
-        const r = e.results[i];
-        if (r.isFinal) finalStr += r[0].transcript;
-        else interim += r[0].transcript;
-      }
-      setText(baseTextRef.current + finalStr + interim);
-    };
-    rec.onerror = (ev) => {
-      setListening(false);
-      if (ev.error !== 'aborted' && ev.error !== 'no-speech') {
-        toast.error(ev.error === 'not-allowed' ? 'Chưa cấp quyền micro.' : 'Lỗi thu âm, thử lại.');
-      }
-    };
-    rec.onend = () => { setListening(false); taRef.current?.focus(); };
-    recogRef.current = rec;
-    rec.start();
-    setListening(true);
-    toast('Đang nghe… nói câu hỏi của em', { icon: '🎤' });
+  // Bản xem trước tức thời bằng Web Speech (Chrome/Edge) — chạy song song lúc ghi âm,
+  // cũng là bản dự phòng nếu Whisper không dùng được (chưa có khoá / lỗi mạng).
+  const startWebSpeechPreview = () => {
+    if (!SpeechRecognitionCtor) return;
+    try {
+      const rec = new SpeechRecognitionCtor();
+      rec.lang = 'vi-VN'; rec.continuous = true; rec.interimResults = true;
+      rec.onresult = (e) => {
+        let s = '';
+        for (let i = 0; i < e.results.length; i++) s += e.results[i][0].transcript;
+        webTextRef.current = s.trim();
+        setText(baseTextRef.current + webTextRef.current);
+      };
+      rec.onerror = () => { /* im lặng — chỉ là bản xem trước */ };
+      rec.onend = () => {};
+      recogRef.current = rec;
+      rec.start();
+    } catch { /* noop */ }
   };
 
-  useEffect(() => () => { try { recogRef.current?.stop(); } catch { /* noop */ } }, []);
+  // Nhập bằng giọng nói: ghi âm mic → Whisper (backend) nhận dạng chính xác → đổ vào ô chat.
+  const toggleMic = async () => {
+    if (listening) { // đang ghi → dừng để gửi Whisper
+      try { recorderRef.current?.stop(); } catch { /* noop */ }
+      try { recogRef.current?.stop(); } catch { /* noop */ }
+      return;
+    }
+    // Không hỗ trợ ghi âm → lùi về Web Speech thuần (nếu có)
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      if (!SpeechRecognitionCtor) { toast.error('Trình duyệt chưa hỗ trợ thu âm. Hãy dùng Chrome hoặc Edge.'); return; }
+      baseTextRef.current = text ? text + ' ' : '';
+      startWebSpeechPreview();
+      setListening(true);
+      toast('Đang nghe… nói câu hỏi của em', { icon: '🎤' });
+      return;
+    }
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      toast.error('Chưa cấp quyền micro cho trình duyệt.');
+      return;
+    }
+    streamRef.current = stream;
+    baseTextRef.current = text ? text + ' ' : '';
+    webTextRef.current = '';
+    chunksRef.current = [];
+
+    const rec = new MediaRecorder(stream);
+    rec.ondataavailable = (ev) => { if (ev.data.size > 0) chunksRef.current.push(ev.data); };
+    rec.onstop = async () => {
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+      setListening(false);
+      const blob = new Blob(chunksRef.current, { type: rec.mimeType || 'audio/webm' });
+      if (blob.size < 1200) { toast('Chưa nghe rõ, thử lại nhé.', { icon: '🎤' }); return; }
+      setSttLoading(true);
+      const tid = toast.loading('Đang nhận dạng giọng nói…');
+      try {
+        const res = await SttApi.transcribe(blob, `audio.${(rec.mimeType || 'audio/webm').includes('ogg') ? 'ogg' : 'webm'}`);
+        const stt = res?.data?.text?.trim();
+        if (res?.success && stt) {
+          setText(baseTextRef.current + stt);
+          toast.success('Đã nhận dạng — kiểm tra rồi gửi nhé.', { id: tid });
+        } else if (webTextRef.current) {
+          setText(baseTextRef.current + webTextRef.current); // giữ bản xem trước
+          toast('Dùng bản nghe nhanh của trình duyệt.', { id: tid, icon: '🎤' });
+        } else {
+          toast.error(res?.message || 'Không nhận dạng được giọng nói.', { id: tid });
+        }
+      } catch (err: unknown) {
+        if (webTextRef.current) {
+          setText(baseTextRef.current + webTextRef.current);
+          toast('Dùng bản nghe nhanh của trình duyệt.', { id: tid, icon: '🎤' });
+        } else {
+          const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+          toast.error(msg || 'Nhận dạng giọng nói thất bại.', { id: tid });
+        }
+      } finally {
+        setSttLoading(false);
+        taRef.current?.focus();
+      }
+    };
+    recorderRef.current = rec;
+    rec.start();
+    startWebSpeechPreview(); // xem trước tức thời trong lúc ghi
+    setListening(true);
+    toast('Đang ghi âm… bấm lại để dừng và nhận dạng', { icon: '🎤' });
+  };
+
+  useEffect(() => () => {
+    try { recogRef.current?.stop(); } catch { /* noop */ }
+    try { recorderRef.current?.stop(); } catch { /* noop */ }
+    streamRef.current?.getTracks().forEach(t => t.stop());
+  }, []);
 
   const canSend = !!text.trim() && !isLoading && !disabled;
 
@@ -211,10 +277,10 @@ const ChatInput = ({
             style={{ width: 38, height: 38, borderRadius: 10, border: 'none', background: showSymbols ? '#eff6ff' : 'transparent', color: showSymbols ? '#2563eb' : '#64748b', cursor: disabled ? 'not-allowed' : 'pointer', display: 'grid', placeItems: 'center', transition: 'all .15s' }}>
             <Sigma size={18} />
           </button>
-          <button className="tai-icobtn" title={listening ? 'Đang nghe — bấm để dừng' : 'Nói để nhập (Chrome/Edge)'}
-            onClick={toggleMic} disabled={disabled}
-            style={{ width: 38, height: 38, borderRadius: 10, border: 'none', background: listening ? '#fee2e2' : 'transparent', color: listening ? '#dc2626' : '#64748b', cursor: disabled ? 'not-allowed' : 'pointer', display: 'grid', placeItems: 'center', transition: 'all .15s', animation: listening ? 'tai-pulse 1.1s ease-in-out infinite' : 'none' }}>
-            <Mic size={18} />
+          <button className="tai-icobtn" title={listening ? 'Đang ghi — bấm để dừng & nhận dạng' : 'Nói để nhập (Whisper)'}
+            onClick={toggleMic} disabled={disabled || sttLoading}
+            style={{ width: 38, height: 38, borderRadius: 10, border: 'none', background: listening ? '#fee2e2' : 'transparent', color: listening ? '#dc2626' : '#64748b', cursor: disabled || sttLoading ? 'not-allowed' : 'pointer', display: 'grid', placeItems: 'center', transition: 'all .15s', animation: listening ? 'tai-pulse 1.1s ease-in-out infinite' : 'none' }}>
+            {sttLoading ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Mic size={18} />}
           </button>
           {showSymbols && (
             <SymbolPicker
