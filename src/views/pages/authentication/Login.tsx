@@ -47,9 +47,13 @@ const Login: FC = () => {
     defaultValues: { username: '', password: '' },
   });
 
-  // Chỉ tài khoản DEMO (admin local) — KHÔNG để mật khẩu thật của GV/SV.
+  // Tài khoản mẫu: hiện tên user, ẨN mật khẩu trên màn hình; nút "Điền" vẫn đổ
+  // đủ user + mật khẩu để đăng nhập (Portal cần đúng mật khẩu thật của GV/SV).
   const SAMPLE_ACCOUNTS: { label: string; u: string; p: string }[] = [
-    { label: 'Tài khoản demo', u: 'admin', p: 'admin123' },
+    { label: 'Quản trị (admin)', u: 'admin', p: 'admin123' },
+    { label: 'Giáo viên', u: '40102', p: 'hai123' },
+    { label: 'Sinh viên K60', u: 'k245520207032', p: '09092006' },
+    { label: 'Sinh viên K61', u: 'k255520207218', p: '20070803' },
   ];
   const fillAccount = (u: string, p: string) => {
     setValue('username', u, { shouldValidate: true });
@@ -272,13 +276,13 @@ const Login: FC = () => {
             {/* Tài khoản mẫu — bấm để điền nhanh (demo/pilot) */}
             <div style={{ marginTop: '1rem', border: '1px solid #e5e7eb', borderRadius: 12, padding: '0.85rem 1rem', background: '#f8fafc' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', marginBottom: 8 }}>
-                Tài khoản demo <span style={{ fontWeight: 400, color: '#94a3b8' }}>(bấm để điền nhanh)</span>
+                Tài khoản mẫu <span style={{ fontWeight: 400, color: '#94a3b8' }}>(bấm để điền nhanh)</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {SAMPLE_ACCOUNTS.map((a) => (
                   <div key={a.u} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: '0.75rem' }}>
                     <span style={{ color: '#334155', flexShrink: 0, minWidth: 104 }}>{a.label}</span>
-                    <span style={{ fontFamily: 'ui-monospace, monospace', color: '#64748b', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.u} / {a.p}</span>
+                    <span style={{ fontFamily: 'ui-monospace, monospace', color: '#64748b', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.u} <span style={{ color: '#cbd5e1' }}>/ ••••••</span></span>
                     <button type="button" onClick={() => fillAccount(a.u, a.p)} style={{ flexShrink: 0, background: 'none', border: 'none', color: '#2563eb', fontWeight: 600, cursor: 'pointer', fontSize: '0.75rem', padding: '2px 4px' }}>Điền</button>
                   </div>
                 ))}
