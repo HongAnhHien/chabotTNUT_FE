@@ -991,6 +991,7 @@ const TeacherAITutors: FC = () => {
               <ChatInput
                 onSend={handleSend}
                 isLoading={streaming}
+                role="teacher"
                 placeholder="Nhập câu hỏi hoặc yêu cầu tạo đề kiểm tra..."
                 suggestions={['📝 Tạo đề kiểm tra 15 câu', '📚 Tóm tắt chương học', '❓ Gợi ý câu hỏi hay']}
               />

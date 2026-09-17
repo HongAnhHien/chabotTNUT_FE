@@ -363,6 +363,7 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
               <ChatInput
                 onSend={handleSend}
                 isLoading={streaming}
+                role="teacher"
                 suggestions={SUGGESTIONS[role]}
               />
             </>
