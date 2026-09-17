@@ -145,6 +145,7 @@ export const API_ENDPOINTS = {
     SEMESTER_SUBJECTS: (hocKy: number) => `/student/semesters/${hocKy}/subjects`,
     MASTERY:           '/student/mastery',
     STUDY_STATS:       '/student/study-stats',
+    UPCOMING_EXAMS:    '/student/upcoming-exams',
     EXAM_STATUS:       (userId: string, maMon: string) => `/chatbot/student-exam-status?user_id=${encodeURIComponent(userId)}&ma_mon=${encodeURIComponent(maMon)}`,
     DASHBOARD_OVERVIEW: (semesterFrom?: string, hocKy?: number) => {
       const params = new URLSearchParams();

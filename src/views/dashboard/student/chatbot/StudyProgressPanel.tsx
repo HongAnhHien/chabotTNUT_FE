@@ -1,7 +1,7 @@
 import { type FC, useEffect, useState } from 'react';
-import { Flame, Check } from 'lucide-react';
+import { Flame, Check, CalendarClock } from 'lucide-react';
 import type { IStudentSubject } from '@/infra/api/interfaces/IStudent';
-import StudentApi, { type ISubjectMastery, type IStudyStats } from '@/infra/student/student_api';
+import StudentApi, { type ISubjectMastery, type IStudyStats, type IUpcomingExam } from '@/infra/student/student_api';
 
 // Panel "Tiến độ học tập" bên phải khung chat SV — thể hiện cá nhân hoá học tập:
 // streak · thống kê tuần · mức thành thạo từng môn · lộ trình hôm nay.
@@ -28,8 +28,8 @@ function fmtThoiGian(giay: number): string {
 interface RoadItem { t: string; done: boolean; tag?: string }
 interface MasteryRow { ma: string; ten: string; info?: ISubjectMastery }
 
-// Sinh lộ trình hôm nay từ mức thành thạo thật + hoạt động hôm nay.
-function buildRoadmap(rows: MasteryRow[], todayCount: number): RoadItem[] {
+// Sinh lộ trình hôm nay từ mức thành thạo thật + hoạt động hôm nay + lịch thi Portal.
+function buildRoadmap(rows: MasteryRow[], todayCount: number, exams: IUpcomingExam[]): RoadItem[] {
   const status = (m: MasteryRow) => m.info?.trang_thai ?? 'chua_hoc';
   const thanhThao = rows.filter(m => (m.info?.mastery ?? 0) >= 80);
   const canOn     = rows.filter(m => status(m) === 'can_on').sort((a, b) => (a.info?.mastery ?? 0) - (b.info?.mastery ?? 0));
@@ -37,6 +37,9 @@ function buildRoadmap(rows: MasteryRow[], todayCount: number): RoadItem[] {
   const chuaHoc   = rows.filter(m => status(m) === 'chua_hoc');
 
   const items: RoadItem[] = [];
+  // Ưu tiên cao nhất: môn có lịch thi gần (≤ 21 ngày).
+  const soon = exams.find(e => e.days_left <= 21);
+  if (soon) items.push({ t: `Ôn thi ${soon.ten_mon} — còn ${soon.days_left} ngày`, done: false, tag: 'lịch thi' });
   if (thanhThao[0]) items.push({ t: `Đã vững ${thanhThao[0].ten}`, done: true });
   if (canOn[0])     items.push({ t: `Ôn lại ${canOn[0].ten} — đang yếu (${canOn[0].info?.mastery}%)`, done: false, tag: 'cần ôn' });
   if (dangHoc[0])   items.push({ t: `Luyện quiz ${dangHoc[0].ten}`, done: false, tag: '~10p' });
@@ -57,14 +60,16 @@ const Stat: FC<{ v: string; l: string; tone?: string }> = ({ v, l, tone }) => (
 const StudyProgressPanel: FC<Props> = ({ subjects }) => {
   const [mst, setMst] = useState<Record<string, ISubjectMastery>>({});
   const [stats, setStats] = useState<IStudyStats | null>(null);
+  const [exams, setExams] = useState<IUpcomingExam[]>([]);
   useEffect(() => {
     StudentApi.getSubjectMastery().then(r => setMst(r.data ?? {})).catch(() => {});
     StudentApi.getStudyStats().then(r => setStats(r.data)).catch(() => {});
+    StudentApi.getUpcomingExams().then(r => setExams(r.data ?? [])).catch(() => {});
   }, []);
   const wk = stats?.week;
   const barMax = Math.max(1, ...(wk?.bars ?? []).map(b => b.v));
   const mastery = subjects.slice(0, 8).map(s => ({ ma: s.ma_mon, ten: s.ten_mon, info: mst[s.ma_mon] as ISubjectMastery | undefined }));
-  const roadmap = buildRoadmap(mastery, stats?.today_count ?? 0);
+  const roadmap = buildRoadmap(mastery, stats?.today_count ?? 0, exams);
 
   return (
     <aside className="sai-progress">
@@ -87,6 +92,30 @@ const StudyProgressPanel: FC<Props> = ({ subjects }) => {
         </div>
         <Flame size={30} color="#fff" fill="rgba(255,255,255,.35)" />
       </div>
+
+      {/* Lịch thi sắp tới — THẬT (Portal) */}
+      {exams.length > 0 && (
+        <div className="sai-card">
+          <p className="sai-h" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><CalendarClock size={13} color="#b4661a" /> Lịch thi sắp tới <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0, color: '#0e8f63' }}>· Portal</span></p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {exams.slice(0, 3).map((e, i) => {
+              const urgent = e.days_left <= 7;
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                  <div style={{ flexShrink: 0, width: 40, textAlign: 'center', borderRadius: 9, padding: '4px 0', background: urgent ? '#f7ece0' : '#f4f7fa', border: `1px solid ${urgent ? '#e8c9a6' : '#e8eef3'}` }}>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 800, color: urgent ? '#b4661a' : '#334155', lineHeight: 1 }}>{e.days_left}</div>
+                    <div style={{ fontSize: '0.52rem', color: '#94a3b8', fontWeight: 600 }}>ngày</div>
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.ten_mon}</div>
+                    <div style={{ fontSize: '0.64rem', color: '#94a3b8' }}>{e.ngay_thi.split('-').reverse().join('/')}{e.gio_bat_dau ? ` · ${e.gio_bat_dau}` : ''}{e.phong_thi ? ` · ${e.phong_thi}` : ''}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Tuần này — THẬT */}
       <div className="sai-card">

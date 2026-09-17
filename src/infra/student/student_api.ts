@@ -51,6 +51,17 @@ export interface IStudyStats {
 }
 export interface IStudyStatsResponse { success: boolean; data: IStudyStats; }
 
+export interface IUpcomingExam {
+  ma_mon: string;
+  ten_mon: string;
+  ngay_thi: string;          // Y-m-d
+  gio_bat_dau?: string | null;
+  phong_thi?: string | null;
+  hinh_thuc_thi?: string | null;
+  days_left: number;
+}
+export interface IUpcomingExamsResponse { success: boolean; data: IUpcomingExam[]; }
+
 class StudentApi {
   async getAssignments(): Promise<IStudentAssignmentsResponse> {
     const res = await axiosInstance.get<IStudentAssignmentsResponse>(
@@ -105,6 +116,11 @@ class StudentApi {
 
   async getStudyStats(): Promise<IStudyStatsResponse> {
     const res = await axiosInstance.get<IStudyStatsResponse>(API_ENDPOINTS.STUDENT.STUDY_STATS);
+    return res.data;
+  }
+
+  async getUpcomingExams(): Promise<IUpcomingExamsResponse> {
+    const res = await axiosInstance.get<IUpcomingExamsResponse>(API_ENDPOINTS.STUDENT.UPCOMING_EXAMS);
     return res.data;
   }
 
