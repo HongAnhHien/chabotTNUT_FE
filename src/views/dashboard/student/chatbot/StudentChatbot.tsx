@@ -523,9 +523,9 @@ const StudentChatbot: FC = () => {
               <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#6d28d9,#8b5cf6)', boxShadow: '0 4px 20px rgba(109,40,217,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <BookOpen size={30} color="white" />
               </div>
-              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1e293b' }}>Chatbot cố vấn học tập</div>
+              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1e293b' }}>Chatbot trợ giảng môn học</div>
               <div style={{ fontSize: '0.8rem', color: '#64748b', textAlign: 'center', maxWidth: 300, lineHeight: 1.6 }}>
-                Chọn cuộc trò chuyện hoặc tạo mới để bắt đầu hỏi bài với trợ lý AI
+                Chọn cuộc trò chuyện hoặc tạo mới để bắt đầu hỏi bài với trợ giảng AI
               </div>
               <button
                 onClick={handleNewChat}

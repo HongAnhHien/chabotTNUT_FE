@@ -26,7 +26,6 @@ const NAV_SECTIONS = [
     label: 'Tổng quan',
     items: [
       { icon: LayoutDashboard, label: 'Hồ sơ giảng dạy',    path: '/teacher/dashboard' },
-      { icon: GraduationCap,   label: 'Cố vấn học tập',     path: '/teacher/advisor' },
     ],
   },
   {
@@ -35,6 +34,7 @@ const NAV_SECTIONS = [
       { icon: BookOpen,      label: 'Môn học',      path: '/teacher/subjects' },
       { icon: ClipboardList, label: 'Bài kiểm tra', path: '/teacher/assignments' },
       { icon: MessageCircle, label: 'Chatbot AI',   path: '/teacher/chat' },
+      { icon: GraduationCap, label: 'Cố vấn học tập', path: '/teacher/advisor' },
     ],
   },
 ];
