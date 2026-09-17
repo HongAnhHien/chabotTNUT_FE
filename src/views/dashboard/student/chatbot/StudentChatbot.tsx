@@ -11,7 +11,8 @@ import StudyProgressPanel from '@/views/dashboard/student/chatbot/StudyProgressP
 import type { ChatMessage } from '@/views/dashboard/teacher/chatbot/types';
 
 import ChatApi from '@/infra/chat/chat_api';
-import StudentApi from '@/infra/student/student_api';
+import StudentApi, { type ISubjectMastery } from '@/infra/student/student_api';
+import StudentTools from '@/views/dashboard/student/chatbot/StudentTools';
 import type { IChatSession } from '@/infra/api/interfaces/IChat';
 import type { IStudentSubject, IStudentExamStatusResponse } from '@/infra/api/interfaces/IStudent';
 import { Button } from '@/components/ui/button';
@@ -214,6 +215,10 @@ const StudentChatbot: FC = () => {
   // Nạp danh sách môn ngay khi vào trang để panel "Mức thành thạo" có dữ liệu.
   useEffect(() => { loadSubjects(); }, [loadSubjects]);
 
+  // Mức thành thạo để hiện % ở header môn.
+  const [masteryMap, setMasteryMap] = useState<Record<string, ISubjectMastery>>({});
+  useEffect(() => { StudentApi.getSubjectMastery().then(r => setMasteryMap(r.data ?? {})).catch(() => {}); }, []);
+
   const handleNewChat = () => {
     if (subjects.length === 0) loadSubjects();
     setShowPicker(true);
@@ -407,18 +412,21 @@ const StudentChatbot: FC = () => {
         )}
 
         {/* ── Sidebar ── */}
-        <div className={`sai-sidebar${sidebarOpen ? ' open' : ''}`}>
-          <ChatHistory
-            sessions={sessions}
-            currentSessionId={currentSession?.id ?? ''}
-            onSelectSession={id => {
-              const sess = sessions.find(s => s.id === id);
-              if (sess) handleSelectSession(sess);
-            }}
-            onNewChat={handleNewChat}
-            onDeleteSession={handleDeleteSession}
-            isLoading={loadingSessions || creatingSession}
-          />
+        <div className={`sai-sidebar${sidebarOpen ? ' open' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <ChatHistory
+              sessions={sessions}
+              currentSessionId={currentSession?.id ?? ''}
+              onSelectSession={id => {
+                const sess = sessions.find(s => s.id === id);
+                if (sess) handleSelectSession(sess);
+              }}
+              onNewChat={handleNewChat}
+              onDeleteSession={handleDeleteSession}
+              isLoading={loadingSessions || creatingSession}
+            />
+          </div>
+          <StudentTools subjects={subjects} mastery={masteryMap} onNewChat={handleNewChat} />
         </div>
 
         {/* ── Chat area ── */}
@@ -433,18 +441,33 @@ const StudentChatbot: FC = () => {
                 <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#6d28d9,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(109,40,217,0.25)' }}>
                   <BookOpen size={18} color="white" />
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>Chatbot cố vấn học tập</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 1 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
-                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Trực tuyến · Trả lời 24/7</span>
-                  </div>
-                </div>
-                {(currentSession.name || currentSession.subject_id) && (
-                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#2563eb', background: 'rgba(37,99,235,0.08)', padding: '4px 10px', borderRadius: 20, flexShrink: 0, whiteSpace: 'nowrap', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {currentSession.name || currentSession.subject_id}
-                  </span>
-                )}
+                {(() => {
+                  const maSub = currentSession.subject_id ?? '';
+                  const sub = subjects.find(s => s.ma_mon === maSub);
+                  const info = masteryMap[maSub];
+                  const pct = info?.mastery ?? null;
+                  const tenMon = sub?.ten_mon || currentSession.name || 'Trợ giảng AI học tập';
+                  return (
+                    <>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tenMon}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 1 }}>
+                          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+                          <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Trực tuyến · Trả lời 24/7{maSub ? ` · ${maSub}` : ''}</span>
+                        </div>
+                      </div>
+                      {pct != null ? (
+                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0e8f63', background: 'rgba(14,143,99,0.1)', padding: '4px 11px', borderRadius: 20, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                          {pct}% thành thạo
+                        </span>
+                      ) : maSub && (
+                        <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', background: 'rgba(148,163,184,0.12)', padding: '4px 10px', borderRadius: 20, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                          chưa có mức thạo
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
               </>
             ) : (
               <span style={{ flex: 1, fontSize: '0.82rem', fontWeight: 600, color: '#94a3b8' }}>Chọn hoặc tạo cuộc trò chuyện</span>
