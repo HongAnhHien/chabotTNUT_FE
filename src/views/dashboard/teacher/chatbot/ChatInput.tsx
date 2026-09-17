@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type ComponentType } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, type ComponentType } from 'react';
 import toast from 'react-hot-toast';
 import {
   Send, Loader2, Camera, Sigma, Mic,
@@ -64,6 +64,8 @@ const ChatInput = ({
   const fileRef = useRef<HTMLInputElement>(null);
   const recogRef = useRef<ISpeechRecognition | null>(null);
   const baseTextRef = useRef('');
+  const caretRef = useRef({ start: 0, end: 0 });
+  const pendingCaretRef = useRef<number | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
@@ -87,18 +89,37 @@ const ChatInput = ({
   };
   const prefill = (p: string) => { setText(p); taRef.current?.focus(); };
 
-  // Chèn đoạn LaTeX tại vị trí con trỏ. `$0` trong template = nơi đặt con trỏ sau khi chèn.
-  const insertSnippet = (tpl: string) => {
+  // Ghi nhớ vị trí con trỏ mỗi khi nó thay đổi — để chèn đúng chỗ dù ô nhập mất/đổi focus.
+  const rememberCaret = () => {
     const ta = taRef.current;
+    if (ta) caretRef.current = { start: ta.selectionStart ?? 0, end: ta.selectionEnd ?? 0 };
+  };
+
+  // Chèn đoạn LaTeX tại vị trí con trỏ đã ghi nhớ. `$0` = nơi đặt con trỏ sau khi chèn.
+  const insertSnippet = (tpl: string) => {
     const caret = tpl.indexOf('$0');
     const clean = tpl.replace('$0', '');
-    const start = ta?.selectionStart ?? text.length;
-    const end = ta?.selectionEnd ?? text.length;
-    const next = text.slice(0, start) + clean + text.slice(end);
+    const s = Math.min(caretRef.current.start, text.length);
+    const e = Math.min(caretRef.current.end, text.length);
+    const next = text.slice(0, s) + clean + text.slice(e);
+    const pos = s + (caret >= 0 ? caret : clean.length);
+    caretRef.current = { start: pos, end: pos };
+    pendingCaretRef.current = pos; // useLayoutEffect sẽ đặt lại con trỏ sau khi DOM cập nhật
     setText(next);
-    const pos = start + (caret >= 0 ? caret : clean.length);
-    requestAnimationFrame(() => { ta?.focus(); ta?.setSelectionRange(pos, pos); });
   };
+
+  // Sau khi React cập nhật value (controlled textarea đẩy con trỏ về cuối),
+  // đặt lại con trỏ về đúng vị trí đã tính — chạy trước khi trình duyệt vẽ.
+  useLayoutEffect(() => {
+    const pos = pendingCaretRef.current;
+    if (pos == null) return;
+    pendingCaretRef.current = null;
+    const ta = taRef.current;
+    if (!ta) return;
+    ta.focus();
+    ta.setSelectionRange(pos, pos);
+    caretRef.current = { start: pos, end: pos };
+  }, [text]);
 
   // Đọc ảnh đề (chụp hoặc chọn file) → text, đưa vào ô chat.
   const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -273,6 +294,7 @@ const ChatInput = ({
             {ocrLoading ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Camera size={18} />}
           </button>
           <button className="tai-icobtn" title="Chèn ký hiệu Toán – Hóa"
+            onMouseDown={e => e.preventDefault()}
             onClick={() => setShowSymbols(v => !v)} disabled={disabled}
             style={{ width: 38, height: 38, borderRadius: 10, border: 'none', background: showSymbols ? '#eff6ff' : 'transparent', color: showSymbols ? '#2563eb' : '#64748b', cursor: disabled ? 'not-allowed' : 'pointer', display: 'grid', placeItems: 'center', transition: 'all .15s' }}>
             <Sigma size={18} />
@@ -294,7 +316,10 @@ const ChatInput = ({
           <textarea
             ref={taRef}
             value={text}
-            onChange={e => setText(e.target.value)}
+            onChange={e => { setText(e.target.value); rememberCaret(); }}
+            onKeyUp={rememberCaret}
+            onClick={rememberCaret}
+            onSelect={rememberCaret}
             onKeyDown={onKey}
             placeholder={placeholder}
             disabled={disabled || isLoading}

@@ -119,7 +119,7 @@ const SymbolPicker = ({ onInsert, onClose }: Props) => {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <div style={{ display: 'flex', gap: 6 }}>
           {(['math', 'chem'] as const).map(k => (
-            <button key={k} onClick={() => setTab(k)}
+            <button key={k} onMouseDown={e => e.preventDefault()} onClick={() => setTab(k)}
               className={`sym-tab ${tab === k ? 'active' : ''}`}
               style={{ padding: '5px 12px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#475569', fontSize: '.78rem', fontWeight: 700, cursor: 'pointer' }}>
               {k === 'math' ? '∑ Toán' : '⚗ Hóa'}
@@ -136,7 +136,7 @@ const SymbolPicker = ({ onInsert, onClose }: Props) => {
             <div style={{ fontSize: '.68rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: .4, margin: '2px 2px 5px' }}>{g.name}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
               {g.items.map(s => (
-                <button key={s.l + s.t} onClick={() => onInsert(s.t)} className="sym-btn"
+                <button key={s.l + s.t} onMouseDown={e => e.preventDefault()} onClick={() => onInsert(s.t)} className="sym-btn"
                   title={s.t.replace('$0', '…')}
                   style={{ minWidth: 34, height: 32, padding: '0 8px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff', color: '#334155', fontSize: '.86rem', fontWeight: 600, cursor: 'pointer', transition: 'all .12s' }}>
                   {s.l}
