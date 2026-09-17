@@ -143,6 +143,7 @@ export const API_ENDPOINTS = {
     SUBJECTS:          '/student/subjects',
     SEMESTERS:         '/student/semesters',
     SEMESTER_SUBJECTS: (hocKy: number) => `/student/semesters/${hocKy}/subjects`,
+    MASTERY:           '/student/mastery',
     EXAM_STATUS:       (userId: string, maMon: string) => `/chatbot/student-exam-status?user_id=${encodeURIComponent(userId)}&ma_mon=${encodeURIComponent(maMon)}`,
     DASHBOARD_OVERVIEW: (semesterFrom?: string, hocKy?: number) => {
       const params = new URLSearchParams();

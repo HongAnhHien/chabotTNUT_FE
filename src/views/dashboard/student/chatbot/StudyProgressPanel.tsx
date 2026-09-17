@@ -1,6 +1,7 @@
-import { type FC } from 'react';
+import { type FC, useEffect, useState } from 'react';
 import { Flame, Check } from 'lucide-react';
 import type { IStudentSubject } from '@/infra/api/interfaces/IStudent';
+import StudentApi, { type ISubjectMastery } from '@/infra/student/student_api';
 
 // Panel "Tiến độ học tập" bên phải khung chat SV — thể hiện cá nhân hoá học tập:
 // streak · thống kê tuần · mức thành thạo từng môn · lộ trình hôm nay.
@@ -11,12 +12,6 @@ interface Props {
   subjects: IStudentSubject[];
 }
 
-// % thành thạo giả lập ổn định theo mã môn (để nhìn "thật", nhất quán mỗi lần).
-function masteryOf(maMon: string): number {
-  let h = 0;
-  for (let i = 0; i < maMon.length; i++) h = (h * 31 + maMon.charCodeAt(i)) & 0x7fffffff;
-  return 40 + (h % 53); // 40..92
-}
 function barColor(p: number): string {
   if (p >= 75) return '#0e8f63';
   if (p >= 60) return '#0e7c8a';
@@ -43,7 +38,11 @@ const Stat: FC<{ v: string; l: string; tone?: string }> = ({ v, l, tone }) => (
 );
 
 const StudyProgressPanel: FC<Props> = ({ subjects }) => {
-  const mastery = subjects.slice(0, 6).map(s => ({ ma: s.ma_mon, ten: s.ten_mon, p: masteryOf(s.ma_mon) }));
+  const [mst, setMst] = useState<Record<string, ISubjectMastery>>({});
+  useEffect(() => {
+    StudentApi.getSubjectMastery().then(r => setMst(r.data ?? {})).catch(() => {});
+  }, []);
+  const mastery = subjects.slice(0, 8).map(s => ({ ma: s.ma_mon, ten: s.ten_mon, info: mst[s.ma_mon] as ISubjectMastery | undefined }));
 
   return (
     <aside className="sai-progress">
@@ -54,8 +53,8 @@ const StudyProgressPanel: FC<Props> = ({ subjects }) => {
         @media (max-width:1180px){.sai-progress{display:none}}
       `}</style>
 
-      <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#0e7c8a', background: '#e1f0f2', border: '1px solid #cfe6e9', borderRadius: 20, padding: '3px 10px', alignSelf: 'flex-start' }}>
-        Bản mockup · dữ liệu mẫu
+      <div style={{ fontSize: '0.6rem', fontWeight: 600, color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 20, padding: '3px 10px', alignSelf: 'flex-start', lineHeight: 1.4 }}>
+        Mức thành thạo: <b style={{ color: '#0e8f63' }}>dữ liệu thật</b> · streak/tuần/lộ trình: mẫu
       </div>
 
       {/* Streak */}
@@ -86,22 +85,30 @@ const StudyProgressPanel: FC<Props> = ({ subjects }) => {
         </div>
       </div>
 
-      {/* Mức thành thạo */}
+      {/* Mức thành thạo — THẬT: từ điểm quiz & số câu đã hỏi */}
       <div className="sai-card">
-        <p className="sai-h">Mức thành thạo</p>
+        <p className="sai-h">Mức thành thạo <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0, color: '#0e8f63' }}>· từ quiz &amp; câu hỏi</span></p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {mastery.length === 0 && <div style={{ fontSize: '0.74rem', color: '#94a3b8' }}>Chưa có môn học.</div>}
-          {mastery.map(m => (
-            <div key={m.ma}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', marginBottom: 3 }}>
-                <span style={{ color: '#334155', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 170 }}>{m.ten}</span>
-                <span style={{ color: barColor(m.p), fontWeight: 800 }}>{m.p}%</span>
+          {mastery.map(m => {
+            const p = m.info?.mastery ?? null;
+            const soHoi = m.info?.so_cau_hoi ?? 0;
+            const soQuiz = m.info?.so_quiz ?? 0;
+            return (
+              <div key={m.ma}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', marginBottom: 3, gap: 6 }}>
+                  <span style={{ color: '#334155', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{m.ten}</span>
+                  {p != null
+                    ? <span style={{ color: barColor(p), fontWeight: 800, flexShrink: 0 }}>{p}%</span>
+                    : <span style={{ color: '#94a3b8', fontSize: '0.68rem', flexShrink: 0 }}>{soHoi > 0 ? `đã hỏi ${soHoi} câu` : 'chưa học'}</span>}
+                </div>
+                <div style={{ height: 6, borderRadius: 99, background: '#eef2f6', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${p ?? 0}%`, background: p != null ? barColor(p) : 'transparent', borderRadius: 99 }} />
+                </div>
+                {p != null && <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: 2 }}>{soQuiz} bài KT · {soHoi} câu hỏi</div>}
               </div>
-              <div style={{ height: 6, borderRadius: 99, background: '#eef2f6', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${m.p}%`, background: barColor(m.p), borderRadius: 99 }} />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

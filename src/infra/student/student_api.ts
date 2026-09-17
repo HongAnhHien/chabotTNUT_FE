@@ -24,6 +24,20 @@ import type {
   IMarkAllNotificationsReadResponse,
 } from '@/infra/api/interfaces/INotification';
 
+export type MasteryStatus = 'thanh_thao' | 'dang_hoc' | 'can_on' | 'chua_hoc';
+export interface ISubjectMastery {
+  ma_mon: string;
+  mastery: number | null;   // null = chưa có bài kiểm tra (không bịa %)
+  so_quiz: number;
+  diem_tb_quiz: number | null;
+  so_cau_hoi: number;
+  trang_thai: MasteryStatus;
+}
+export interface ISubjectMasteryResponse {
+  success: boolean;
+  data: Record<string, ISubjectMastery>;
+}
+
 class StudentApi {
   async getAssignments(): Promise<IStudentAssignmentsResponse> {
     const res = await axiosInstance.get<IStudentAssignmentsResponse>(
@@ -68,6 +82,11 @@ class StudentApi {
     const res = await axiosInstance.get<IStudentSemesterSubjectsResponse>(
       API_ENDPOINTS.STUDENT.SEMESTER_SUBJECTS(hocKy)
     );
+    return res.data;
+  }
+
+  async getSubjectMastery(): Promise<ISubjectMasteryResponse> {
+    const res = await axiosInstance.get<ISubjectMasteryResponse>(API_ENDPOINTS.STUDENT.MASTERY);
     return res.data;
   }
 
