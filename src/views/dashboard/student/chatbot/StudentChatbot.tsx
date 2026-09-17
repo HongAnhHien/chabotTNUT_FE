@@ -13,6 +13,7 @@ import type { ChatMessage } from '@/views/dashboard/teacher/chatbot/types';
 import ChatApi from '@/infra/chat/chat_api';
 import StudentApi, { type ISubjectMastery } from '@/infra/student/student_api';
 import StudentTools from '@/views/dashboard/student/chatbot/StudentTools';
+import LectureSummary from '@/views/dashboard/student/chatbot/LectureSummary';
 import type { IChatSession } from '@/infra/api/interfaces/IChat';
 import type { IStudentSubject, IStudentExamStatusResponse } from '@/infra/api/interfaces/IStudent';
 import { Button } from '@/components/ui/button';
@@ -495,6 +496,9 @@ const StudentChatbot: FC = () => {
 
           {currentSession ? (
             <>
+              {messages.length === 0 && (
+                <LectureSummary subjectName={subjects.find(s => s.ma_mon === currentSession.subject_id)?.ten_mon} />
+              )}
               <div style={{ flex: 1, overflow: 'hidden' }}>
                 <ChatContent
                   role="student"
