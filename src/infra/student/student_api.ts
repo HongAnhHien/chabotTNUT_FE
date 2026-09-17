@@ -40,6 +40,7 @@ export interface ISubjectMasteryResponse {
 
 export interface IStudyStats {
   streak: number;
+  today_count: number;
   week: {
     bai_da_hoc: number;
     do_chinh_xac: number | null;   // % · null nếu chưa có quiz tuần này

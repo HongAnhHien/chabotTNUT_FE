@@ -25,12 +25,27 @@ function fmtThoiGian(giay: number): string {
   if (phut < 60) return `${phut}p`;
   return `${Math.floor(phut / 60)}g ${phut % 60}p`;
 }
-const ROADMAP = [
-  { t: 'Ổn định nghĩa đạo hàm', done: true },
-  { t: 'Quy tắc chuỗi — lý thuyết', done: true },
-  { t: 'Luyện 3 bài hàm hợp', done: false, tag: '~15p' },
-  { t: 'Kiểm tra nhanh 5 câu', done: false, tag: '~8p' },
-];
+interface RoadItem { t: string; done: boolean; tag?: string }
+interface MasteryRow { ma: string; ten: string; info?: ISubjectMastery }
+
+// Sinh lộ trình hôm nay từ mức thành thạo thật + hoạt động hôm nay.
+function buildRoadmap(rows: MasteryRow[], todayCount: number): RoadItem[] {
+  const status = (m: MasteryRow) => m.info?.trang_thai ?? 'chua_hoc';
+  const thanhThao = rows.filter(m => (m.info?.mastery ?? 0) >= 80);
+  const canOn     = rows.filter(m => status(m) === 'can_on').sort((a, b) => (a.info?.mastery ?? 0) - (b.info?.mastery ?? 0));
+  const dangHoc   = rows.filter(m => status(m) === 'dang_hoc');
+  const chuaHoc   = rows.filter(m => status(m) === 'chua_hoc');
+
+  const items: RoadItem[] = [];
+  if (thanhThao[0]) items.push({ t: `Đã vững ${thanhThao[0].ten}`, done: true });
+  if (canOn[0])     items.push({ t: `Ôn lại ${canOn[0].ten} — đang yếu (${canOn[0].info?.mastery}%)`, done: false, tag: 'cần ôn' });
+  if (dangHoc[0])   items.push({ t: `Luyện quiz ${dangHoc[0].ten}`, done: false, tag: '~10p' });
+  for (const c of chuaHoc) { if (items.length >= 4) break; items.push({ t: `Bắt đầu ôn ${c.ten}`, done: false, tag: 'mới' }); }
+  items.push(todayCount > 0
+    ? { t: `Đã học hôm nay — ${todayCount} hoạt động 👏`, done: true }
+    : { t: 'Hỏi trợ giảng hoặc làm 1 quiz hôm nay', done: false, tag: '≥1' });
+  return items.slice(0, 5);
+}
 
 const Stat: FC<{ v: string; l: string; tone?: string }> = ({ v, l, tone }) => (
   <div style={{ background: '#f4f7fa', borderRadius: 11, padding: '9px 11px' }}>
@@ -49,6 +64,7 @@ const StudyProgressPanel: FC<Props> = ({ subjects }) => {
   const wk = stats?.week;
   const barMax = Math.max(1, ...(wk?.bars ?? []).map(b => b.v));
   const mastery = subjects.slice(0, 8).map(s => ({ ma: s.ma_mon, ten: s.ten_mon, info: mst[s.ma_mon] as ISubjectMastery | undefined }));
+  const roadmap = buildRoadmap(mastery, stats?.today_count ?? 0);
 
   return (
     <aside className="sai-progress">
@@ -59,8 +75,8 @@ const StudyProgressPanel: FC<Props> = ({ subjects }) => {
         @media (max-width:1180px){.sai-progress{display:none}}
       `}</style>
 
-      <div style={{ fontSize: '0.6rem', fontWeight: 600, color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 20, padding: '3px 10px', alignSelf: 'flex-start', lineHeight: 1.4 }}>
-Thành thạo · streak · tuần: <b style={{ color: '#0e8f63' }}>dữ liệu thật</b> · lộ trình hôm nay: mẫu
+      <div style={{ fontSize: '0.6rem', fontWeight: 600, color: '#0e8f63', background: '#e4f2ea', border: '1px solid #cfe6d9', borderRadius: 20, padding: '3px 10px', alignSelf: 'flex-start', lineHeight: 1.4 }}>
+        ✓ Cá nhân hoá từ dữ liệu học thật của bạn
       </div>
 
       {/* Streak */}
@@ -118,11 +134,11 @@ Thành thạo · streak · tuần: <b style={{ color: '#0e8f63' }}>dữ liệu t
         </div>
       </div>
 
-      {/* Lộ trình hôm nay */}
+      {/* Lộ trình hôm nay — gợi ý từ môn yếu/chưa học + hoạt động thật */}
       <div className="sai-card">
-        <p className="sai-h">Lộ trình hôm nay</p>
+        <p className="sai-h">Lộ trình hôm nay <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0, color: '#0e8f63' }}>· gợi ý cá nhân</span></p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-          {ROADMAP.map((r, i) => (
+          {roadmap.map((r, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
               <span style={{ width: 18, height: 18, borderRadius: 6, flexShrink: 0, display: 'grid', placeItems: 'center', background: r.done ? '#0e8f63' : '#fff', border: r.done ? 'none' : '1.5px solid #cbd5e1' }}>
                 {r.done && <Check size={12} color="#fff" strokeWidth={3} />}
