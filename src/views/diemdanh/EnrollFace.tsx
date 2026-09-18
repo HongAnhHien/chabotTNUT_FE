@@ -31,7 +31,11 @@ const EnrollFace: FC = () => {
   // Rào chắn NĐ13 — SV chỉ đăng ký khuôn mặt của CHÍNH MÌNH: khoá mã SV theo tài khoản Portal.
   const user = useAuthStore(selectUser);
   const isStudent = (user?.role as string) === ROLES.STUDENT;
-  const myCode = user?.portal_code ?? "";
+  // Mã SV = student_code (Portal), fallback username. KHÔNG dùng portal_code (là portal_id nội bộ).
+  const myCode =
+    (user as { profile?: { student_code?: string } } | null)?.profile?.student_code
+    || user?.username
+    || "";
 
   const [phase, setPhase] = useState<Phase>("consent");
   const [maSv, setMaSv] = useState("");
