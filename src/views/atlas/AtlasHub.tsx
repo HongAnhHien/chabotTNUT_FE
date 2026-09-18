@@ -5,6 +5,8 @@ import { useAuthStore, selectUser } from "@/views/pages/stores/auth_store";
 import { ROLES, ROLE_LABELS, type Role } from "@/constants/roles";
 import { ATLAS_APPS, type AtlasApp } from "./atlasApps";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
+import { API_ENDPOINTS } from "@/infra/api/conflig/apiEndpoints";
+import toast from "react-hot-toast";
 
 interface AiService {
   key: string;
@@ -86,9 +88,28 @@ const AtlasHub: FC = () => {
     };
   }, []);
 
-  const openApp = (app: AtlasApp) => {
+  const openApp = async (app: AtlasApp) => {
     if (app.status === "soon") return;
     const dest = app.to(role);
+
+    // Phân hệ SSO (RIAT E-learning): lấy vé rồi mở trang đăng nhập một lần.
+    if (app.sso === "riat") {
+      // Mở tab trống ngay khi bấm để tránh bị chặn popup, nạp URL sau khi có vé.
+      const w = window.open("about:blank", "_blank");
+      try {
+        const res = await axiosInstance.post(API_ENDPOINTS.SSO.RIAT_TICKET);
+        const ticket = res.data?.data?.ticket as string | undefined;
+        if (!ticket) throw new Error("no ticket");
+        const url = `${dest.replace(/\/+$/, "")}/learn/sso?t=${encodeURIComponent(ticket)}`;
+        if (w) w.location.href = url;
+        else window.location.href = url;
+      } catch {
+        if (w) w.close();
+        toast.error("Chưa tạo được phiên đăng nhập RIAT E-learning. Kiểm tra RIAT đang chạy và thử lại.");
+      }
+      return;
+    }
+
     if (app.status === "external") window.open(dest, "_blank", "noopener,noreferrer");
     else navigate(dest);
   };

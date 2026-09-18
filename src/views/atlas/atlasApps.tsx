@@ -28,6 +28,8 @@ export interface AtlasApp {
   status: AppStatus;
   /** Nhãn giai đoạn cho ứng dụng "sắp ra mắt". */
   phase?: string;
+  /** Phân hệ chạy riêng cần đăng nhập một lần (SSO) — mở qua vé thay vì mở thẳng. */
+  sso?: "riat";
   /** Đích điều hướng theo vai (route nội bộ hoặc URL ngoài). */
   to: (role: Role) => string;
 }
@@ -137,6 +139,7 @@ export const ATLAS_APPS: AtlasApp[] = [
     icon: BookOpen,
     roles: ALL,
     status: "external",
+    sso: "riat",
     to: () => RIAT_ELEARNING_URL,
   },
   {

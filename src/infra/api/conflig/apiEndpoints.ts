@@ -177,4 +177,8 @@ export const API_ENDPOINTS = {
   STT: {
     TRANSCRIBE: '/stt', // nói → text (Whisper)
   },
+
+  SSO: {
+    RIAT_TICKET: '/sso/riat-ticket', // vé SSO sang RIAT E-learning
+  },
 } as const;
