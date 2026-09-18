@@ -3,6 +3,8 @@ import { Link } from "react-router";
 import { ArrowLeft, Camera, Loader2, CheckCircle2, ShieldCheck, RotateCcw, ScanFace } from "lucide-react";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 import { embed, drawThumb, buildTemplate, type FrameCapture, type PoseGroup, type QualityResult } from "@/lib/faceEngine";
+import { useAuthStore, selectUser } from "@/views/pages/stores/auth_store";
+import { ROLES } from "@/constants/roles";
 
 interface Pose { name: string; hint: string; group: PoseGroup; }
 const POSES: Pose[] = [
@@ -26,8 +28,16 @@ const EnrollFace: FC = () => {
   const framesRef = useRef<FrameCapture[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
 
+  // Rào chắn NĐ13 — SV chỉ đăng ký khuôn mặt của CHÍNH MÌNH: khoá mã SV theo tài khoản Portal.
+  const user = useAuthStore(selectUser);
+  const isStudent = (user?.role as string) === ROLES.STUDENT;
+  const myCode = user?.portal_code ?? "";
+
   const [phase, setPhase] = useState<Phase>("consent");
   const [maSv, setMaSv] = useState("");
+
+  // Với SV: mã SV luôn = mã Portal của chính mình (không cho gõ tay).
+  useEffect(() => { if (isStudent && myCode) setMaSv(myCode); }, [isStudent, myCode]);
   const [agree, setAgree] = useState(false);
   const [poseIdx, setPoseIdx] = useState(0);
   const [ring, setRing] = useState(0);
@@ -43,6 +53,7 @@ const EnrollFace: FC = () => {
   useEffect(() => () => stopCamera(), []);
 
   const start = async () => {
+    if (isStudent && myCode.trim().length < 3) { setError("Tài khoản chưa gắn mã sinh viên Portal — liên hệ giáo vụ."); return; }
     if (maSv.trim().length < 3) { setError("Nhập mã sinh viên hợp lệ."); return; }
     if (!agree) { setError("Cần đồng ý xử lý dữ liệu sinh trắc (NĐ13)."); return; }
     setError(null);
@@ -171,8 +182,15 @@ const EnrollFace: FC = () => {
               <li>• Chỉ lưu <b>vector đặc trưng</b>, không lưu ảnh gốc.</li>
               <li>• Có quyền <b>xoá</b> bất cứ lúc nào.</li>
             </ul>
-            <input value={maSv} onChange={(e) => setMaSv(e.target.value)} placeholder="Mã sinh viên (VD: K205480106xxx)"
-              className="mt-1 rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 text-sm text-white placeholder-white/40 outline-none focus:border-teal-400" />
+            {isStudent ? (
+              <div className="mt-1 rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-sm text-white/90">
+                Mã SV: <b>{myCode || "(chưa gắn mã Portal)"}</b>
+                <span className="mt-0.5 block text-[11px] text-white/50">Khoá theo tài khoản đăng nhập — bạn chỉ đăng ký khuôn mặt của chính mình.</span>
+              </div>
+            ) : (
+              <input value={maSv} onChange={(e) => setMaSv(e.target.value)} placeholder="Mã sinh viên (VD: K205480106xxx)"
+                className="mt-1 rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 text-sm text-white placeholder-white/40 outline-none focus:border-teal-400" />
+            )}
             <label className="flex items-start gap-2 text-xs text-white/80">
               <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5 h-4 w-4 accent-teal-400" />
               Tôi đồng ý cho xử lý dữ liệu sinh trắc khuôn mặt phục vụ điểm danh học phần.

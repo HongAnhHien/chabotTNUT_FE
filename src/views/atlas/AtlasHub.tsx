@@ -3,7 +3,8 @@ import { useNavigate } from "react-router";
 import { LogOut, ExternalLink, Activity, ArrowRight, Sparkles, Layers, KeyRound, ShieldCheck, Lock } from "lucide-react";
 import { useAuthStore, selectUser } from "@/views/pages/stores/auth_store";
 import { ROLES, ROLE_LABELS, type Role } from "@/constants/roles";
-import { ATLAS_APPS, type AtlasApp } from "./atlasApps";
+// VISIBLE_APPS = ATLAS_APPS đã ẩn thẻ có cờ (đăng ký khuôn mặt) khi trường chưa mở đợt enroll.
+import { VISIBLE_APPS as ATLAS_APPS, type AtlasApp } from "./atlasApps";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 import { API_ENDPOINTS } from "@/infra/api/conflig/apiEndpoints";
 import toast from "react-hot-toast";

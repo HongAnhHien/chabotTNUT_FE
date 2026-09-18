@@ -112,9 +112,10 @@ export const appRoutes: RouteObject[] = [
     ),
   },
   {
+    // SV tự đăng ký khuôn mặt của chính mình (mã SV khoá theo tài khoản Portal); cán bộ vẫn vào được để hỗ trợ.
     path: "/diem-danh/enroll",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN]}>
+      <ProtectedRoute allowedRoles={[ROLES.STUDENT, ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN]}>
         <EnrollFace />
       </ProtectedRoute>
     ),

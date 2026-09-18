@@ -14,6 +14,7 @@ import {
   School,
   FolderTree,
   TrendingUp,
+  ScanFace,
   type LucideIcon,
 } from "lucide-react";
 import { ROLES, type Role } from "@/constants/roles";
@@ -31,6 +32,8 @@ export interface AtlasApp {
   phase?: string;
   /** Phân hệ chạy riêng cần đăng nhập một lần (SSO) — mở qua vé thay vì mở thẳng. */
   sso?: "riat";
+  /** Chỉ hiện khi trường mở đợt (dùng cho đăng ký khuôn mặt — dữ liệu sinh trắc, NĐ13). */
+  gated?: boolean;
   /** Đích điều hướng theo vai (route nội bộ hoặc URL ngoài). */
   to: (role: Role) => string;
 }
@@ -38,6 +41,11 @@ export interface AtlasApp {
 // URL phân hệ RIAT E-learning (app Next.js chạy riêng). Cấu hình qua env, mặc định cổng dev 3001.
 const RIAT_ELEARNING_URL =
   (import.meta.env.VITE_RIAT_ELEARNING_URL as string | undefined) || "http://localhost:3001";
+
+// Đợt đăng ký khuôn mặt (NĐ13 — dữ liệu sinh trắc): chỉ hiện thẻ khi trường MỞ đợt enroll.
+// Bật bằng biến môi trường VITE_ENROLL_KHUON_MAT="1"; mặc định TẮT.
+const ENROLL_KHUON_MAT_MO =
+  (import.meta.env.VITE_ENROLL_KHUON_MAT as string | undefined) === "1";
 
 const ALL: Role[] = [ROLES.STUDENT, ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN];
 const STAFF: Role[] = [ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN];
@@ -143,6 +151,16 @@ export const ATLAS_APPS: AtlasApp[] = [
     to: () => "/diem-danh",
   },
   {
+    key: "enroll-khuon-mat",
+    name: "Đăng ký khuôn mặt",
+    desc: "SV tự quét đa góc để điểm danh — xử lý ngay trên máy, chỉ lưu vector, không lưu ảnh (NĐ13).",
+    icon: ScanFace,
+    roles: [ROLES.STUDENT],
+    status: "available",
+    gated: true, // chỉ hiện khi mở đợt enroll (VITE_ENROLL_KHUON_MAT="1")
+    to: () => "/diem-danh/enroll",
+  },
+  {
     key: "elearning",
     name: "RIAT E-learning",
     desc: "Nền tảng khoá học RIAT: bồi dưỡng năng lực hướng nghiệp.",
@@ -172,7 +190,12 @@ export const ATLAS_APPS: AtlasApp[] = [
   },
 ];
 
-/** Ứng dụng mà một vai được thấy. */
+/** Thẻ hiển thị trên Atlas (đã ẩn thẻ có cờ khi trường chưa mở đợt enroll). */
+export const VISIBLE_APPS: AtlasApp[] = ATLAS_APPS.filter(
+  (a) => !a.gated || ENROLL_KHUON_MAT_MO,
+);
+
+/** Ứng dụng mà một vai được thấy (ẩn thẻ có cờ khi chưa mở đợt). */
 export function appsForRole(role: Role): AtlasApp[] {
-  return ATLAS_APPS.filter((a) => a.roles.includes(role));
+  return VISIBLE_APPS.filter((a) => a.roles.includes(role));
 }
