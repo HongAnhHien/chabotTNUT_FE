@@ -21,7 +21,8 @@ export interface IImpactReport {
     improvement_pct: number | null;
   };
   estimate: { minutes_per_question: number; hours_saved_week: number; hours_saved_month: number; note: string };
-  satisfaction: number | null;
+  satisfaction: number | null;   // % thích trên tổng 👍/👎
+  satisfaction_n: number;        // số lượt phản hồi 👍/👎
 }
 
 class ImpactApi {

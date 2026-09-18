@@ -87,10 +87,17 @@ const StaffReport: FC<{ r: IImpactReport }> = ({ r }) => (
           )}
         </div>
       </Card>
-      <Card title="Độ hài lòng người dùng" right={<Badge tone="amber">Cần khảo sát</Badge>}>
-        <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
-          Chưa thu thập khảo sát hài lòng. Đề xuất: tổng hợp từ nút phản hồi 👍/👎 trong khung chat để có số thật ở kỳ tới.
-        </div>
+      <Card title="Độ hài lòng người dùng" right={r.satisfaction != null ? <Badge tone="green">👍 số thật</Badge> : <Badge tone="amber">Chưa có phản hồi</Badge>}>
+        {r.satisfaction != null ? (
+          <div>
+            <div style={{ fontSize: 30, fontWeight: 800, color: GREEN }}>{r.satisfaction}<small style={{ fontSize: 15 }}>%</small></div>
+            <div style={{ fontSize: 12.5, color: "#94a3b8" }}>thấy hữu ích · trên {r.satisfaction_n.toLocaleString("vi")} lượt phản hồi 👍/👎 trong khung chat</div>
+          </div>
+        ) : (
+          <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
+            Chưa có lượt bấm 👍/👎 nào trong khung chat. Số hài lòng sẽ tự lên khi người dùng phản hồi câu trả lời của Trợ giảng AI.
+          </div>
+        )}
       </Card>
     </div>
 
