@@ -20,6 +20,7 @@ const DiemDanhManage = lazy(() => import("@views/diemdanh/DiemDanhManage"));
 const EnrollFace = lazy(() => import("@views/diemdanh/EnrollFace"));
 const QuetDienThoai = lazy(() => import("@views/diemdanh/QuetDienThoai"));
 const WebGISView = lazy(() => import("@views/webgis/WebGISView"));
+const PlatformImpactPage = lazy(() => import("@views/danhgia/PlatformImpactPage"));
 const ElearningCatalog = lazy(() => import("@views/elearning/ElearningCatalog"));
 
 // Admin
@@ -133,6 +134,16 @@ export const appRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={[ROLES.STUDENT, ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN]}>
         <WebGISView />
+      </ProtectedRoute>
+    ),
+  },
+
+  // ── Đánh giá hiệu quả nền tảng (mọi vai) ──
+  {
+    path: "/danh-gia",
+    element: (
+      <ProtectedRoute allowedRoles={[ROLES.STUDENT, ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN]}>
+        <PlatformImpactPage />
       </ProtectedRoute>
     ),
   },

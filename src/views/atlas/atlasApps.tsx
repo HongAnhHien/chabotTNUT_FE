@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   School,
   FolderTree,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 import { ROLES, type Role } from "@/constants/roles";
@@ -76,6 +77,15 @@ export const ATLAS_APPS: AtlasApp[] = [
     roles: ALL,
     status: "available",
     to: workspace,
+  },
+  {
+    key: "danh-gia",
+    name: "Đánh giá hiệu quả",
+    desc: "Hiệu quả nền tảng: câu hỏi AI, tiến bộ học tập, giờ tiết kiệm, học liệu.",
+    icon: TrendingUp,
+    roles: ALL,
+    status: "available",
+    to: () => "/danh-gia",
   },
   {
     key: "cms",

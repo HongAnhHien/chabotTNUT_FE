@@ -181,4 +181,8 @@ export const API_ENDPOINTS = {
   SSO: {
     RIAT_TICKET: '/sso/riat-ticket', // vé SSO sang RIAT E-learning
   },
+
+  DANH_GIA: {
+    HIEU_QUA: '/danh-gia/hieu-qua', // báo cáo hiệu quả nền tảng (cán bộ)
+  },
 } as const;

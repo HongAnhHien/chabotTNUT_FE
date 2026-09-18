@@ -31,6 +31,7 @@ const APP_COLORS: Record<string, [string, string]> = {
   "tro-giang": ["#6366f1", "#4f46e5"],
   cvht: ["#8b5cf6", "#7c3aed"],
   dashboard: ["#0ea5e9", "#0284c7"],
+  "danh-gia": ["#16a34a", "#15803d"],
   cms: ["#14b8a6", "#0d9488"],
   "quan-tri": ["#64748b", "#475569"],
   "tuyen-sinh": ["#f43f5e", "#e11d48"],
