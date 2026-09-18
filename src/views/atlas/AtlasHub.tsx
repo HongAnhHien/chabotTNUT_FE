@@ -219,7 +219,7 @@ const AtlasHub: FC = () => {
       {/* ── Lưới ứng dụng (đè lên đáy hero) ───────────────────────────── */}
       <main className="relative z-20 mx-auto -mt-12 max-w-6xl px-5 pb-16">
         <section aria-labelledby="apps-available">
-          <h2 id="apps-available" className="mb-3 px-1 text-xs font-bold uppercase tracking-[.14em] text-slate-500">
+          <h2 id="apps-available" className="mb-3 px-1 text-xs font-bold uppercase tracking-[.14em] text-slate-700">
             Ứng dụng của bạn
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -260,7 +260,7 @@ const AtlasHub: FC = () => {
 
         {(webgis || otherApps.length > 0) && (
           <section aria-labelledby="apps-eco" className="mt-10">
-            <h2 id="apps-eco" className="mb-1 px-1 text-xs font-bold uppercase tracking-[.14em] text-slate-500">
+            <h2 id="apps-eco" className="mb-1 px-1 text-xs font-bold uppercase tracking-[.14em] text-slate-700">
               Trong hệ sinh thái PIAI-TNUT
             </h2>
             <p className="mb-3 px-1 text-xs text-slate-400">Các phân hệ khác của nền tảng — mở theo vai được cấp quyền.</p>
