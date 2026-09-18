@@ -32,6 +32,10 @@ export interface AtlasApp {
   to: (role: Role) => string;
 }
 
+// URL phân hệ RIAT E-learning (app Next.js chạy riêng). Cấu hình qua env, mặc định cổng dev 3001.
+const RIAT_ELEARNING_URL =
+  (import.meta.env.VITE_RIAT_ELEARNING_URL as string | undefined) || "http://localhost:3001";
+
 const ALL: Role[] = [ROLES.STUDENT, ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN];
 const STAFF: Role[] = [ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN];
 const ORG: Role[] = [ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN];
@@ -129,11 +133,11 @@ export const ATLAS_APPS: AtlasApp[] = [
   {
     key: "elearning",
     name: "RIAT E-learning",
-    desc: "Đăng ký khoá bồi dưỡng năng lực hướng nghiệp.",
+    desc: "Nền tảng khoá học RIAT: bồi dưỡng năng lực hướng nghiệp.",
     icon: BookOpen,
     roles: ALL,
-    status: "available",
-    to: () => "/elearning",
+    status: "external",
+    to: () => RIAT_ELEARNING_URL,
   },
   {
     key: "webgis",
