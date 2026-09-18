@@ -174,7 +174,7 @@ const AtlasHub: FC = () => {
           </div>
         </header>
 
-        <div className="relative z-10 mx-auto max-w-6xl px-5 pb-20 pt-8">
+        <div className="relative z-10 mx-auto max-w-6xl px-5 pb-10 pt-8">
           <span className="atlas-pill inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white ring-1 ring-white/25">
             <Sparkles className="h-3.5 w-3.5" /> {roleLabel}
           </span>
@@ -217,7 +217,7 @@ const AtlasHub: FC = () => {
       </div>
 
       {/* ── Lưới ứng dụng (đè lên đáy hero) ───────────────────────────── */}
-      <main className="relative z-20 mx-auto -mt-12 max-w-6xl px-5 pb-16">
+      <main className="relative z-20 mx-auto max-w-6xl px-5 pb-16 pt-7">
         <section aria-labelledby="apps-available">
           <h2 id="apps-available" className="mb-3 px-1 text-xs font-bold uppercase tracking-[.14em] text-slate-700">
             Ứng dụng của bạn
