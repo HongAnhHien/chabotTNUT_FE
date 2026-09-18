@@ -92,7 +92,7 @@ export const ATLAS_APPS: AtlasApp[] = [
   {
     key: "tuyen-sinh",
     name: "AI Tuyển sinh",
-    desc: "Trợ lý tuyển sinh TNUT (admission.tnut.edu.vn).",
+    desc: "Trợ lý tuyển sinh TNUT.",
     icon: School,
     roles: ALL,
     status: "external",
@@ -138,9 +138,9 @@ export const ATLAS_APPS: AtlasApp[] = [
   {
     key: "webgis",
     name: "WebGIS Atlas TNUT",
-    desc: "Bản đồ số: cơ sở, phân bố sinh viên ngoại trú.",
+    desc: "Bản đồ số khuôn viên + trợ lý AI hỏi–đáp: cơ sở, quy hoạch, ngoại trú.",
     icon: Map,
-    roles: STAFF,
+    roles: ALL,
     status: "available",
     to: () => "/webgis",
   },

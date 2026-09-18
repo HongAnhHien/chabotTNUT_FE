@@ -127,11 +127,11 @@ export const appRoutes: RouteObject[] = [
     ),
   },
 
-  // ── WebGIS Atlas TNUT (cán bộ) ──
+  // ── WebGIS Atlas TNUT (mọi vai) ──
   {
     path: "/webgis",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN]}>
+      <ProtectedRoute allowedRoles={[ROLES.STUDENT, ROLES.TEACHER, ROLES.KHOA, ROLES.TRUONG, ROLES.ADMIN]}>
         <WebGISView />
       </ProtectedRoute>
     ),
