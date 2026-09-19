@@ -24,3 +24,11 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Claude Code personal local settings (không commit)
+.claude/settings.local.json
+
+# Model nhận diện khuôn mặt ĐH07 — không commit (license + dung lượng lớn)
+/public/models/*.onnx
+/public/models/*.task
+/public/mediapipe/

@@ -1,10 +1,14 @@
 // faceEngine — xử lý khuôn mặt NGAY TRÊN THIẾT BỊ cho enroll điểm danh (ĐH07).
 // Ảnh không rời máy: chỉ trích ra vector đặc trưng (embedding) rồi gửi lên server.
 //
-// Phần trích embedding hiện là DEV MODEL (descriptor xác định từ điểm ảnh) để
-// toàn bộ luồng chạy & gửi vector thật ngay hôm nay. Khi có model on-device
-// (MediaPipe căn chỉnh + ArcFace/MobileFaceNet ONNX 512-D) thì thay đúng 1 hàm
-// `embed()` bên dưới — phần còn lại (thu, chất lượng, gộp, gửi) giữ nguyên.
+// `embed()` đã nối MODEL THẬT: MediaPipe FaceLandmarker căn chỉnh 112×112 +
+// MobileFaceNet/ArcFace ONNX 512-D (on-device). Khi CHƯA có file model trong
+// public/models/ thì tự động dùng model DEV (descriptor điểm ảnh) để app không
+// vỡ — thả file model vào là tự chuyển sang nhận diện thật. Phần còn lại (thu,
+// chất lượng, gộp, gửi) giữ nguyên.
+
+import * as ort from "onnxruntime-web";
+import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 
 export const FACE_DIM = 512;
 
@@ -120,10 +124,133 @@ function embedDev(gray: Float32Array, w: number): Float32Array {
   return l2normalize(out);
 }
 
-export function embed(video: HTMLVideoElement, canvas: HTMLCanvasElement): { vec: Float32Array; quality: QualityResult } | null {
+// ── MODEL THẬT: căn chỉnh (MediaPipe) + embedding ONNX 512-D ──────────────
+// Thả file vào (không commit nếu license không cho phát tán):
+//   public/models/face_embedding.onnx   — MobileFaceNet/ArcFace 512-D, input 112×112
+//   public/models/face_landmarker.task   — MediaPipe FaceLandmarker
+//   public/mediapipe/wasm/…              — copy từ node_modules/@mediapipe/tasks-vision/wasm
+const EMBED_URL = "/models/face_embedding.onnx";
+const LANDMARKER_URL = "/models/face_landmarker.task";
+const MP_WASM = "/mediapipe/wasm"; // self-host (khỏi phụ thuộc CDN, chạy offline)
+
+// 5 điểm mốc từ FaceLandmarker 468 (mắt trái · mắt phải · mũi · mép trái · mép phải).
+// ⚠️ Kiểm chứng lại thứ tự trên dữ liệu thật TNUT trước khi nghiệm thu.
+const LM_IDX = [33, 263, 1, 61, 291] as const;
+// Template 5 điểm chuẩn ArcFace cho ảnh 112×112.
+const ARC_REF: [number, number][] = [
+  [38.2946, 51.6963], [73.5318, 51.5014], [56.0252, 71.7366], [41.5493, 92.3655], [70.7299, 92.2041],
+];
+
+let session: ort.InferenceSession | null = null;
+let landmarker: FaceLandmarker | null = null;
+let realReady: Promise<boolean> | null = null;
+let alignCanvas: HTMLCanvasElement | null = null;
+
+/** Nạp model thật 1 lần. Thiếu file/không nạp được → false (dùng DEV), không thử lại liên tục. */
+function ensureReal(): Promise<boolean> {
+  if (!realReady) {
+    realReady = (async () => {
+      try {
+        session = await ort.InferenceSession.create(EMBED_URL, { executionProviders: ["wasm"] });
+        const vision = await FilesetResolver.forVisionTasks(MP_WASM);
+        landmarker = await FaceLandmarker.createFromOptions(vision, {
+          baseOptions: { modelAssetPath: LANDMARKER_URL },
+          runningMode: "VIDEO",
+          numFaces: 1,
+        });
+        console.info("[faceEngine] Model ONNX + FaceLandmarker sẵn sàng → nhận diện THẬT.");
+        return true;
+      } catch (e) {
+        console.warn("[faceEngine] Chưa có model thật, tạm dùng model DEV. Thả file vào public/models/. Chi tiết:", e);
+        session = null; landmarker = null;
+        return false;
+      }
+    })();
+  }
+  return realReady;
+}
+
+/** Trạng thái cho UI (đã sẵn sàng model thật hay đang chạy DEV). */
+export function faceModelReady(): Promise<boolean> { return ensureReal(); }
+
+/** 5 điểm mốc theo pixel trong hệ toạ độ video, hoặc null nếu không thấy mặt. */
+function detectLandmarks(video: HTMLVideoElement): [number, number][] | null {
+  if (!landmarker) return null;
+  const res = landmarker.detectForVideo(video, performance.now());
+  const f = res.faceLandmarks?.[0];
+  if (!f) return null;
+  const vw = video.videoWidth, vh = video.videoHeight;
+  return LM_IDX.map((idx) => [f[idx].x * vw, f[idx].y * vh] as [number, number]);
+}
+
+/** Ước lượng phép biến đổi tương tự (xoay+co giãn+dịch) src→dst theo bình phương tối thiểu. */
+function estimateSimilarity(src: [number, number][], dst: [number, number][]) {
+  const n = src.length;
+  let mx = 0, my = 0, Mx = 0, My = 0;
+  for (let i = 0; i < n; i++) { mx += src[i][0]; my += src[i][1]; Mx += dst[i][0]; My += dst[i][1]; }
+  mx /= n; my /= n; Mx /= n; My /= n;
+  let sxx = 0, sxy = 0, d = 0;
+  for (let i = 0; i < n; i++) {
+    const x = src[i][0] - mx, y = src[i][1] - my;
+    const X = dst[i][0] - Mx, Y = dst[i][1] - My;
+    sxx += x * X + y * Y;
+    sxy += x * Y - y * X;
+    d += x * x + y * y;
+  }
+  const a = sxx / (d || 1), b = sxy / (d || 1);
+  const tx = Mx - (a * mx - b * my);
+  const ty = My - (b * mx + a * my);
+  return { a, b, tx, ty }; // x'=a·x−b·y+tx ; y'=b·x+a·y+ty
+}
+
+/** Warp khuôn mặt về 112×112 đã align → Float32 NCHW (1,3,112,112), RGB, chuẩn hoá (x−127.5)/128. */
+function alignTo112(video: HTMLVideoElement, src: [number, number][]): Float32Array {
+  if (!alignCanvas) alignCanvas = document.createElement("canvas");
+  const c = alignCanvas; c.width = 112; c.height = 112;
+  const ctx = c.getContext("2d", { willReadFrequently: true })!;
+  const { a, b, tx, ty } = estimateSimilarity(src, ARC_REF);
+  ctx.setTransform(a, b, -b, a, tx, ty); // similarity: khớp 5 điểm về ARC_REF
+  ctx.drawImage(video, 0, 0);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const px = ctx.getImageData(0, 0, 112, 112).data;
+  const area = 112 * 112;
+  const out = new Float32Array(3 * area);
+  for (let i = 0, p = 0; i < area; i++, p += 4) {
+    out[i] = (px[p] - 127.5) / 128;             // R
+    out[area + i] = (px[p + 1] - 127.5) / 128;  // G
+    out[2 * area + i] = (px[p + 2] - 127.5) / 128; // B
+  }
+  return out;
+}
+
+/** Suy luận ONNX → embedding 512-D đã L2-normalize. */
+async function embedOnnx(aligned: Float32Array): Promise<Float32Array> {
+  const s = session!;
+  const input = new ort.Tensor("float32", aligned, [1, 3, 112, 112]);
+  const res = await s.run({ [s.inputNames[0]]: input });
+  const v = res[s.outputNames[0]].data as Float32Array;
+  return l2normalize(v.length > FACE_DIM ? v.slice(0, FACE_DIM) : v);
+}
+
+export async function embed(
+  video: HTMLVideoElement,
+  canvas: HTMLCanvasElement,
+): Promise<{ vec: Float32Array; quality: QualityResult } | null> {
   const g = grabGray(video, canvas, 64);
   if (!g) return null;
   const quality = assessQuality(g.gray, g.w, g.w);
+
+  if (await ensureReal()) {
+    try {
+      const pts = detectLandmarks(video);
+      if (!pts) return null; // không thấy mặt trong khung này → bỏ qua
+      const aligned = alignTo112(video, pts);
+      const vec = await embedOnnx(aligned);
+      return { vec, quality };
+    } catch (e) {
+      console.warn("[faceEngine] Lỗi suy luận thật, tạm dùng DEV cho khung này:", e);
+    }
+  }
   return { vec: embedDev(g.gray, g.w), quality };
 }
 

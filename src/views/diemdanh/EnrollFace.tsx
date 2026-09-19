@@ -86,7 +86,7 @@ const EnrollFace: FC = () => {
       const pose = POSES[i];
       const t0 = performance.now(), dur = 1500;
       while (performance.now() - t0 < dur) {
-        const e = embed(v, work);
+        const e = await embed(v, work);
         if (e) {
           framesRef.current.push({ vec: e.vec, group: pose.group, quality: e.quality });
           setQuality(e.quality);
@@ -94,7 +94,7 @@ const EnrollFace: FC = () => {
         const th = thumbRefs.current[i];
         if (th) drawThumb(v, th);
         setRing(Math.min(1, (performance.now() - t0) / dur));
-        await sleep(200);
+        await sleep(280); // suy luận ONNX nặng hơn DEV → giãn nhịp thu khung
       }
       setRing(1);
       setDoneFlags((prev) => { const n = [...prev]; n[i] = true; return n; });

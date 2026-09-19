@@ -37,10 +37,10 @@ const QuetDienThoai: FC = () => {
       const embeddings: number[][] = [];
       const t0 = performance.now(), dur = 4000;
       while (performance.now() - t0 < dur) {
-        const e = embed(v, work);
+        const e = await embed(v, work);
         if (e && e.quality.ok) embeddings.push(Array.from(e.vec));
         setProgress(Math.min(1, (performance.now() - t0) / dur));
-        await sleep(180);
+        await sleep(280); // suy luận ONNX nặng hơn DEV → giãn nhịp
       }
       stopCamera();
 
