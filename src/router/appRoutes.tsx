@@ -15,6 +15,8 @@ const ErrorPage = lazy(() => import("@views/misc/Error"));
 const AtlasHub = lazy(() => import("@views/atlas/AtlasHub"));
 const CmsMaterials = lazy(() => import("@views/cms/CmsMaterials"));
 const LabanMap = lazy(() => import("@views/laban/LabanMap"));
+const AtlasOverview = lazy(() => import("@views/laban/AtlasOverview"));
+const CompetencyMap = lazy(() => import("@views/laban/CompetencyMap"));
 const NoiTruManage = lazy(() => import("@views/noitru/NoiTruManage"));
 const DiemDanhManage = lazy(() => import("@views/diemdanh/DiemDanhManage"));
 const EnrollFace = lazy(() => import("@views/diemdanh/EnrollFace"));
@@ -88,6 +90,22 @@ export const appRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute>
         <LabanMap />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/laban/atlas",
+    element: (
+      <ProtectedRoute>
+        <AtlasOverview />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/laban/giao-thong",
+    element: (
+      <ProtectedRoute>
+        <CompetencyMap />
       </ProtectedRoute>
     ),
   },

@@ -135,7 +135,7 @@ export const ATLAS_APPS: AtlasApp[] = [
   {
     key: "la-ban",
     name: "La bàn nghề nghiệp",
-    desc: "Bản đồ CTĐT, PLO, lộ trình 5 giai đoạn & nghề đích.",
+    desc: "Atlas 33 CTĐT toàn trường · tiên quyết · Gateway/Bridge · dịch chuyển liên ngành · định vị & cố vấn nghề.",
     icon: Compass,
     roles: ALL,
     status: "available",

@@ -1,6 +1,6 @@
 import { type FC, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Bell, LogOut, Menu } from 'lucide-react';
+import { Bell, LogOut, Menu, Compass } from 'lucide-react';
 import NotificationPanel from '@/components/common/NotificationPanel';
 import type { INotification } from '@/infra/api/interfaces/INotification';
 
@@ -23,6 +23,8 @@ const CSS = `
   .sv-hdr-bell:hover { background: #f1f5f9 !important; }
   .sv-hdr-logout { transition: all .15s; }
   .sv-hdr-logout:hover { background: rgba(220,38,38,0.07) !important; border-color: rgba(220,38,38,0.3) !important; }
+  .sv-hdr-atlas { transition: all .15s; }
+  .sv-hdr-atlas:hover { background: rgba(37,99,235,0.11) !important; border-color: rgba(37,99,235,0.4) !important; }
   .sv-hdr-menu { transition: background .15s; }
   .sv-hdr-menu:hover { background: #f1f5f9 !important; }
 `;
@@ -116,6 +118,24 @@ const StudentHeader: FC<Props> = ({
         />
       )}
     </div>
+
+    {/* Về Atlas (trang chủ hệ sinh thái) */}
+    <button
+      className="sv-hdr-atlas"
+      onClick={() => navigate('/atlas')}
+      title="Về trang chủ Atlas TNUT"
+      style={{
+        display: 'flex', alignItems: 'center', gap: 6,
+        padding: '7px 13px', borderRadius: 9,
+        border: '1px solid rgba(37,99,235,0.22)',
+        background: 'rgba(37,99,235,0.06)',
+        color: '#2563eb', fontSize: '0.78rem', fontWeight: 600,
+        cursor: 'pointer', flexShrink: 0,
+      }}
+    >
+      <Compass size={14} />
+      <span style={{ display: onMenuClick ? 'none' : 'inline' }}>Về Atlas</span>
+    </button>
 
     {/* Logout */}
     <button

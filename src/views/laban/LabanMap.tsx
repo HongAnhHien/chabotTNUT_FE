@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FC, type FormEvent } from "react";
-import { Link } from "react-router";
-import { ArrowLeft, Compass, Loader2, GitBranch, Star, Target, Route as RouteIcon, X, MapPin, Briefcase, MessageCircle, Send } from "lucide-react";
+import { Link, useSearchParams } from "react-router";
+import { ArrowLeft, Compass, Loader2, GitBranch, Star, Target, Route as RouteIcon, X, MapPin, Briefcase, MessageCircle, Send, Grid3x3, Shuffle, Zap } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
@@ -8,7 +8,8 @@ import { useAuthStore } from "@/views/pages/stores/auth_store";
 
 interface NganhItem { id: string; ma_nganh: string; ten_nganh: string; khoa_tuyen?: string | null; tong_tc?: number | null; so_hoc_phan: number; co_du_lieu: boolean; }
 interface Plo { ma_plo: string; mo_ta: string; nhom?: string | null; }
-interface HocPhan { ma_mon: string; ten_mon?: string | null; khoi: number; nhom?: string | null; hoc_ky?: number | null; so_tc?: string | null; vai_tro?: string | null; bat_buoc?: boolean; dung_chung?: boolean; plo_codes: string[]; tien_quyet_ma: string[]; }
+interface HocPhan { ma_mon: string; ten_mon?: string | null; khoi: number; nhom?: string | null; hoc_ky?: number | null; tang?: number | null; so_tc?: string | null; vai_tro?: string | null; bat_buoc?: boolean; dung_chung?: boolean; la_gateway?: boolean; la_bridge?: boolean; so_nganh_chung?: number | null; plo_codes: string[]; plo_levels?: Record<string, number>; can_cu?: string | null; tien_quyet_ma: string[]; hoc_sau_ma?: string[]; song_hanh_ma?: string[]; }
+interface MobilityEdge { nganh_id: string; ma_nganh: string; ten_nganh: string; so_chung: number; ty_le: number; mon_chung: string[]; }
 interface GiaiDoan { giai_doan: number; ten: string; thoi_diem?: string | null; muc_tieu?: string | null; hoc_phan_ma: string[]; plo_codes: string[]; du_an?: string | null; career_action?: string | null; }
 interface Nghe { ten_vi: string; mo_ta?: string | null; nhom_nganh?: string | null; do_hot?: number | null; plo_can: string[]; }
 interface Curriculum { nganh: { id: string; ma_nganh: string; ten_nganh: string; khoa_tuyen?: string | null; tong_tc?: number | null; }; khoi: string[]; plo: Plo[]; hoc_phan: HocPhan[]; giai_doan: GiaiDoan[]; nghe: Nghe[]; }
@@ -33,10 +34,43 @@ const KHOI_STYLE = [
 ];
 const ks = (k: number) => KHOI_STYLE[k] ?? KHOI_STYLE[0];
 
+// Mức đóng góp PLO (1..4) — màu đậm dần
+const LV: Record<number, string> = {
+  1: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
+  2: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
+  3: "bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300",
+  4: "bg-emerald-200 text-emerald-800 dark:bg-emerald-500/25 dark:text-emerald-200",
+};
+const LV_TITLE: Record<number, string> = {
+  1: "Mức 1 — chạm nhẹ, giới thiệu khái niệm",
+  2: "Mức 2 — có luyện tập nhưng chưa sâu",
+  3: "Mức 3 — đạt mức vận dụng cơ bản",
+  4: "Mức 4 — đạt mức đỉnh, cam kết cao nhất",
+};
+
+// Căn cứ gán PLO → nhãn soát chất lượng
+type CanCuInfo = { short: string; badge: string; chip: string; kiem: "yes" | "no" | "ref" };
+const CANCU: Record<string, CanCuInfo> = {
+  "ĐỀ CƯƠNG THẬT": { short: "đã kiểm", kiem: "yes", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300", chip: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" },
+  "ÁP CHUẨN":      { short: "PLO chưa kiểm", kiem: "no", badge: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300", chip: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300" },
+  "THƯ VIỆN":      { short: "thư viện", kiem: "ref", badge: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400", chip: "bg-slate-50 text-slate-500 dark:bg-slate-800 dark:text-slate-400" },
+};
+const canCu = (v?: string | null): CanCuInfo | null => (v ? CANCU[v] ?? null : null);
+
+// Vai trò học phần (dịch sang tiếng Việt)
+const VAITRO: Record<string, string> = {
+  Foundation: "Nền tảng", Core: "Cốt lõi", Specialized: "Chuyên sâu", Elective: "Tự chọn",
+  Practice: "Thực hành", Design: "Đồ án", Integration: "Tích hợp", Bridge: "Cầu nối", Gateway: "Mở khoá",
+};
+const viTro = (v?: string | null) => (v ? VAITRO[v] ?? v : "");
+
 const LabanMap: FC = () => {
   const logout = useAuthStore((s) => s.logout);
+  const [searchParams] = useSearchParams();
+  const wantNganh = searchParams.get("nganh") ?? "";
   const [nganhList, setNganhList] = useState<NganhItem[]>([]);
   const [nganhId, setNganhId] = useState<string>("");
+  const [mobility, setMobility] = useState<MobilityEdge[]>([]);
   const [cur, setCur] = useState<Curriculum | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingCur, setLoadingCur] = useState(false);
@@ -56,12 +90,13 @@ const LabanMap: FC = () => {
       .then((res) => {
         const list: NganhItem[] = res.data?.data ?? [];
         setNganhList(list);
-        const first = list.find((n) => n.co_du_lieu) ?? list[0];
+        const wanted = wantNganh && list.find((n) => n.id === wantNganh);
+        const first = wanted || list.find((n) => n.co_du_lieu) || list[0];
         if (first) setNganhId(first.id);
       })
       .catch(() => setError("Không tải được danh sách ngành."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [wantNganh]);
 
   useEffect(() => {
     if (!nganhId) return;
@@ -71,16 +106,30 @@ const LabanMap: FC = () => {
     setAdvisor(null);
     setChatMsgs([]);
     setChatOpen(false);
+    setMobility([]);
     axiosInstance.get(`/laban/nganh/${nganhId}/curriculum`)
       .then((res) => setCur(res.data?.data ?? null))
       .catch(() => setError("Không tải được bản đồ CTĐT."))
       .finally(() => setLoadingCur(false));
+    axiosInstance.get(`/laban/nganh/${nganhId}/mobility`)
+      .then((res) => setMobility(res.data?.data ?? []))
+      .catch(() => setMobility([]));
   }, [nganhId]);
 
   const ploMap = useMemo(() => {
     const m: Record<string, string> = {};
     cur?.plo.forEach((p) => { m[p.ma_plo] = p.mo_ta; });
     return m;
+  }, [cur]);
+
+  const ploQA = useMemo(() => {
+    const withPlo = (cur?.hoc_phan ?? []).filter((h) => h.plo_codes.length > 0);
+    let yes = 0, no = 0, ref = 0;
+    withPlo.forEach((h) => {
+      const k = canCu(h.can_cu)?.kiem;
+      if (k === "yes") yes++; else if (k === "no") no++; else if (k === "ref") ref++;
+    });
+    return { total: withPlo.length, yes, no, ref, has: withPlo.length > 0 && (yes + no + ref) > 0 };
   }, [cur]);
 
   const byKhoi = useMemo(() => {
@@ -151,6 +200,14 @@ const LabanMap: FC = () => {
               <Compass className="h-5 w-5 text-teal-600 dark:text-teal-400" />
               <span className="font-bold tracking-tight">La bàn nghề nghiệp</span>
             </div>
+            <Link to="/laban/atlas" className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-sm font-medium text-teal-700 transition hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-teal-300">
+              <Grid3x3 className="h-4 w-4" /> Atlas toàn trường
+            </Link>
+            {nganhId && (
+              <Link to={`/laban/giao-thong?nganh=${nganhId}`} className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-sm font-medium text-violet-700 transition hover:bg-violet-100 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-300">
+                <Shuffle className="h-4 w-4" /> Bản đồ giao thông
+              </Link>
+            )}
           </div>
           <div className="flex items-center gap-3">
             {nganhList.length > 0 && (
@@ -231,20 +288,40 @@ const LabanMap: FC = () => {
               </div>
             ) : (
               <>
+                {/* Thanh soát chất lượng PLO */}
+                {ploQA.has && (
+                  <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                      <div className="text-sm font-semibold">Soát chất lượng gán PLO <span className="font-normal text-slate-400">({ploQA.total} học phần có PLO)</span></div>
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2 py-1 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"><span className="h-2 w-2 rounded-full bg-emerald-500" /> {ploQA.yes} đã kiểm (đề cương thật)</span>
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2 py-1 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"><span className="h-2 w-2 rounded-full bg-amber-500" /> {ploQA.no} áp chuẩn — chưa kiểm</span>
+                        {ploQA.ref > 0 && <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2 py-1 text-slate-500 dark:bg-slate-800 dark:text-slate-400"><span className="h-2 w-2 rounded-full bg-slate-400" /> {ploQA.ref} thư viện</span>}
+                      </div>
+                    </div>
+                    {ploQA.no > 0 && (
+                      <div className="mt-3 flex items-start gap-2 border-t border-slate-100 pt-3 text-xs text-amber-700 dark:border-slate-800 dark:text-amber-300">
+                        <span className="mt-0.5">⚠</span>
+                        <span><b>Còn {ploQA.no}/{ploQA.total} học phần</b> có PLO gán tự động theo khuôn ("áp chuẩn"), <b>chưa soát bằng đề cương thật</b> — Bộ môn nên rà lại (bấm vào từng học phần để xem PLO &amp; mức đóng góp). Ví dụ môn "mềm" có thể bị gán nhầm PLO phần cứng (RF/anten, vi mạch).</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Bản đồ học phần theo 4 khối */}
                 <h2 className="mb-3 mt-8 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   <GitBranch className="h-4 w-4" /> Bản đồ chương trình đào tạo
                 </h2>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-4">
                   {cur.khoi.map((label, k) => {
                     const st = ks(k);
                     return (
-                      <div key={k} className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                        <div className={`mb-2 flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold ${st.bg} ${st.text}`}>
+                      <div key={k} className="flex max-h-[72vh] flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                        <div className={`mb-2 flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold ${st.bg} ${st.text}`}>
                           <span className={`h-2.5 w-2.5 rounded-full ${st.dot}`} /> {label}
-                          <span className="ml-auto text-xs font-normal opacity-70">{byKhoi[k].length}</span>
+                          <span className="ml-auto rounded-full bg-white/60 px-1.5 text-xs font-normal dark:bg-black/20">{byKhoi[k].length}</span>
                         </div>
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-1 flex-col gap-2 overflow-y-auto pr-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-track]:bg-transparent dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
                           {byKhoi[k].map((h) => {
                             const stt = statusOf(h);
                             return (
@@ -262,8 +339,14 @@ const LabanMap: FC = () => {
                               <div className="mt-0.5 font-medium leading-snug">{h.ten_mon}</div>
                               <div className="mt-1.5 flex flex-wrap items-center gap-1">
                                 {h.so_tc && <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">{h.so_tc} TC</span>}
-                                {h.vai_tro && <span className={`rounded px-1.5 py-0.5 text-[10px] ${st.bg} ${st.text}`}>{h.vai_tro}</span>}
-                                {h.dung_chung && <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">dùng chung</span>}
+                                {h.la_gateway && <span className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300" title="Mở khoá — mở nhiều môn học sau"><Zap className="h-2.5 w-2.5" />Mở khoá</span>}
+                                {h.la_bridge && <span className="inline-flex items-center gap-0.5 rounded bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 dark:bg-violet-500/15 dark:text-violet-300" title={`Cầu nối — dùng chung ${h.so_nganh_chung ?? ""} ngành`}><Shuffle className="h-2.5 w-2.5" />Cầu nối</span>}
+                                {!h.la_gateway && !h.la_bridge && h.vai_tro && <span className={`rounded px-1.5 py-0.5 text-[10px] ${st.bg} ${st.text}`}>{viTro(h.vai_tro)}</span>}
+                                {h.plo_codes.length > 0 && canCu(h.can_cu) && canCu(h.can_cu)!.kiem !== "ref" && (
+                                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${canCu(h.can_cu)!.badge}`} title={`Căn cứ gán PLO: ${h.can_cu}`}>
+                                    {canCu(h.can_cu)!.kiem === "no" ? "⚠ PLO chưa kiểm" : "✓ PLO đã kiểm"}
+                                  </span>
+                                )}
                                 {h.tien_quyet_ma.length > 0 && <span className="text-[10px] text-slate-400">◂ {h.tien_quyet_ma.join(", ")}</span>}
                               </div>
                             </button>
@@ -326,6 +409,29 @@ const LabanMap: FC = () => {
                     </div>
                   </>
                 )}
+
+                {/* Dịch chuyển liên ngành (Internal Mobility Map) */}
+                {mobility.length > 0 && (
+                  <>
+                    <h2 className="mb-1 mt-10 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <Shuffle className="h-4 w-4" /> Ngành liền kề — dịch chuyển không đổi hẳn ngành
+                    </h2>
+                    <p className="mb-3 text-xs text-slate-400">Xếp theo số học phần dùng chung với ngành này — càng nhiều càng dễ chuyển hướng mà vẫn tận dụng tín chỉ đã học.</p>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {mobility.slice(0, 9).map((m) => (
+                        <button key={m.nganh_id} onClick={() => setNganhId(m.nganh_id)}
+                          className="rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-violet-400 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                          <div className="flex items-center justify-between gap-2">
+                            <h3 className="truncate font-semibold leading-tight">{m.ten_nganh}</h3>
+                            <span className="shrink-0 rounded-full bg-violet-50 px-2 py-0.5 text-xs font-bold text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">{m.so_chung} chung</span>
+                          </div>
+                          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"><div className="h-full rounded-full bg-violet-500" style={{ width: `${Math.min(100, m.ty_le)}%` }} /></div>
+                          {m.mon_chung.length > 0 && <div className="mt-2 truncate text-[10px] text-slate-400" title={m.mon_chung.join(", ")}>Ví dụ chung: {m.mon_chung.slice(0, 5).join(", ")}</div>}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </>
             )}
           </>
@@ -343,26 +449,56 @@ const LabanMap: FC = () => {
             <div className="mt-2 flex flex-wrap gap-2 text-xs">
               {selected.so_tc && <span className="rounded bg-slate-100 px-2 py-0.5 dark:bg-slate-800">{selected.so_tc} tín chỉ</span>}
               <span className="rounded bg-slate-100 px-2 py-0.5 dark:bg-slate-800">Học kỳ {selected.hoc_ky ?? "—"}</span>
-              {selected.vai_tro && <span className={`rounded px-2 py-0.5 ${ks(selected.khoi).bg} ${ks(selected.khoi).text}`}>{selected.vai_tro}</span>}
+              {selected.vai_tro && <span className={`rounded px-2 py-0.5 ${ks(selected.khoi).bg} ${ks(selected.khoi).text}`}>{viTro(selected.vai_tro)}</span>}
               <span className="rounded bg-slate-100 px-2 py-0.5 dark:bg-slate-800">{selected.bat_buoc ? "Bắt buộc" : "Tự chọn"}</span>
             </div>
+            {(selected.la_gateway || selected.la_bridge) && (
+              <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                {selected.la_gateway && <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"><Zap className="h-3.5 w-3.5" /> Mở khoá — mở nhiều môn học sau</span>}
+                {selected.la_bridge && <span className="inline-flex items-center gap-1 rounded-lg bg-violet-50 px-2 py-1 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300"><Shuffle className="h-3.5 w-3.5" /> Cầu nối — dùng chung {selected.so_nganh_chung ?? ""} ngành</span>}
+              </div>
+            )}
             {selected.tien_quyet_ma.length > 0 && (
               <div className="mt-4">
-                <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Học phần tiên quyết</div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Học phần tiên quyết (học trước)</div>
                 <div className="mt-1 flex flex-wrap gap-1.5">{selected.tien_quyet_ma.map((m) => <span key={m} className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs dark:bg-slate-800">{m}</span>)}</div>
+              </div>
+            )}
+            {(selected.hoc_sau_ma?.length ?? 0) > 0 && (
+              <div className="mt-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Mở khoá học phần sau</div>
+                <div className="mt-1 flex flex-wrap gap-1.5">{selected.hoc_sau_ma!.map((m) => <span key={m} className="rounded-md bg-emerald-50 px-2 py-0.5 font-mono text-xs text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">{m}</span>)}</div>
+              </div>
+            )}
+            {(selected.song_hanh_ma?.length ?? 0) > 0 && (
+              <div className="mt-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Học song hành</div>
+                <div className="mt-1 flex flex-wrap gap-1.5">{selected.song_hanh_ma!.map((m) => <span key={m} className="rounded-md bg-blue-50 px-2 py-0.5 font-mono text-xs text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">{m}</span>)}</div>
               </div>
             )}
             {selected.plo_codes.length > 0 && (
               <div className="mt-4">
-                <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Chuẩn đầu ra đóng góp (PLO)</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Chuẩn đầu ra đóng góp (PLO)</div>
+                  {canCu(selected.can_cu) && (
+                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${canCu(selected.can_cu)!.chip}`} title="Căn cứ gán PLO">
+                      {selected.can_cu} · {canCu(selected.can_cu)!.short}
+                    </span>
+                  )}
+                </div>
                 <ul className="mt-1.5 flex flex-col gap-1.5">
-                  {selected.plo_codes.map((p) => (
-                    <li key={p} className="flex gap-2 text-sm">
-                      <span className="shrink-0 rounded bg-teal-50 px-1.5 py-0.5 text-xs font-semibold text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">{p}</span>
-                      <span className="text-slate-600 dark:text-slate-300">{ploMap[p] ?? ""}</span>
-                    </li>
-                  ))}
+                  {selected.plo_codes.map((p) => {
+                    const lv = selected.plo_levels?.[p];
+                    return (
+                      <li key={p} className="flex items-center gap-2 text-sm">
+                        <span className="shrink-0 rounded bg-teal-50 px-1.5 py-0.5 text-xs font-semibold text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">{p}</span>
+                        {lv != null && <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${LV[lv] ?? LV[1]}`} title={LV_TITLE[lv] ?? ""}>mức {lv}</span>}
+                        <span className="text-slate-600 dark:text-slate-300">{ploMap[p] ?? ""}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
+                <p className="mt-2 text-[10px] text-slate-400">Mức 1 giới thiệu · 2 luyện tập · 3 vận dụng · 4 thành thạo (cam kết cao nhất).</p>
               </div>
             )}
           </div>
