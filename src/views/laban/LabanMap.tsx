@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FC, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router";
-import { ArrowLeft, Compass, Loader2, GitBranch, Star, Target, Route as RouteIcon, X, MapPin, Briefcase, MessageCircle, Send, Grid3x3, Shuffle, Zap } from "lucide-react";
+import { ArrowLeft, Compass, Loader2, GitBranch, Star, Target, Route as RouteIcon, X, MapPin, Briefcase, MessageCircle, Send, Grid3x3, Shuffle, Zap, ChevronDown, Layers } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
@@ -10,6 +10,8 @@ interface NganhItem { id: string; ma_nganh: string; ten_nganh: string; khoa_tuye
 interface Plo { ma_plo: string; mo_ta: string; nhom?: string | null; }
 interface HocPhan { ma_mon: string; ten_mon?: string | null; khoi: number; nhom?: string | null; hoc_ky?: number | null; tang?: number | null; so_tc?: string | null; vai_tro?: string | null; bat_buoc?: boolean; dung_chung?: boolean; la_gateway?: boolean; la_bridge?: boolean; so_nganh_chung?: number | null; plo_codes: string[]; plo_levels?: Record<string, number>; can_cu?: string | null; tien_quyet_ma: string[]; hoc_sau_ma?: string[]; song_hanh_ma?: string[]; }
 interface MobilityEdge { nganh_id: string; ma_nganh: string; ten_nganh: string; so_chung: number; ty_le: number; mon_chung: string[]; }
+interface KhungItem { t: "hp" | "note"; ma?: string; ten: string; tc?: number | null; }
+interface KhungBlock { level: number; code: string; ten: string; tc?: number | null; items: KhungItem[]; }
 interface GiaiDoan { giai_doan: number; ten: string; thoi_diem?: string | null; muc_tieu?: string | null; hoc_phan_ma: string[]; plo_codes: string[]; du_an?: string | null; career_action?: string | null; }
 interface Nghe { ten_vi: string; mo_ta?: string | null; nhom_nganh?: string | null; do_hot?: number | null; plo_can: string[]; }
 interface Curriculum { nganh: { id: string; ma_nganh: string; ten_nganh: string; khoa_tuyen?: string | null; tong_tc?: number | null; }; khoi: string[]; plo: Plo[]; hoc_phan: HocPhan[]; giai_doan: GiaiDoan[]; nghe: Nghe[]; }
@@ -52,6 +54,7 @@ const LV_TITLE: Record<number, string> = {
 type CanCuInfo = { short: string; badge: string; chip: string; kiem: "yes" | "no" | "ref" };
 const CANCU: Record<string, CanCuInfo> = {
   "ĐỀ CƯƠNG THẬT": { short: "đã kiểm", kiem: "yes", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300", chip: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" },
+  "MA TRẬN PLO":   { short: "ma trận PLO (BM chốt)", kiem: "yes", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300", chip: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" },
   "ÁP CHUẨN":      { short: "PLO chưa kiểm", kiem: "no", badge: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300", chip: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300" },
   "THƯ VIỆN":      { short: "thư viện", kiem: "ref", badge: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400", chip: "bg-slate-50 text-slate-500 dark:bg-slate-800 dark:text-slate-400" },
 };
@@ -71,6 +74,7 @@ const LabanMap: FC = () => {
   const [nganhList, setNganhList] = useState<NganhItem[]>([]);
   const [nganhId, setNganhId] = useState<string>("");
   const [mobility, setMobility] = useState<MobilityEdge[]>([]);
+  const [khung, setKhung] = useState<KhungBlock[]>([]);
   const [cur, setCur] = useState<Curriculum | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingCur, setLoadingCur] = useState(false);
@@ -107,6 +111,10 @@ const LabanMap: FC = () => {
     setChatMsgs([]);
     setChatOpen(false);
     setMobility([]);
+    setKhung([]);
+    axiosInstance.get(`/laban/nganh/${nganhId}/khung`)
+      .then((res) => setKhung(res.data?.data?.blocks ?? []))
+      .catch(() => setKhung([]));
     axiosInstance.get(`/laban/nganh/${nganhId}/curriculum`)
       .then((res) => setCur(res.data?.data ?? null))
       .catch(() => setError("Không tải được bản đồ CTĐT."))
@@ -358,6 +366,46 @@ const LabanMap: FC = () => {
                     );
                   })}
                 </div>
+
+                {/* Bản đồ CTĐT CHI TIẾT theo khối kiến thức (khung chính thức - nguồn A) */}
+                {khung.length > 0 && (
+                  <>
+                    <h2 className="mb-1 mt-10 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <Layers className="h-4 w-4" /> Bản đồ CTĐT chi tiết — theo khối kiến thức
+                    </h2>
+                    <p className="mb-3 text-xs text-slate-400">Đúng khung chương trình chính thức của Nhà trường (nguồn A): phân khối, số tín chỉ từng khối và nhóm học phần tự chọn. Bấm để mở/gập từng khối.</p>
+                    <div className="space-y-2">
+                      {khung.map((b, bi) => b.level === 1 ? (
+                        <div key={bi} className="mt-4 flex items-center gap-2 border-b-2 border-slate-200 pb-1.5 text-sm font-bold text-slate-700 first:mt-0 dark:border-slate-700 dark:text-slate-200">
+                          {b.code && <span className="text-teal-600 dark:text-teal-400">{b.code}.</span>}
+                          <span>{b.ten}</span>
+                          {b.tc != null && <span className="ml-auto text-xs font-normal text-slate-400">{b.tc} TC</span>}
+                        </div>
+                      ) : (
+                        <details key={bi} className="group rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900" open={bi < 3}>
+                          <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                            <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
+                            {b.code && <span className="shrink-0 rounded bg-teal-50 px-1.5 py-0.5 font-mono text-xs text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">{b.code}</span>}
+                            <span className="min-w-0 flex-1 truncate">{b.ten}</span>
+                            <span className="shrink-0 text-xs font-normal text-slate-400">{b.items.filter((i) => i.t === "hp").length} HP{b.tc != null ? ` · ${b.tc} TC` : ""}</span>
+                          </summary>
+                          <div className="border-t border-slate-100 px-3 py-1.5 dark:border-slate-800">
+                            {b.items.map((it, ii) => it.t === "hp" ? (
+                              <div key={ii} className="flex items-baseline gap-2.5 py-1 text-sm">
+                                <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">{it.ma}</span>
+                                <span className="flex-1 leading-snug text-slate-700 dark:text-slate-200">{it.ten}</span>
+                                {it.tc != null && <span className="shrink-0 text-xs text-slate-400">{it.tc} TC</span>}
+                              </div>
+                            ) : (
+                              <div key={ii} className="py-1 text-xs italic text-amber-600 dark:text-amber-400">— {it.ten}</div>
+                            ))}
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-xs text-slate-400">Nguồn: khung CTĐT chính thức Nhà trường (khung 14/08 toàn trường).</p>
+                  </>
+                )}
 
                 {/* Lộ trình 5 giai đoạn */}
                 {cur.giai_doan.length > 0 && (
