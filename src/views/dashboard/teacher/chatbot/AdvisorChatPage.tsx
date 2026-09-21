@@ -141,8 +141,10 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
         setCurrentSession(fake);
         setMessages([]);
       }
-    } catch {
-      toast.error('Không thể tạo cuộc trò chuyện.');
+    } catch (err) {
+      // Ưu tiên hiện thông báo BE trả về (VD 503: "Cổng thông tin phản hồi chậm…")
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(msg || 'Không thể tạo cuộc trò chuyện.');
     } finally {
       setCreatingSession(false);
     }
@@ -307,6 +309,7 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
             onNewChat={handleNewChat}
             onDeleteSession={handleDeleteSession}
             isLoading={loadingSessions || creatingSession}
+            contextLabel="Cố vấn"
           />
         </div>
 
@@ -364,6 +367,7 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
                 onSend={handleSend}
                 isLoading={streaming}
                 role="teacher"
+                placeholder="Hỏi về điểm, thời khóa biểu, lịch thi, tư vấn ngành nghề…"
                 suggestions={SUGGESTIONS[role]}
               />
             </>
@@ -373,8 +377,9 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
                 {loadingSessions ? <Loader2 size={30} color="white" style={{ animation: 'spin 1s linear infinite' }} /> : <GraduationCap size={30} color="white" />}
               </div>
               <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1e293b' }}>Chatbot cố vấn học tập</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', textAlign: 'center', maxWidth: 300, lineHeight: 1.6 }}>
-                Chọn cuộc trò chuyện hoặc tạo mới để bắt đầu hỏi cố vấn học tập
+              <div style={{ fontSize: '0.8rem', color: '#64748b', textAlign: 'center', maxWidth: 320, lineHeight: 1.6 }}>
+                Hỏi về <b style={{ color: '#2563eb' }}>điểm, thời khóa biểu, lịch thi, tư vấn ngành nghề</b> — dựa trên dữ liệu Cổng thông tin của bạn.
+                <br />Cần hỏi kiến thức, giải bài theo môn? Hãy chuyển sang tab <b>“{role === 'teacher' ? 'Chatbot trợ giảng' : 'Chat môn học'}”</b>.
               </div>
               <button
                 onClick={handleNewChat}

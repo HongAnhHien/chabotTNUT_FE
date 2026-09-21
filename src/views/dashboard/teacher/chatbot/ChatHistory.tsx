@@ -1,6 +1,27 @@
 import { Plus, MessageSquare, Trash2, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { IChatSession } from '@/infra/api/interfaces/IChat';
 
+// Bảng màu nhấn cho phép mỗi chế độ chat (môn học / cố vấn) có danh tính riêng,
+// nhìn phát biết ngay đang ở khu vực nào. Mặc định giữ nguyên xanh dương cũ.
+export interface ChatAccent {
+  from: string;    // gradient nút "Hội thoại mới"
+  to: string;
+  solid: string;   // màu đặc (spinner, text active)
+  soft: string;    // nền nhạt item active
+  softer: string;  // nền icon item active
+  shadow: string;  // đổ bóng nút
+  badgeText: string;
+  badgeBg: string;
+  emptyIcon: string;
+}
+
+const DEFAULT_ACCENT: ChatAccent = {
+  from: '#2563eb', to: '#3b82f6', solid: '#2563eb',
+  soft: 'rgba(37,99,235,0.08)', softer: 'rgba(37,99,235,0.13)',
+  shadow: 'rgba(37,99,235,0.28)', badgeText: '#3b82f6',
+  badgeBg: 'rgba(59,130,246,0.08)', emptyIcon: '#bfdbfe',
+};
+
 interface Props {
   sessions: IChatSession[];
   currentSessionId: string;
@@ -10,6 +31,8 @@ interface Props {
   isLoading?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
+  accent?: ChatAccent;
+  contextLabel?: string; // hậu tố cho nhãn "Gần đây" (VD "Cố vấn", "Môn học")
 }
 
 const fmtDate = (iso?: string) => {
@@ -17,17 +40,17 @@ const fmtDate = (iso?: string) => {
   return new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit' }).format(new Date(iso));
 };
 
-const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onNewChat, onDeleteSession, isLoading = false, collapsed = false, onToggleCollapse }: Props) => (
+const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onNewChat, onDeleteSession, isLoading = false, collapsed = false, onToggleCollapse, accent = DEFAULT_ACCENT, contextLabel }: Props) => (
   <aside style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', background: 'white', borderRight: '1px solid #e8edf3', overflow: 'hidden' }}>
 
     {/* New chat button + collapse toggle */}
     <div style={{ flexShrink: 0, padding: collapsed ? '14px 8px 10px' : '14px 12px 10px', display: 'flex', gap: 6, alignItems: 'center' }}>
       <button onClick={onNewChat} disabled={isLoading} title="Hội thoại mới" style={{
         flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-        padding: '10px', borderRadius: 10, background: 'linear-gradient(135deg,#2563eb,#3b82f6)',
+        padding: '10px', borderRadius: 10, background: `linear-gradient(135deg,${accent.from},${accent.to})`,
         border: 'none', color: 'white', fontSize: '0.82rem', fontWeight: 700,
         cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1,
-        boxShadow: '0 2px 10px rgba(37,99,235,0.28)', transition: 'opacity .15s',
+        boxShadow: `0 2px 10px ${accent.shadow}`, transition: 'opacity .15s',
       }}>
         {isLoading
           ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} />
@@ -50,13 +73,13 @@ const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onNewChat, o
     <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
       {isLoading && sessions.length === 0 ? (
         <div style={{ padding: '2.5rem 1rem', textAlign: 'center' }}>
-          <Loader2 size={22} color="#3b82f6" style={{ margin: '0 auto 8px', display: 'block', animation: 'spin 1s linear infinite' }} />
+          <Loader2 size={22} color={accent.to} style={{ margin: '0 auto 8px', display: 'block', animation: 'spin 1s linear infinite' }} />
           {!collapsed && <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Đang tải...</div>}
         </div>
       ) : sessions.length === 0 ? (
         <div style={{ padding: '2.5rem 1rem', textAlign: 'center' }}>
-          <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(37,99,235,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
-            <MessageSquare size={20} color="#bfdbfe" />
+          <div style={{ width: 44, height: 44, borderRadius: '50%', background: accent.soft, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+            <MessageSquare size={20} color={accent.emptyIcon} />
           </div>
           {!collapsed && (
             <>
@@ -69,7 +92,7 @@ const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onNewChat, o
         <div style={{ padding: collapsed ? '0 6px' : '0 8px' }}>
           {!collapsed && (
             <div style={{ padding: '8px 4px 4px', fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              Gần đây
+              Gần đây{contextLabel ? <span style={{ color: accent.solid }}> · {contextLabel}</span> : ''}
             </div>
           )}
           {sessions.map(s => {
@@ -77,30 +100,30 @@ const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onNewChat, o
             return (
               <div key={s.id} onClick={() => onSelectSession(s.id)} title={collapsed ? (s.name || 'Cuộc trò chuyện') : undefined} style={{
                 position: 'relative', padding: '8px', cursor: 'pointer', borderRadius: 9, marginBottom: 1,
-                background: active ? 'rgba(37,99,235,0.08)' : 'transparent', transition: 'background .12s',
+                background: active ? accent.soft : 'transparent', transition: 'background .12s',
                 display: 'flex', justifyContent: collapsed ? 'center' : 'flex-start',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, width: collapsed ? 'auto' : '100%' }}>
                   <div style={{
                     width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-                    background: active ? 'rgba(37,99,235,0.13)' : 'rgba(100,116,139,0.07)',
+                    background: active ? accent.softer : 'rgba(100,116,139,0.07)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <MessageSquare size={13} color={active ? '#2563eb' : '#94a3b8'} />
+                    <MessageSquare size={13} color={active ? accent.solid : '#94a3b8'} />
                   </div>
                   {!collapsed && (
                     <>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{
                           fontSize: '0.78rem', fontWeight: active ? 700 : 500,
-                          color: active ? '#1e3a8a' : '#334155',
+                          color: active ? accent.solid : '#334155',
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
                           {s.name || 'Cuộc trò chuyện'}
                         </div>
                         <div style={{ display: 'flex', gap: 5, marginTop: 1 }}>
                           {s.subject_id && (
-                            <span style={{ fontSize: '0.7rem', color: '#3b82f6', fontWeight: 700, background: 'rgba(59,130,246,0.08)', borderRadius: 20, padding: '0 6px' }}>
+                            <span style={{ fontSize: '0.7rem', color: accent.badgeText, fontWeight: 700, background: accent.badgeBg, borderRadius: 20, padding: '0 6px' }}>
                               {s.subject_id}
                             </span>
                           )}

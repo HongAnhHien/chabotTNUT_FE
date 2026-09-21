@@ -112,6 +112,15 @@ const SubjectPicker: FC<SubjectPickerProps> = ({ subjects, loading, onSelect, on
   </>
 );
 
+// Màu nhấn tím cho chế độ "Chat môn học" — khác hẳn xanh dương của "Cố vấn học tập"
+// để danh sách hội thoại và nút tạo mới nhìn phát biết ngay đang ở khu vực nào.
+const SUBJECT_ACCENT = {
+  from: '#6d28d9', to: '#8b5cf6', solid: '#6d28d9',
+  soft: 'rgba(109,40,217,0.08)', softer: 'rgba(109,40,217,0.14)',
+  shadow: 'rgba(109,40,217,0.28)', badgeText: '#7c3aed',
+  badgeBg: 'rgba(124,58,237,0.09)', emptyIcon: '#ddd6fe',
+};
+
 // ── Main component ────────────────────────────────────
 const StudentChatbot: FC = () => {
   const navigate = useNavigate();
@@ -425,6 +434,8 @@ const StudentChatbot: FC = () => {
               onNewChat={handleNewChat}
               onDeleteSession={handleDeleteSession}
               isLoading={loadingSessions || creatingSession}
+              accent={SUBJECT_ACCENT}
+              contextLabel="Môn học"
             />
           </div>
           <StudentTools subjects={subjects} mastery={masteryMap} onNewChat={handleNewChat} />
@@ -524,8 +535,9 @@ const StudentChatbot: FC = () => {
                 <BookOpen size={30} color="white" />
               </div>
               <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1e293b' }}>Chatbot trợ giảng môn học</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', textAlign: 'center', maxWidth: 300, lineHeight: 1.6 }}>
-                Chọn cuộc trò chuyện hoặc tạo mới để bắt đầu hỏi bài với trợ giảng AI
+              <div style={{ fontSize: '0.8rem', color: '#64748b', textAlign: 'center', maxWidth: 320, lineHeight: 1.6 }}>
+                Hỏi <b style={{ color: '#6d28d9' }}>kiến thức, giải bài, luyện tập</b> theo từng môn học — trả lời dựa trên học liệu của môn.
+                <br />Cần hỏi về điểm, thời khóa biểu, lịch thi? Hãy chuyển sang tab <b>“Cố vấn học tập”</b>.
               </div>
               <button
                 onClick={handleNewChat}
