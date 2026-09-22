@@ -207,6 +207,10 @@ const InfraTab: FC = () => {
   const [reqPerUser, setReqPerUser] = useState(40), [pct4o, setPct4o] = useState(5);
   const [miniRate, setMiniRate] = useState(77), [o4Rate, setO4Rate] = useState(1300);
   const [pa, setPa] = useState<PAKey>("PA2");
+  // Mua vs Thuê (khi tự host LLM trên GPU)
+  const [genGpu, setGenGpu] = useState(3000), [gpuPrice, setGpuPrice] = useState(28000), [gpuHourly, setGpuHourly] = useState(1.9);
+  const [staff, setStaff] = useState(45000000), [depr, setDepr] = useState(48);
+  const tout = 500, fx = 26000;
 
   const c = useMemo(() => {
     const concurrent = N * pctConc / 100;
@@ -221,8 +225,26 @@ const InfraTab: FC = () => {
     const avgReq = reqMonth > 0 ? tokenM / reqMonth : 0;
     const vps = PA[pa].cost * 1e6;
     const total = tokenM + vps;
-    return { concurrent, webRpsReal, webRpsDesign, aiConc, aiQps, aiInflight, reqMonth, reqMini, req4o, costMini, cost4o, tokenM, avgReq, vps, total };
-  }, [N, pctConc, aiChat, reqPerUser, pct4o, miniRate, o4Rate, pa]);
+
+    // ── Mua server vs Thuê (nếu tự host LLM trên GPU) ──
+    const outSec = aiQps * tout;
+    const gpu = Math.max(4, Math.ceil(outSec / genGpu) + 2);
+    const capexUSD = gpu * gpuPrice + Math.ceil(gpu / 4) * 25000 + 36000 + 25000 + 20000;
+    const capexVND = capexUSD * fx;
+    const opexBuy = (gpu * 0.7 + 3) * 730 * 3000 * 1.5 + staff + 12e6 + 10e6;
+    const deprM = capexVND / depr;
+    const tcoBuy = deprM + opexBuy, tco4Buy = capexVND + opexBuy * 48;
+    const cloudGpuVND = gpu * gpuHourly * 730 * fx;
+    const tcoCloud = cloudGpuVND + 39e6, tco4Cloud = tcoCloud * 48;
+    const tcoApi = tokenM + 40e6, tco4Api = tcoApi * 48;
+    const t4 = [tco4Buy, tco4Cloud, tco4Api];
+    let best = 0; for (let i = 1; i < 3; i++) if (t4[i] < t4[best]) best = i;
+    const beCloud = tcoCloud - opexBuy > 0 ? capexVND / (tcoCloud - opexBuy) : null;
+    const beApi = tcoApi - opexBuy > 0 ? capexVND / (tcoApi - opexBuy) : null;
+
+    return { concurrent, webRpsReal, webRpsDesign, aiConc, aiQps, aiInflight, reqMonth, reqMini, req4o, costMini, cost4o, tokenM, avgReq, vps, total,
+      gpu, capexVND, opexBuy, deprM, tcoBuy, tco4Buy, cloudGpuVND, tcoCloud, tco4Cloud, tcoApi, tco4Api, best, beCloud, beApi };
+  }, [N, pctConc, aiChat, reqPerUser, pct4o, miniRate, o4Rate, pa, genGpu, gpuPrice, gpuHourly, staff, depr]);
 
   const maxCost = Math.max(c.tokenM, c.vps);
 
@@ -244,6 +266,13 @@ const InfraTab: FC = () => {
           <Seg label="Chọn phương án" options={[{ k: "PA1", t: "PA1" }, { k: "PA2", t: "PA2 ⭐" }, { k: "PA3", t: "PA3" }]} val={pa} set={(k) => setPa(k as PAKey)} />
           <div style={{ fontSize: 12, color: SOFT, lineHeight: 1.5 }}><b style={{ color: INK }}>{PA[pa].name}</b><br />{PA[pa].cfg}<br /><span style={{ color: FAINT }}>{PA[pa].note}</span></div>
         </Group>
+        <Group title="Mua vs Thuê — tự host GPU">
+          <Slider label="Tốc độ sinh / GPU (token/s)" val={genGpu} set={setGenGpu} min={1000} max={6000} step={250} fmt={(n) => nf.format(n)} />
+          <Slider label="Giá 1 GPU (USD, H100)" val={gpuPrice} set={setGpuPrice} min={12000} max={40000} step={1000} fmt={(n) => "$" + nf.format(n)} />
+          <Slider label="Thuê GPU cloud ($/GPU/giờ)" val={gpuHourly} set={setGpuHourly} min={1} max={4} step={0.1} fmt={(n) => "$" + n} />
+          <Slider label="Nhân sự vận hành / tháng (đ)" val={staff} set={setStaff} min={0} max={120000000} step={5000000} fmt={vnd} />
+          <Slider label="Khấu hao (tháng)" val={depr} set={setDepr} min={24} max={72} step={6} fmt={(n) => n + " th"} />
+        </Group>
       </form>
 
       <div>
@@ -252,6 +281,7 @@ const InfraTab: FC = () => {
           <Stat label="Web RPS (thiết kế ×2,5)" value={Math.round(c.webRpsDesign)} sub={`thực ~${Math.round(c.webRpsReal)} req/s`} color={ACC} />
           <Stat label="Câu hỏi AI / giây" value={c.aiQps.toFixed(1)} sub={`~${Math.round(c.aiInflight)} in-flight`} />
           <Stat label="Lượt AI / tháng" value={(c.reqMonth / 1000).toFixed(0) + "k"} sub={`TB ${Math.round(c.avgReq)}đ/lượt`} />
+          <Stat label="GPU (nếu tự host)" value={c.gpu} sub="H100 80GB" color={ACC} />
         </div>
 
         <Card title="Chi phí / tháng — Token AI vs VPS" desc="Đòn bẩy lớn nhất là tỷ lệ mini/gpt-4o (4o đắt ~17×). Ở kiến trúc hiện tại KHÔNG cần GPU (LLM qua API, e5 embed local).">
@@ -265,6 +295,34 @@ const InfraTab: FC = () => {
             {c.tokenM > c.vps
               ? `⚠️ Token AI (${vnd(c.tokenM)}) > VPS (${vnd(c.vps)}) → ưu tiên kiểm soát token: mặc định mini, router độ khó, trần ngân sách, cache câu lặp.`
               : `VPS đang lớn hơn token — tải AI còn thấp, dư địa tăng cường độ dùng.`}
+          </div>
+        </Card>
+
+        <Card title="Mua server vs Thuê — chi phí sở hữu" desc="Nếu tự host LLM trên GPU (thay vì gọi API). Ô viền xanh là rẻ nhất theo TCO 4 năm với giả định hiện tại — kéo % dùng AI để thấy điểm lật.">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }} className="infra-vs">
+            {([
+              { n: "Mua server (tự host GPU)", tco: c.tcoBuy, lines: [["CAPEX ban đầu", vnd(c.capexVND)], ["Vận hành/tháng", vnd(c.opexBuy)], ["Khấu hao/tháng", vnd(c.deprM)]], cap: `Cần ${c.gpu} GPU · TCO 4 năm ${vnd(c.tco4Buy)}` },
+              { n: "Thuê GPU cloud (tự host)", tco: c.tcoCloud, lines: [["CAPEX", "0đ"], ["GPU cloud/tháng", vnd(c.cloudGpuVND)], ["App/DB VPS/tháng", vnd(39e6)]], cap: `$${gpuHourly}/GPU/giờ (cam kết) · TCO 4 năm ${vnd(c.tco4Cloud)}` },
+              { n: "Thuê VPS + OpenAI API", tco: c.tcoApi, lines: [["CAPEX", "0đ"], ["Token API/tháng", vnd(c.tokenM)], ["VPS/tháng", vnd(40e6)]], cap: `TCO 4 năm ${vnd(c.tco4Api)}` },
+            ] as { n: string; tco: number; lines: [string, string][]; cap: string }[]).map((o, i) => {
+              const isBest = i === c.best;
+              return (
+                <div key={i} style={{ position: "relative", border: `1px solid ${isBest ? GOOD : BORDER}`, boxShadow: isBest ? `0 0 0 1.5px ${GOOD}` : "none", borderRadius: 14, padding: "16px 16px 14px", background: "#fff" }}>
+                  {isBest && <span style={{ position: "absolute", top: -10, left: 14, fontSize: 10, fontWeight: 800, letterSpacing: ".05em", background: GOOD, color: "#fff", padding: "3px 9px", borderRadius: 99 }}>RẺ NHẤT 4 NĂM</span>}
+                  <div style={{ fontSize: 14, fontWeight: 800, color: INK, marginTop: isBest ? 6 : 0 }}>{o.n}</div>
+                  <div style={{ fontFamily: "ui-monospace,monospace", fontSize: 23, fontWeight: 800, color: ACC, margin: "8px 0 2px" }}>{vnd(o.tco)}<small style={{ fontSize: 11, color: FAINT, fontWeight: 500 }}> /tháng</small></div>
+                  {o.lines.map(([k, v], j) => (
+                    <div key={j} style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 12, color: SOFT, padding: "6px 0", borderTop: `1px solid ${BORDER}`, marginTop: j === 0 ? 8 : 0 }}>
+                      <span>{k}</span><b style={{ fontFamily: "ui-monospace,monospace", color: INK, fontWeight: 700 }}>{v}</b>
+                    </div>
+                  ))}
+                  <div style={{ fontSize: 11, color: FAINT, marginTop: 8, lineHeight: 1.4 }}>{o.cap}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 12, color: FAINT, marginTop: 12, paddingLeft: 12, borderLeft: `2px solid ${BORDER}` }}>
+            Điểm hoà vốn Mua vs {c.beCloud ? `Thuê GPU cloud ~${Math.round(c.beCloud)} tháng` : "Thuê GPU cloud: không (thuê rẻ hơn)"} · vs Thuê+API {c.beApi ? `~${Math.round(c.beApi)} tháng` : "không (API rẻ hơn — chưa cần mua GPU)"}. Mua server lợi thế NĐ13 (dữ liệu không rời trường); cần PoC + load test trước khi đầu tư.
           </div>
         </Card>
 
@@ -312,7 +370,7 @@ const InfraCalcPage: FC = () => {
       <main style={{ maxWidth: 1120, margin: "0 auto", padding: 20 }}>
         <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
           <button type="button" onClick={() => setTab("roi")} style={tabBtn(tab === "roi")}><GraduationCap size={15} /> ROI Trợ giảng AI · Pilot 300 SV</button>
-          <button type="button" onClick={() => setTab("infra")} style={tabBtn(tab === "infra")}><Server size={15} /> Hạ tầng 12.000 · VPS vs Token</button>
+          <button type="button" onClick={() => setTab("infra")} style={tabBtn(tab === "infra")}><Server size={15} /> Hạ tầng 12.000 · VPS · Mua vs Thuê</button>
         </div>
         <div style={{ marginBottom: 14, display: "flex", alignItems: "center", gap: 8, color: SOFT, fontSize: 12.5 }}>
           {tab === "roi" ? <Cpu size={15} color={ACC} /> : <Cloud size={15} color={ACC} />}
