@@ -15,6 +15,7 @@ import {
   FolderTree,
   TrendingUp,
   ScanFace,
+  Calculator,
   type LucideIcon,
 } from "lucide-react";
 import { ROLES, type Role } from "@/constants/roles";
@@ -112,6 +113,15 @@ export const ATLAS_APPS: AtlasApp[] = [
     roles: [ROLES.ADMIN],
     status: "available",
     to: () => "/admin/dashboard",
+  },
+  {
+    key: "tinh-toan-ha-tang",
+    name: "Tính toán hạ tầng & ROI",
+    desc: "Hoạch định năng lực & chi phí: ROI trợ giảng AI + hạ tầng 12.000 (VPS vs token).",
+    icon: Calculator,
+    roles: [ROLES.ADMIN],
+    status: "available",
+    to: () => "/tinh-toan-ha-tang",
   },
   {
     key: "tuyen-sinh",
