@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FC } from "react";
 import { Link, useSearchParams } from "react-router";
-import { ArrowLeft, Compass, Loader2, Layers } from "lucide-react";
+import { ArrowLeft, Compass, Loader2, Layers, GraduationCap, Languages, Briefcase, Route, X } from "lucide-react";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 import { API_ENDPOINTS } from "@/infra/api/conflig/apiEndpoints";
 import toast from "react-hot-toast";
@@ -20,8 +20,10 @@ const RADAR_TAG: Record<string, { label: string; cls: string }> = {
 };
 interface Edge { nganh_id: string; ma_nganh: string; ten_nganh: string; ten_khoa?: string | null; cung_nganh?: boolean; cung_khoa: boolean; so_chung: number; ty_le: number; mon_chung: string[]; optionality: number; nghe: NgheDich[]; }
 
-// màu tuyến: cùng ngành (xanh dương, gần nhất) · nội bộ khoa (A, xanh lá) · ra ngoài (C, hồng)
-const COL_NGANH = "#2563eb", COL_A = "#2f9e44", COL_C = "#d6336c";
+// màu tuyến: cùng ngành (xanh dương, gần nhất) · nội bộ khoa (A, xanh lá) · ra ngoài (C, hồng) · theo mong muốn (tím)
+const COL_NGANH = "#2563eb", COL_A = "#2f9e44", COL_C = "#d6336c", COL_WISH = "#7c3aed";
+// Bằng 2 theo xu hướng thực tiễn: khối kinh tế – quản lý có CTĐT trong trường (vẽ được tuyến)
+const RE_KINH_TE = /quản lý công nghiệp|logistic|kinh tế|quản trị/i;
 // URL phân hệ RIAT E-learning (app Next.js chạy riêng, mặc định cổng dev 3001)
 const RIAT_ELEARNING_URL = (import.meta.env.VITE_RIAT_ELEARNING_URL as string | undefined) || "http://localhost:3001";
 const colorOf = (e: Edge) => (e.cung_nganh ? COL_NGANH : e.cung_khoa ? COL_A : COL_C);
@@ -46,6 +48,9 @@ const CompetencyMap: FC = () => {
   const [mapLoading, setMapLoading] = useState(true);
   const [active, setActive] = useState<string | null>(null);
   const [radarBy, setRadarBy] = useState<Record<string, RadarItem[]>>({});
+  // Tuyến "theo mong muốn": ngành người học tự chọn (ngoài 6 tuyến gần nhất) — nhớ theo từng ngành gốc
+  const [wish, setWish] = useState<string>("");
+  const [wishPick, setWishPick] = useState<string>("");
 
   useEffect(() => {
     axiosInstance.get("/laban/nganh").then((r) => {
@@ -62,6 +67,11 @@ const CompetencyMap: FC = () => {
     let cancelled = false;
     setActive(null);
     setMapLoading(true);
+    // khôi phục tuyến mong muốn đã chọn trước đó cho đúng ngành gốc này
+    let saved = "";
+    try { saved = localStorage.getItem(`laban:wish:${nganhId}`) ?? ""; } catch { saved = ""; }
+    setWish(saved);
+    setWishPick(saved);
 
     const curReq = axiosInstance.get(`/laban/nganh/${nganhId}/curriculum`)
       .then((r) => { if (!cancelled) setCur(r.data?.data ?? null); })
@@ -104,8 +114,24 @@ const CompetencyMap: FC = () => {
       .slice(0, 6);
   }, [cur]);
 
-  const dests = [...edges].sort((a, b) => (b.cung_nganh ? 1 : 0) - (a.cung_nganh ? 1 : 0) || b.so_chung - a.so_chung).slice(0, 6);
+  const near = [...edges].sort((a, b) => (b.cung_nganh ? 1 : 0) - (a.cung_nganh ? 1 : 0) || b.so_chung - a.so_chung).slice(0, 6);
+  // Tuyến theo mong muốn: nếu ngành người học chọn không nằm trong 6 tuyến gần nhất thì vẽ thêm
+  const wishEdge = wish ? edges.find((e) => e.nganh_id === wish) ?? null : null;
+  const dests = wishEdge && !near.some((d) => d.nganh_id === wish) ? [...near, wishEdge] : near;
+  const isWish = (e: Edge) => !!wish && e.nganh_id === wish;
+  const tint = (e: Edge) => (isWish(e) ? COL_WISH : colorOf(e));
   const sel = dests.find((d) => d.nganh_id === active) || null;
+  // Danh sách chọn "muốn học thêm ngành nào khác" — mọi ngành có dữ liệu dịch chuyển, xếp theo tên
+  const wishOptions = [...edges].sort((a, b) => a.ten_nganh.localeCompare(b.ten_nganh, "vi"));
+  // Gợi ý bằng 2 khối kinh tế – quản lý (có CTĐT trong trường nên vẽ được tuyến)
+  const kinhTeGoiY = wishOptions.filter((e) => RE_KINH_TE.test(e.ten_nganh)).slice(0, 3);
+
+  const chonTuyenMongMuon = (id: string) => {
+    setWish(id);
+    setWishPick(id);
+    setActive(id || null);
+    try { if (id) localStorage.setItem(`laban:wish:${nganhId}`, id); else localStorage.removeItem(`laban:wish:${nganhId}`); } catch { /* bỏ qua */ }
+  };
 
   // SVG layout (cỡ chữ to hơn cho hài hoà với panel bên phải)
   const VB_W = 1000, VB_H = Math.max(460, 150 + dests.length * 104);
@@ -168,20 +194,20 @@ const CompetencyMap: FC = () => {
                 <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="block h-auto w-full min-w-[640px]" role="img" aria-label="Bản đồ tuyến dịch chuyển năng lực">
                   {/* tuyến */}
                   {dests.map((d, i) => {
-                    const y = ys[i], col = colorOf(d), on = active === d.nganh_id, dim = active !== null && !on;
+                    const y = ys[i], col = tint(d), on = active === d.nganh_id, dim = active !== null && !on, mm = isWish(d);
                     const path = `M${HUB.x},${HUB.y} C520,${HUB.y} 540,${y} ${NX},${y}`;
                     const bx = 560, by = HUB.y + (y - HUB.y) * 0.62;
                     return (
                       <g key={d.nganh_id} className="cursor-pointer" style={{ opacity: dim ? 0.34 : 1, transition: "opacity .15s" }}
                         onClick={() => setActive(on ? null : d.nganh_id)} tabIndex={0} role="button" aria-label={d.ten_nganh}
                         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActive(on ? null : d.nganh_id); } }}>
-                        <path d={path} fill="none" stroke={col} strokeWidth={on ? 10 : 5.5} strokeLinecap="round" style={{ transition: "stroke-width .15s" }} />
+                        <path d={path} fill="none" stroke={col} strokeWidth={on ? 10 : 5.5} strokeLinecap="round" strokeDasharray={mm ? "14 9" : undefined} style={{ transition: "stroke-width .15s" }} />
                         <circle cx={bx} cy={by} r={19} fill="var(--bead-bg)" stroke={col} strokeWidth={4} />
                         <text x={bx} y={by} textAnchor="middle" dominantBaseline="central" className="fill-slate-900 dark:fill-slate-100" style={{ fontSize: 17, fontWeight: 700 }}>{d.so_chung}</text>
                         <rect x={NX} y={y - NH / 2} width={NW} height={NH} rx={13} className="fill-slate-50 dark:fill-slate-800" stroke="var(--node-stroke)" strokeWidth={on ? 2.6 : 1.5} />
                         <rect x={NX} y={y - NH / 2} width={7} height={NH} rx={3.5} fill={col} />
                         <text x={NX + 22} y={y - 7} className="fill-slate-900 dark:fill-slate-100" style={{ fontSize: 21, fontWeight: 600 }}>{d.ten_nganh.length > 26 ? d.ten_nganh.slice(0, 25) + "…" : d.ten_nganh}</text>
-                        <text x={NX + 22} y={y + 18} className="fill-slate-500 dark:fill-slate-400" style={{ fontSize: 15 }}>{(() => { const n = d.nghe?.[0]?.ten_vi; return n ? (n.length > 30 ? n.slice(0, 29) + "…" : n) : (d.cung_khoa ? "Nội bộ khoa · A" : "Ra ngoài khoa · C"); })()}</text>
+                        <text x={NX + 22} y={y + 18} className="fill-slate-500 dark:fill-slate-400" style={{ fontSize: 15 }}>{(() => { if (mm) return "★ Theo mong muốn của bạn"; const n = d.nghe?.[0]?.ten_vi; return n ? (n.length > 30 ? n.slice(0, 29) + "…" : n) : (d.cung_khoa ? "Nội bộ khoa · A" : "Ra ngoài khoa · C"); })()}</text>
                       </g>
                     );
                   })}
@@ -198,6 +224,7 @@ const CompetencyMap: FC = () => {
                 <span className="inline-flex items-center gap-1.5"><i className="inline-block h-1 w-5 rounded" style={{ background: COL_NGANH }} /> Cùng ngành (gần nhất)</span>
                 <span className="inline-flex items-center gap-1.5"><i className="inline-block h-1 w-5 rounded" style={{ background: COL_A }} /> Nội bộ khoa (nguồn A)</span>
                 <span className="inline-flex items-center gap-1.5"><i className="inline-block h-1 w-5 rounded" style={{ background: COL_C }} /> Ra ngoài khoa (nguồn C)</span>
+                {wishEdge && <span className="inline-flex items-center gap-1.5"><i className="inline-block h-1 w-5 rounded" style={{ background: COL_WISH }} /> Theo mong muốn</span>}
                 <span className="ml-auto text-[11px] text-slate-400">Độ khó/Rủi ro/Độ mở lựa chọn = suy luận (B)</span>
               </div>
             </div>
@@ -227,17 +254,42 @@ const CompetencyMap: FC = () => {
                     </div>
                   )}
                   <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
-                    <p>Người học có thể tận dụng học <b>song song 2 bằng đại học</b>, hoặc <b>định hướng bồi dưỡng các kỹ năng chuyên môn</b> cho tương lai.</p>
-                    <button type="button" onClick={openRiatSso} className="mt-2 inline-flex items-center gap-1 font-medium text-teal-700 hover:underline dark:text-teal-300">Xem thêm khoá bồi dưỡng tại RIAT E-learning →</button>
+                    <h3 className="flex items-center gap-1.5 text-sm font-bold text-slate-800 dark:text-slate-100"><GraduationCap className="h-4 w-4 text-teal-600 dark:text-teal-400" /> Gợi ý học bằng 2 — xu hướng thực tiễn</h3>
+                    <p className="mt-1.5">Người học có thể tận dụng học <b>song song 2 bằng đại học</b>. Hai hướng đang có nhu cầu tuyển dụng rõ nhất với kỹ sư TNUT:</p>
+                    <div className="mt-2.5 flex flex-col gap-2">
+                      <div className="rounded-lg border border-slate-200 bg-white p-2.5 dark:border-slate-700 dark:bg-slate-900">
+                        <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-100"><Languages className="h-4 w-4 text-sky-600 dark:text-sky-400" /> Tiếng Anh kỹ thuật</div>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Điều kiện cần để vào doanh nghiệp FDI, đọc tài liệu kỹ thuật gốc và dự tuyển các chương trình trao đổi, thực tập nước ngoài.</p>
+                        <button type="button" onClick={openRiatSso} className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-teal-700 hover:underline dark:text-teal-300">Khoá tiếng Anh kỹ thuật tại RIAT E-learning →</button>
+                      </div>
+                      <div className="rounded-lg border border-slate-200 bg-white p-2.5 dark:border-slate-700 dark:bg-slate-900">
+                        <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-100"><Briefcase className="h-4 w-4 text-violet-600 dark:text-violet-400" /> Khối kinh tế – quản lý</div>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Kỹ sư biết quản trị sản xuất, chi phí, chuỗi cung ứng là lợi thế khi lên vị trí trưởng nhóm, quản đốc, quản lý dự án.</p>
+                        {kinhTeGoiY.length > 0 ? (
+                          <div className="mt-1.5 flex flex-wrap gap-1.5">
+                            {kinhTeGoiY.map((e) => (
+                              <button key={e.nganh_id} type="button" onClick={() => chonTuyenMongMuon(e.nganh_id)}
+                                className="rounded-full border border-violet-300 bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 transition hover:bg-violet-100 dark:border-violet-500/40 dark:bg-violet-500/10 dark:text-violet-300">
+                                Vẽ tuyến → {e.ten_nganh}
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <button type="button" onClick={openRiatSso} className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-teal-700 hover:underline dark:text-teal-300">Khoá bồi dưỡng quản trị tại RIAT E-learning →</button>
+                        )}
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs text-slate-400">Học bằng 2 / bồi dưỡng là <b>định hướng (nguồn B)</b> — điều kiện đăng ký thực tế theo quy chế đào tạo của Nhà trường.</p>
                   </div>
                 </>
               ) : (
                 <>
                   <h2 className="flex flex-wrap items-center gap-2 text-base font-bold leading-tight">
-                    <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: colorOf(sel) }} />{sel.ten_nganh}
+                    <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: tint(sel) }} />{sel.ten_nganh}
                     {sel.cung_nganh
                       ? <span className="rounded px-1.5 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">Cùng ngành</span>
                       : <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${sel.cung_khoa ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" : "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300"}`}>Nguồn {sel.cung_khoa ? "A" : "C"}</span>}
+                    {isWish(sel) && <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">Theo mong muốn</span>}
                   </h2>
                   {sel.ten_khoa && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{sel.ten_khoa}</p>}
                   {sel.nghe?.length > 0 && (
@@ -269,7 +321,7 @@ const CompetencyMap: FC = () => {
                     <div className="flex flex-col">
                       {sel.mon_chung.map((c) => (
                         <div key={c} className="flex items-baseline gap-2.5 border-t border-slate-100 py-1.5 first:border-t-0 dark:border-slate-800">
-                          <span className="shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold text-white" style={{ background: colorOf(sel) }}>{c}</span>
+                          <span className="shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold text-white" style={{ background: tint(sel) }}>{c}</span>
                           <span className="text-sm text-slate-700 dark:text-slate-200">{nameOf[c] ?? c}</span>
                         </div>
                       ))}
@@ -300,8 +352,36 @@ const CompetencyMap: FC = () => {
                         ? "Tuyến nội bộ khoa — dịch chuyển thuận lợi, tận dụng phần lớn tín chỉ đã học."
                         : "Tuyến ra ngoài khoa (nguồn C) — cần đối chiếu CTĐT ngành đích khi chuyển; số môn chung càng cao càng dễ."}
                   </div>
+                  {isWish(sel) && (
+                    <div className="mt-2 border-l-[3px] border-violet-400 pl-3 text-sm text-slate-500 dark:text-slate-400">
+                      Tuyến bạn tự chọn. Số học phần dùng chung càng thấp thì càng nên tính phương án <b>học bằng 2</b> thay vì chuyển ngành — trao đổi với cố vấn học tập trước khi đăng ký.
+                    </div>
+                  )}
                 </>
               )}
+
+              {/* Bản đồ dịch chuyển theo mong muốn — chọn bất kỳ ngành nào để vẽ thêm tuyến */}
+              <div className="mt-5 rounded-xl border border-violet-200 bg-violet-50/60 p-3 dark:border-violet-500/30 dark:bg-violet-500/5">
+                <h3 className="flex items-center gap-1.5 text-sm font-bold text-slate-800 dark:text-slate-100"><Route className="h-4 w-4 text-violet-600 dark:text-violet-400" /> Bạn muốn học thêm ngành nào khác?</h3>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Chọn ngành mong muốn — hệ thống vẽ thêm tuyến dịch chuyển riêng cho bạn, kèm học phần cầu nối, mức chung và độ khó.</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <select value={wishPick} onChange={(e) => setWishPick(e.target.value)}
+                    className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-800">
+                    <option value="">— Chọn ngành mong muốn —</option>
+                    {wishOptions.map((e) => <option key={e.nganh_id} value={e.nganh_id}>{e.ten_nganh}</option>)}
+                  </select>
+                  <button type="button" disabled={!wishPick} onClick={() => chonTuyenMongMuon(wishPick)}
+                    className="rounded-lg bg-violet-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-40">
+                    Vẽ tuyến
+                  </button>
+                </div>
+                {wishEdge && (
+                  <div className="mt-2 flex items-center gap-2 text-xs text-violet-700 dark:text-violet-300">
+                    <span className="min-w-0 flex-1 truncate">Đang hiển thị tuyến mong muốn: <b>{wishEdge.ten_nganh}</b> · {wishEdge.so_chung} học phần dùng chung ({wishEdge.ty_le}%)</span>
+                    <button type="button" onClick={() => chonTuyenMongMuon("")} className="inline-flex shrink-0 items-center gap-0.5 rounded px-1.5 py-0.5 hover:bg-violet-100 dark:hover:bg-violet-500/15"><X className="h-3.5 w-3.5" /> Bỏ tuyến</button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
