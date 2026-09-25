@@ -58,6 +58,7 @@ const TeacherAssignmentDetail = lazy(() => import("@views/dashboard/teacher/assi
 const TeacherExamView      = lazy(() => import("@views/dashboard/teacher/exams/TeacherExamView"));
 const TeacherSubjectFiles  = lazy(() => import("@views/dashboard/teacher/subjects/TeacherSubjectFiles"));
 const TeacherBaiGiang      = lazy(() => import("@views/dashboard/teacher/baigiang/TeacherBaiGiang"));
+const TeacherBangDiem      = lazy(() => import("@views/dashboard/teacher/bangdiem/TeacherBangDiem"));
 const TeacherBaiGiangEditor = lazy(() => import("@views/dashboard/teacher/baigiang/TeacherBaiGiangEditor"));
 const TeacherSubjectExams  = lazy(() => import("@views/dashboard/teacher/subjects/exams"));
 const ClassStudentsPage    = lazy(() => import("@views/dashboard/teacher/class"));
@@ -283,6 +284,7 @@ export const appRoutes: RouteObject[] = [
       { path: "subjects/:maMon/exams",       element: <TeacherSubjectExams /> },
       { path: "subjects/:maMon/analytics",   element: <SubjectAnalyticsPage /> },
       { path: "subjects/:maMon/bai-giang",   element: <TeacherBaiGiang /> },
+      { path: "subjects/:maMon/bang-diem",   element: <TeacherBangDiem /> },
       { path: "bai-giang/:id",               element: <TeacherBaiGiangEditor /> },
       { path: "courses/:idToHoc/students",   element: <ClassStudentsPage /> },
       { path: "courses/:idToHoc/analytics",  element: <ClassAnalyticsPage /> },

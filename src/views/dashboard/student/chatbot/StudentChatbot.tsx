@@ -1,6 +1,6 @@
 import { type FC, useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ArrowLeft, BookOpen, X, Loader2, Menu, AlertCircle } from 'lucide-react';
+import { ArrowLeft, BookOpen, X, Loader2, Menu, AlertCircle, CalendarCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import ChatHistory from '@/views/dashboard/teacher/chatbot/ChatHistory';
@@ -14,6 +14,9 @@ import ChatApi from '@/infra/chat/chat_api';
 import StudentApi, { type ISubjectMastery } from '@/infra/student/student_api';
 import StudentTools from '@/views/dashboard/student/chatbot/StudentTools';
 import LectureSummary from '@/views/dashboard/student/chatbot/LectureSummary';
+import LuyenTapApi from '@/infra/luyentap/luyentap_api';
+import { batDauLuyenTap } from '@/views/dashboard/student/subjects/StudentLuyenTapPanel';
+import type { ILuyenTapBuoi, ILuyenTapNhacResponse } from '@/infra/api/interfaces/ILuyenTap';
 import type { IChatSession } from '@/infra/api/interfaces/IChat';
 import type { IStudentSubject, IStudentExamStatusResponse } from '@/infra/api/interfaces/IStudent';
 import { Button } from '@/components/ui/button';
@@ -32,6 +35,11 @@ const extractAsgnLink = (content: string): { link: string; cleaned: string } | n
     .trim();
   return { link, cleaned };
 };
+
+// ── Ý định "tạo đề ôn tập" khi SV tự gõ (chỉ dùng cho môn có lịch luyện tập hằng tuần) ──
+const Y_DINH_LUYEN_TAP = /((tạo|ra|cho|làm|lấy|gửi|soạn)\s+(cho\s+)?(em|mình|tôi|tớ)?\s*(một|vài|ít|mấy|\d+)?\s*(bộ\s+)?(đề|bài|câu hỏi|câu)\s*(ôn|luyện|trắc nghiệm|kiểm tra|thi thử))|ôn luyện|luyện tập|kiểm tra thử|thi thử|làm bài ôn|đề ôn/i;
+const HOI_KIEN_THUC = /(là gì|giải thích|tại sao|vì sao|như thế nào|thế nào là|khác nhau|so sánh|nghĩa là|\?$)/i;
+const laYDinhLuyenTap = (t: string) => Y_DINH_LUYEN_TAP.test(t) && !HOI_KIEN_THUC.test(t.trim());
 
 // ── CSS ───────────────────────────────────────────────
 const CSS = `
@@ -147,6 +155,9 @@ const StudentChatbot: FC = () => {
   // Exam status
   const user = useAuthStore(s => s.user);
   const [examStatus, setExamStatus] = useState<IStudentExamStatusResponse | null>(null);
+  // Nhắc luyện tập hằng tuần: các buổi đang mở mà SV chưa có điểm
+  const [nhacLT, setNhacLT] = useState<ILuyenTapNhacResponse['data']>(null);
+  const [moLT, setMoLT] = useState(false);
 
   // CSAT rating — derived, không cần effect: ẩn ngay khi dismiss (submit/skip) qua
   // dismissedSessionId, ẩn vĩnh viễn qua storage sau khi session đã "resolved".
@@ -224,6 +235,15 @@ const StudentChatbot: FC = () => {
 
   // Nạp danh sách môn ngay khi vào trang để panel "Mức thành thạo" có dữ liệu.
   useEffect(() => { loadSubjects(); }, [loadSubjects]);
+
+  useEffect(() => {
+    const maMon = currentSession?.subject_id;
+    setNhacLT(null);
+    if (!maMon) return;
+    let alive = true;
+    LuyenTapApi.getNhac(maMon).then(r => { if (alive) setNhacLT(r.data); }).catch(() => {});
+    return () => { alive = false; };
+  }, [currentSession?.subject_id]);
 
   // Mức thành thạo để hiện % ở header môn.
   const [masteryMap, setMasteryMap] = useState<Record<string, ISubjectMastery>>({});
@@ -312,8 +332,75 @@ const StudentChatbot: FC = () => {
   };
 
   // ── Send message (SSE) ───────────────────────────────
+  /**
+   * Mở đề luyện tập mới của môn: ưu tiên buổi đang mở chưa làm; `onThem` = khi đã luyện đủ thì mở lại
+   * buổi đang mở gần nhất (hoặc buổi đã qua gần nhất) để ôn thêm — lượt sau hạn không tính điểm.
+   */
+  const chonBuoiLuyenTap = async (onThem: boolean, chuong?: number): Promise<ILuyenTapBuoi | undefined> => {
+    // SV nêu "chương N" → chọn buổi đã mở thuộc chương đó (ưu tiên buổi chưa có điểm)
+    if (chuong && currentSession?.subject_id) {
+      try {
+        const cua = (await LuyenTapApi.getStudent(currentSession.subject_id)).data.buoi
+          .filter(x => x.trang_thai !== 'chua_mo' && x.chuong.includes(chuong));
+        const b = cua.find(x => x.diem == null && x.trang_thai === 'dang_mo') ?? cua.find(x => x.trang_thai === 'dang_mo') ?? cua[cua.length - 1];
+        if (b) return b;
+      } catch { /* rơi về cách chọn mặc định */ }
+    }
+    let b: ILuyenTapBuoi | undefined = nhacLT?.can_lam[0];
+    if (!b && onThem && currentSession?.subject_id) {
+      try {
+        const gan = [...(await LuyenTapApi.getStudent(currentSession.subject_id)).data.buoi].reverse();
+        b = gan.find(x => x.trang_thai === 'dang_mo') ?? gan.find(x => x.trang_thai === 'qua_han');
+      } catch { /* bỏ qua — báo ở nơi gọi */ }
+    }
+    return b;
+  };
+
+  const moLuyenTap = async (onThem = false) => {
+    const b = await chonBuoiLuyenTap(onThem);
+    if (!b) { toast(onThem ? 'Môn này chưa có buổi luyện tập nào đang mở.' : 'Tuần này bạn đã luyện đủ các buổi đang mở. 👏'); return; }
+    setMoLT(true);
+    await batDauLuyenTap(b.id, navigate);
+    setMoLT(false);
+  };
+
+  /** SV tự gõ "tạo đề ôn tập…" ở môn có lịch luyện tập → tạo lượt luyện tập, trả lời ngay trong khung chat kèm thẻ Làm bài. */
+  const traLoiLuyenTap = async (text: string) => {
+    const t0 = Date.now();
+    setMessages(prev => [...prev, { id: `user-${t0}`, role: 'user', content: text, timestamp: new Date() }]);
+    const soChuong = Number(text.match(/chương\s*(\d+)/i)?.[1]) || undefined;
+    const b = await chonBuoiLuyenTap(true, soChuong);
+    let content: string;
+    let link: string | undefined;
+    if (!b) {
+      content = soChuong
+        ? `Các buổi luyện tập của Chương ${soChuong} chưa mở. Em có thể hỏi mình về nội dung chương này trong lúc chờ nhé!`
+        : 'Môn này hiện chưa có buổi luyện tập nào đang mở. Em có thể hỏi mình về nội dung bài học trong lúc chờ nhé!';
+    } else {
+      try {
+        const asgId = await LuyenTapApi.batDau(b.id);
+        link = `${window.location.origin}/student/assignments/${asgId}`;
+        const chuaLam = nhacLT?.can_lam.some(x => x.id === b.id);
+        content = `Mình đã tạo đề luyện tập **${b.ma_buoi} — ${b.ten}**: ${b.so_cau} câu rút từ ngân hàng câu hỏi của môn, `
+          + `làm trong ${b.thoi_gian} phút, máy chấm ngay và giải thích từng phương án. `
+          + (chuaLam
+            ? 'Điểm cao nhất nộp trước hạn được tính vào cột luyện tập.'
+            : 'Em đã luyện đủ các buổi đang mở — lượt này để ôn thêm (điểm cao nhất vẫn được giữ).')
+          + '\n\nBấm **Làm bài** bên dưới để bắt đầu. Muốn chọn buổi khác, em mở khung "Luyện tập hằng tuần" ở trang môn học.';
+      } catch (e: unknown) {
+        content = (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Mình chưa mở được đề luyện tập, em thử lại sau nhé.';
+      }
+    }
+    setMessages(prev => [...prev, { id: `bot-${t0}`, role: 'assistant', content, timestamp: new Date(), intent: 'luyen_tap_tao_de', assignmentLink: link }]);
+  };
+
   const handleSend = async (text: string) => {
     if (!currentSession || streaming) return;
+    if (text.startsWith('🗓️ Luyện tập tuần này')) { void moLuyenTap(); return; }
+    // Môn đã có lịch luyện tập hằng tuần → "Tạo câu hỏi ôn tập" rút đề từ ngân hàng câu hỏi của môn
+    // (máy chấm + giải thích + tính điểm luyện tập). Môn chưa có lịch vẫn hỏi chatbot như cũ.
+    if (text === '📝 Tạo câu hỏi ôn tập' && nhacLT) { void moLuyenTap(true); return; }
+    if (nhacLT && laYDinhLuyenTap(text)) { void traLoiLuyenTap(text); return; }
 
     const userMsgId = `user-${Date.now()}`;
     const botMsgId  = `bot-${Date.now()}`;
@@ -505,6 +592,22 @@ const StudentChatbot: FC = () => {
             </div>
           )}
 
+          {/* ── Nhắc luyện tập hằng tuần ── */}
+          {currentSession && nhacLT && nhacLT.can_lam.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', background: 'rgba(37,99,235,0.06)', borderBottom: '1px solid rgba(37,99,235,0.16)', flexShrink: 0, flexWrap: 'wrap' }}>
+              <CalendarCheck size={15} color="#2563eb" style={{ flexShrink: 0 }} />
+              <span style={{ flex: 1, minWidth: 200, fontSize: '0.78rem', color: '#1e3a8a', fontWeight: 600 }}>
+                Luyện tập tuần này: còn {nhacLT.can_lam.length} buổi chưa làm ({nhacLT.can_lam.slice(0, 4).map(b => b.ma_buoi).join(', ')}
+                {nhacLT.can_lam.length > 4 ? '…' : ''}) — mỗi buổi 10 câu, tính vào cột điểm luyện tập.
+                {nhacLT.tong_ket.diem_tb != null && <span style={{ color: '#64748b', fontWeight: 500 }}> TB hiện tại {nhacLT.tong_ket.diem_tb}/10.</span>}
+              </span>
+              <button onClick={() => void moLuyenTap()} disabled={moLT}
+                style={{ flexShrink: 0, padding: '5px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg,#1d4ed8,#2563eb)', color: 'white', fontWeight: 700, fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                {moLT ? 'Đang mở…' : `Luyện ${nhacLT.can_lam[0].ma_buoi} ngay`}
+              </button>
+            </div>
+          )}
+
           {currentSession ? (
             <>
               {messages.length === 0 && !streaming ? (
@@ -537,7 +640,10 @@ const StudentChatbot: FC = () => {
               <ChatInput
                 onSend={handleSend}
                 isLoading={streaming}
-                suggestions={['📚 Tóm tắt chương 1', '📝 Tạo câu hỏi ôn tập', '🎯 Gợi ý lộ trình ôn thi']}
+                suggestions={[
+                  ...(nhacLT && nhacLT.can_lam.length > 0 ? [`🗓️ Luyện tập tuần này (${nhacLT.can_lam[0].ma_buoi})`] : []),
+                  '📚 Tóm tắt chương 1', '📝 Tạo câu hỏi ôn tập', '🎯 Gợi ý lộ trình ôn thi',
+                ]}
               />
             </>
           ) : (

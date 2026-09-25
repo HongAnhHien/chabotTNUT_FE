@@ -9,6 +9,7 @@ import FilePreviewModal, { type PreviewState } from "@/components/common/FilePre
 import FilesTab from "./FilesTab";
 import ExamsTab from "./ExamsTab";
 import StudentBaiGiangPanel from "./StudentBaiGiangPanel";
+import StudentLuyenTapPanel from "./StudentLuyenTapPanel";
 import CSS from "./subjectDetail.styles";
 
 const pad2 = (n: number | string) => String(n).padStart(2, '0');
@@ -127,6 +128,9 @@ const StudentSubjectDetail: FC = () => {
 
           {/* Bài giảng AI giảng viên đã duyệt (chỉ hiện nếu có) */}
           <StudentBaiGiangPanel maMon={subject.ma_mon} />
+
+          {/* Luyện tập hằng tuần theo buổi (chỉ hiện nếu môn có lịch luyện tập) */}
+          <StudentLuyenTapPanel maMon={subject.ma_mon} />
 
           {/* Tabs */}
           <div className="ssd-tab-bar">

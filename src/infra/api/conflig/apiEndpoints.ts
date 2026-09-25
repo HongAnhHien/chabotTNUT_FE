@@ -77,6 +77,15 @@ export const API_ENDPOINTS = {
     BAI_GIANG_DUYET:    (id: string) => `/teacher/bai-giang/${id}/duyet`,
     BAI_GIANG_BO_DUYET: (id: string) => `/teacher/bai-giang/${id}/bo-duyet`,
     BAI_GIANG_TAI:      (id: string) => `/teacher/bai-giang/${id}/tai`,
+    // Luyện tập hằng tuần + bảng điểm tổng hợp theo trọng số
+    LUYEN_TAP:          '/teacher/luyen-tap',
+    LUYEN_TAP_ITEM:     (id: string) => `/teacher/luyen-tap/${id}`,
+    BANG_DIEM:          '/teacher/bang-diem',
+    BANG_DIEM_LOP:      '/teacher/bang-diem/lop',
+    BANG_DIEM_SV:       '/teacher/bang-diem/sinh-vien',
+    BANG_DIEM_CHOT:     '/teacher/bang-diem/chot',
+    BANG_DIEM_CAU_HINH: '/teacher/bang-diem/cau-hinh',
+    BANG_DIEM_XUAT:     '/teacher/bang-diem/xuat',
 
     // Legacy aliases (kept for backward compat with existing drawers)
     SUBJECT_AI_FILES:     (s: string) => `/teacher/subjects/${s}/files/sent`,
@@ -178,6 +187,11 @@ export const API_ENDPOINTS = {
     BAI_GIANG:      '/student/bai-giang',
     BAI_GIANG_ITEM: (id: string) => `/student/bai-giang/${id}`,
     BAI_GIANG_TAI:  (id: string) => `/student/bai-giang/${id}/tai`,
+
+    // Luyện tập hằng tuần theo buổi
+    LUYEN_TAP:         '/student/luyen-tap',
+    LUYEN_TAP_NHAC:    '/student/luyen-tap/nhac',
+    LUYEN_TAP_BAT_DAU: (id: string) => `/student/luyen-tap/${id}/bat-dau`,
   },
 
   FILES: {
