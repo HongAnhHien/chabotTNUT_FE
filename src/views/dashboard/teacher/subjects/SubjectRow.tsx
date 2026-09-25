@@ -1,5 +1,5 @@
 import { type FC, useState } from 'react';
-import { BookOpen, Users, MapPin, Calendar, ChevronDown, FileText, ClipboardList, Info, Sparkles, AlertTriangle, MessageCircle } from 'lucide-react';
+import { BookOpen, Users, MapPin, Calendar, ChevronDown, FileText, ClipboardList, Info, Sparkles, AlertTriangle, MessageCircle, Presentation } from 'lucide-react';
 import type { ITeacherSubjectWithClasses, ISubjectAnalyticsEmbed } from '@/infra/api/interfaces/ITeacher';
 import type { IAnalyticsSummary } from '@/infra/api/interfaces/IChat';
 
@@ -25,12 +25,13 @@ interface Props {
   onDetail:   () => void;
   onFiles:    () => void;
   onExams:    () => void;
+  onBaiGiang: () => void;
   onClsDetail: (cls: Cls) => void;
   onStudents:  (cls: Cls) => void;
   onClsExams:  (cls: Cls) => void;
 }
 
-const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, chatSummary, onDetail, onFiles, onExams, onClsDetail, onStudents, onClsExams }) => {
+const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, chatSummary, onDetail, onFiles, onExams, onBaiGiang, onClsDetail, onStudents, onClsExams }) => {
   const [expanded, setExpanded] = useState(true);
   const { subject, classes } = course;
   const color = COLORS[colorIdx % COLORS.length];
@@ -107,6 +108,9 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, 
           </button>
           <button onClick={onExams} className="sl-btn" style={{ background:'rgba(37,99,235,0.07)', border:'1px solid rgba(37,99,235,0.18)', color:'#2563eb' }}>
             <ClipboardList size={13} /> Bài kiểm tra
+          </button>
+          <button onClick={onBaiGiang} className="sl-btn" style={{ background:'rgba(249,115,22,0.08)', border:'1px solid rgba(249,115,22,0.25)', color:'#ea580c' }}>
+            <Presentation size={13} /> Bài giảng AI
           </button>
         </div>
 

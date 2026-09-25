@@ -69,6 +69,15 @@ export const API_ENDPOINTS = {
     NOTIFICATION_READ:      (id: string) => `/teacher/notifications/${id}/read`,
     NOTIFICATIONS_READ_ALL: '/teacher/notifications/read-all',
 
+    // Soạn bài giảng AI (dự án 26)
+    BAI_GIANG:          '/teacher/bai-giang',
+    BAI_GIANG_CHUONG:   '/teacher/bai-giang/chuong',
+    BAI_GIANG_SINH:     '/teacher/bai-giang/sinh',
+    BAI_GIANG_ITEM:     (id: string) => `/teacher/bai-giang/${id}`,
+    BAI_GIANG_DUYET:    (id: string) => `/teacher/bai-giang/${id}/duyet`,
+    BAI_GIANG_BO_DUYET: (id: string) => `/teacher/bai-giang/${id}/bo-duyet`,
+    BAI_GIANG_TAI:      (id: string) => `/teacher/bai-giang/${id}/tai`,
+
     // Legacy aliases (kept for backward compat with existing drawers)
     SUBJECT_AI_FILES:     (s: string) => `/teacher/subjects/${s}/files/sent`,
     SUBJECT_AI_SEND:      (s: string) => `/teacher/subjects/${s}/files/send-to-api`,
@@ -164,6 +173,11 @@ export const API_ENDPOINTS = {
     NOTIFICATIONS:          '/student/notifications',
     NOTIFICATION_READ:      (id: string) => `/student/notifications/${id}/read`,
     NOTIFICATIONS_READ_ALL: '/student/notifications/read-all',
+
+    // Bài giảng AI đã được GV duyệt
+    BAI_GIANG:      '/student/bai-giang',
+    BAI_GIANG_ITEM: (id: string) => `/student/bai-giang/${id}`,
+    BAI_GIANG_TAI:  (id: string) => `/student/bai-giang/${id}/tai`,
   },
 
   FILES: {

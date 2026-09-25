@@ -41,6 +41,7 @@ const StudentChatbotPage        = lazy(() => import("@views/dashboard/student/ch
 const StudentAdvisorPage        = lazy(() => import("@views/dashboard/student/chatbot/StudentAdvisor"));
 const ChatModeLayout            = lazy(() => import("@views/dashboard/teacher/chatbot/ChatModeLayout"));
 const StudentSubjectDetailPage  = lazy(() => import("@views/dashboard/student/subjects/StudentSubjectDetail"));
+const StudentBaiGiangViewer     = lazy(() => import("@views/dashboard/student/baigiang/StudentBaiGiangViewer"));
 const StudentSchedulePage       = lazy(() => import("@views/dashboard/student/schedule/StudentSchedule"));
 const NotificationsPage         = lazy(() => import("@views/dashboard/notifications/NotificationsPage"));
 
@@ -56,6 +57,8 @@ const TeacherAssignmentsPage  = lazy(() => import("@views/dashboard/teacher/assi
 const TeacherAssignmentDetail = lazy(() => import("@views/dashboard/teacher/assignments/TeacherAssignmentDetail"));
 const TeacherExamView      = lazy(() => import("@views/dashboard/teacher/exams/TeacherExamView"));
 const TeacherSubjectFiles  = lazy(() => import("@views/dashboard/teacher/subjects/TeacherSubjectFiles"));
+const TeacherBaiGiang      = lazy(() => import("@views/dashboard/teacher/baigiang/TeacherBaiGiang"));
+const TeacherBaiGiangEditor = lazy(() => import("@views/dashboard/teacher/baigiang/TeacherBaiGiangEditor"));
 const TeacherSubjectExams  = lazy(() => import("@views/dashboard/teacher/subjects/exams"));
 const ClassStudentsPage    = lazy(() => import("@views/dashboard/teacher/class"));
 const TeacherAdvisorDashboard      = lazy(() => import("@views/dashboard/teacher/advisor/TeacherAdvisorDashboard"));
@@ -221,6 +224,7 @@ export const appRoutes: RouteObject[] = [
       { path: "dashboard",        element: <StudentAspx /> },
       { path: "subjects",             element: <StudentSubjectsPage /> },
       { path: "subjects/:maMon",   element: <StudentSubjectDetailPage /> },
+      { path: "bai-giang/:id",     element: <StudentBaiGiangViewer /> },
       { path: "schedule",         element: <StudentSchedulePage /> },
       { path: "notifications",    element: <NotificationsPage /> },
       { path: "profile",          element: <StudentProfile /> },
@@ -278,6 +282,8 @@ export const appRoutes: RouteObject[] = [
       { path: "subjects/:maMon/files",       element: <TeacherSubjectFiles /> },
       { path: "subjects/:maMon/exams",       element: <TeacherSubjectExams /> },
       { path: "subjects/:maMon/analytics",   element: <SubjectAnalyticsPage /> },
+      { path: "subjects/:maMon/bai-giang",   element: <TeacherBaiGiang /> },
+      { path: "bai-giang/:id",               element: <TeacherBaiGiangEditor /> },
       { path: "courses/:idToHoc/students",   element: <ClassStudentsPage /> },
       { path: "courses/:idToHoc/analytics",  element: <ClassAnalyticsPage /> },
       { path: "advisor",         element: <TeacherAdvisorDashboard /> },

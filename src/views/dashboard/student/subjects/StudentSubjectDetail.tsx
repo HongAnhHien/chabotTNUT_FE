@@ -8,6 +8,7 @@ import type { IStudentAssignmentListItem } from "@/infra/api/interfaces/IAssignm
 import FilePreviewModal, { type PreviewState } from "@/components/common/FilePreviewModal";
 import FilesTab from "./FilesTab";
 import ExamsTab from "./ExamsTab";
+import StudentBaiGiangPanel from "./StudentBaiGiangPanel";
 import CSS from "./subjectDetail.styles";
 
 const pad2 = (n: number | string) => String(n).padStart(2, '0');
@@ -123,6 +124,9 @@ const StudentSubjectDetail: FC = () => {
               </span>
             </div>
           )}
+
+          {/* Bài giảng AI giảng viên đã duyệt (chỉ hiện nếu có) */}
+          <StudentBaiGiangPanel maMon={subject.ma_mon} />
 
           {/* Tabs */}
           <div className="ssd-tab-bar">
