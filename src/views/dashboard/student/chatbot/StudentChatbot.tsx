@@ -507,9 +507,19 @@ const StudentChatbot: FC = () => {
 
           {currentSession ? (
             <>
-              {messages.length === 0 && (
-                <LectureSummary subjectName={subjects.find(s => s.ma_mon === currentSession.subject_id)?.ten_mon} />
-              )}
+              {messages.length === 0 && !streaming ? (
+                /* Màn chào mừng: cửa sổ "Học cùng gia sư AI" + lời chào — cuộn chung */
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+                  <LectureSummary
+                    maMon={currentSession.subject_id}
+                    subjectName={subjects.find(s => s.ma_mon === currentSession.subject_id)?.ten_mon}
+                  />
+                  <div style={{ height: 250 }}>
+                    <ChatContent role="student" messages={messages} isStreaming={streaming} sessionId={currentSession?.id}
+                      onExamDismiss={() => {}} onExamConfirm={() => Promise.resolve()} onExamPreview={() => {}} onFeedback={handleFeedback} />
+                  </div>
+                </div>
+              ) : (
               <div style={{ flex: 1, overflow: 'hidden' }}>
                 <ChatContent
                   role="student"
@@ -522,6 +532,7 @@ const StudentChatbot: FC = () => {
                   onFeedback={handleFeedback}
                 />
               </div>
+              )}
               {showRating && <RatingCard onSubmit={handleRatingSubmit} onSkip={handleRatingSkip} />}
               <ChatInput
                 onSend={handleSend}
