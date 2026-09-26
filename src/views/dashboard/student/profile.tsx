@@ -1,8 +1,7 @@
 import { type FC, useEffect, useState } from 'react';
 import {
-  User, Mail, Shield, Calendar,
-  Activity, BookOpen, Key, Clock, LogIn, Hash,
-  GraduationCap,
+  User, Shield, Calendar,
+  Activity, Clock, LogIn,
 } from 'lucide-react';
 import AuthRepository from '@/infra/AuthRepository';
 import type { IUserMe, IStudentProfileData } from '@/infra/api/interfaces/IUser';
@@ -12,14 +11,6 @@ function isStudentProfile(p: IUserMe['profile']): p is IStudentProfileData {
 }
 
 // ── helpers ──────────────────────────────────────────
-function fmtDate(iso: string | undefined): string {
-  if (!iso) return '—';
-  return new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  }).format(new Date(iso));
-}
-
 function fmtDateShort(iso: string | undefined): string {
   if (!iso) return '—';
   return new Intl.DateTimeFormat('vi-VN', {
@@ -47,23 +38,6 @@ const Skeleton: FC<{ w?: string; h?: string }> = ({ w = '100%', h = '16px' }) =>
   <div className="prof-skeleton" style={{ width: w, height: h }} />
 );
 
-// ── Info Row ─────────────────────────────────────────
-const InfoRow: FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
-  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px 0', borderBottom: '1px solid rgba(37,99,235,0.08)' }}>
-    <div style={{
-      width: 36, height: 36, borderRadius: '10px', flexShrink: 0,
-      background: 'rgba(37,99,235,0.08)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      {icon}
-    </div>
-    <div style={{ minWidth: 0 }}>
-      <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500, marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-      <div style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: 600, wordBreak: 'break-all' }}>{value}</div>
-    </div>
-  </div>
-);
-
 // ── Main ─────────────────────────────────────────────
 const StudentProfile: FC = () => {
   const [user, setUser]           = useState<IUserMe | null>(null);
@@ -82,15 +56,6 @@ const StudentProfile: FC = () => {
   };
 
   useEffect(() => { fetchProfile(); }, []);
-
-  const card: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.82)',
-    backdropFilter: 'blur(20px)',
-    border: '1px solid rgba(255,255,255,0.95)',
-    borderRadius: '20px',
-    boxShadow: '0 8px 32px rgba(37,99,235,0.08)',
-    padding: '1.5rem',
-  };
 
   return (
     <div style={{
@@ -138,7 +103,7 @@ const StudentProfile: FC = () => {
                   ? <><Skeleton w="160px" h="22px" /><div style={{ marginTop: 8 }}><Skeleton w="200px" h="14px" /></div></>
                   : <>
                       <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 800, lineHeight: 1.2 }}>{user?.name}</h1>
-                      <p style={{ margin: '4px 0 0', fontSize: '0.875rem', color: 'rgba(255,255,255,0.72)' }}>{user?.email}</p>
+                      <p style={{ margin: '4px 0 0', fontSize: '0.875rem', color: 'rgba(255,255,255,0.8)' }}>Mã SV: <b style={{ fontFamily: 'monospace' }}>{studentProfile?.student_code ?? '—'}</b></p>
                     </>
                 }
               </div>
@@ -217,104 +182,6 @@ const StudentProfile: FC = () => {
             <Activity size={16} /> {error}
           </div>
         )}
-
-        {/* ── TWO-COLUMN CARDS ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-
-          {/* Personal info */}
-          <div style={card}>
-            <h3 style={{ margin: '0 0 0.25rem', fontSize: '1rem', fontWeight: 700, color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <User size={17} color="#2563eb" /> Thông tin cá nhân
-            </h3>
-            <p style={{ margin: '0 0 1rem', fontSize: '0.78rem', color: '#94a3b8' }}>Thông tin tài khoản hệ thống</p>
-
-            {loading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[1,2,3,4].map(i => <div key={i} style={{ display: 'flex', gap: 12 }}><Skeleton w="36px" h="36px" /><div style={{ flex: 1 }}><Skeleton w="60%" h="12px" /><div style={{ marginTop: 6 }}><Skeleton w="80%" h="16px" /></div></div></div>)}
-              </div>
-            ) : (
-              <div>
-                <InfoRow icon={<Hash size={15} color="#2563eb" />}     label="Mã ID"          value={user?.id ?? '—'} />
-                <InfoRow icon={<User size={15} color="#2563eb" />}     label="Tên đăng nhập"  value={user?.username ?? '—'} />
-                <InfoRow icon={<Mail size={15} color="#2563eb" />}     label="Email"          value={user?.email ?? '—'} />
-                <InfoRow icon={<Shield size={15} color="#2563eb" />}   label="Vai trò"        value={user?.role === 'student' ? 'Sinh viên' : user?.role === 'admin' ? 'Quản trị viên' : (user?.role ?? '—')} />
-                <InfoRow icon={<Calendar size={15} color="#2563eb" />} label="Ngày tạo tài khoản" value={fmtDate(user?.created_at)} />
-              </div>
-            )}
-          </div>
-
-          {/* Student profile */}
-          <div style={card}>
-            <h3 style={{ margin: '0 0 0.25rem', fontSize: '1rem', fontWeight: 700, color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <GraduationCap size={17} color="#2563eb" /> Hồ sơ sinh viên
-            </h3>
-            <p style={{ margin: '0 0 1rem', fontSize: '0.78rem', color: '#94a3b8' }}>Thông tin học vụ từ cổng thông tin</p>
-
-            {loading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[1,2,3,4].map(i => <div key={i} style={{ display: 'flex', gap: 12 }}><Skeleton w="36px" h="36px" /><div style={{ flex: 1 }}><Skeleton w="60%" h="12px" /><div style={{ marginTop: 6 }}><Skeleton w="80%" h="16px" /></div></div></div>)}
-              </div>
-            ) : (
-              <div>
-                <InfoRow icon={<BookOpen size={15} color="#2563eb" />} label="Mã sinh viên"   value={studentProfile?.student_code ?? '—'} />
-                <InfoRow icon={<Hash size={15} color="#2563eb" />}     label="Portal ID"      value={studentProfile?.portal_id ?? '—'} />
-                <InfoRow icon={<Activity size={15} color="#2563eb" />} label="Hoạt động cuối" value={fmtDate(studentProfile?.last_active)} />
-                <InfoRow icon={<Calendar size={15} color="#2563eb" />} label="Ngày tạo hồ sơ" value={fmtDate(studentProfile?.created_at)} />
-                <InfoRow icon={<Clock size={15} color="#2563eb" />}    label="Cập nhật lần cuối" value={fmtDate(studentProfile?.updated_at)} />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── PORTAL ACCESS CARD ── */}
-        <div style={{
-          ...card,
-          background: 'linear-gradient(135deg, rgba(30,58,138,0.06) 0%, rgba(37,99,235,0.04) 100%)',
-          border: '1px solid rgba(37,99,235,0.14)',
-        }}>
-          <h3 style={{ margin: '0 0 1rem', fontSize: '1rem', fontWeight: 700, color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Key size={17} color="#2563eb" /> Thông tin cổng thông tin TNUT
-          </h3>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div style={{
-              background: 'white', borderRadius: '14px', padding: '1rem',
-              border: '1px solid rgba(37,99,235,0.1)',
-            }}>
-              <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
-                Portal Code
-              </div>
-              {loading
-                ? <Skeleton w="70%" h="18px" />
-                : <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1e3a8a', fontFamily: 'monospace', wordBreak: 'break-all' }}>
-                    {user?.portal_code ?? '—'}
-                  </div>
-              }
-            </div>
-
-            <div style={{
-              background: 'white', borderRadius: '14px', padding: '1rem',
-              border: '1px solid rgba(37,99,235,0.1)',
-            }}>
-              <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
-                Hết hạn portal
-              </div>
-              {loading
-                ? <Skeleton w="70%" h="18px" />
-                : (() => {
-                    const expires = user?.portal_expires_at;
-                    const expired = expires ? new Date(expires) < new Date() : false;
-                    return (
-                      <div style={{ fontSize: '0.9rem', fontWeight: 700, color: expired ? '#dc2626' : '#059669' }}>
-                        {fmtDate(expires)}
-                        {expired && <span style={{ marginLeft: 6, fontSize: '0.72rem', background: 'rgba(220,38,38,0.1)', padding: '2px 8px', borderRadius: '20px' }}>Hết hạn</span>}
-                      </div>
-                    );
-                  })()
-              }
-            </div>
-          </div>
-        </div>
 
       </div>
     </div>

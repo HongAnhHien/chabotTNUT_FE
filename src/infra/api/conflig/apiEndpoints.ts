@@ -52,6 +52,7 @@ export const API_ENDPOINTS = {
     SUBJECT_ANALYTICS: (maMon: string)   => `/teacher/subjects/${maMon}/analytics`,
 
     // Lộ trình đề kiểm tra theo môn
+    HO_SO:            '/teacher/ho-so',
     LO_TRINH:         '/teacher/lo-trinh',
     LO_TRINH_REORDER: '/teacher/lo-trinh/reorder',
     LO_TRINH_ITEM:    (id: string) => `/teacher/lo-trinh/${id}`,

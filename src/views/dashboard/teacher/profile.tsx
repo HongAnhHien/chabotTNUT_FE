@@ -1,21 +1,15 @@
 import { type FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
-  User, Mail, Shield, Calendar,
-  Activity, Key, Clock, LogIn, Hash,
-  GraduationCap, Briefcase,
+  User, Calendar, Activity, Clock, LogIn, Hash,
+  GraduationCap, Briefcase, Building2, Landmark, Layers, Award, BadgeCheck, BookOpen, Users,
 } from 'lucide-react';
 import AuthRepository from '@/infra/AuthRepository';
-import type { IUserMe, ITeacherProfileData } from '@/infra/api/interfaces/IUser';
+import type { IUserMe } from '@/infra/api/interfaces/IUser';
+import { getTeacherHoSo, type ITeacherHoSo } from '@/infra/teacher/hoso_api';
 
 // ── helpers ──────────────────────────────────────────
-function fmtDate(iso: string | undefined): string {
-  if (!iso) return '—';
-  return new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  }).format(new Date(iso));
-}
+const CHUA = 'Chưa cập nhật';
 
 function fmtDateShort(iso: string | undefined): string {
   if (!iso) return '—';
@@ -24,12 +18,15 @@ function fmtDateShort(iso: string | undefined): string {
   }).format(new Date(iso));
 }
 
-function initials(name: string): string {
-  return name.split(' ').map(w => w[0]).filter(Boolean).slice(-2).join('').toUpperCase();
+/** 20261 → "HK1 2026–2027" (mã học kỳ Portal: năm bắt đầu + số kỳ). */
+function tenHocKy(hk: number | null | undefined): string {
+  if (!hk) return '—';
+  const nam = Math.floor(hk / 10);
+  return `HK${hk % 10} ${nam}–${nam + 1}`;
 }
 
-function isTeacherProfile(p: IUserMe['profile']): p is ITeacherProfileData {
-  return 'teacher_code' in p;
+function initials(name: string): string {
+  return name.split(' ').map(w => w[0]).filter(Boolean).slice(-2).join('').toUpperCase();
 }
 
 const CSS = `
@@ -55,10 +52,12 @@ const InfoRow: FC<{ icon: React.ReactNode; label: string; value: string }> = ({ 
     </div>
     <div style={{ minWidth: 0 }}>
       <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500, marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-      <div style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: 600, wordBreak: 'break-all' }}>{value}</div>
+      <div style={{ fontSize: '0.9rem', color: value === CHUA ? '#94a3b8' : '#1e293b', fontWeight: 600, wordBreak: 'break-word' }}>{value}</div>
     </div>
   </div>
 );
+
+const cellTd: React.CSSProperties = { padding: '7px 8px', borderBottom: '1px solid #f1f5f9' };
 
 // ── Main ─────────────────────────────────────────────
 const TeacherProfile: FC = () => {
@@ -66,6 +65,8 @@ const TeacherProfile: FC = () => {
   const [user, setUser]             = useState<IUserMe | null>(null);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState<string | null>(null);
+  const [hoSo, setHoSo]             = useState<ITeacherHoSo | null>(null);
+  const [hoSoLoading, setHoSoLoading] = useState(true);
 
   const fetchProfile = () => {
     setLoading(true);
@@ -76,9 +77,10 @@ const TeacherProfile: FC = () => {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchProfile(); }, []);
-
-  const teacherProfile = user?.profile && isTeacherProfile(user.profile) ? user.profile : null;
+  useEffect(() => {
+    fetchProfile();
+    getTeacherHoSo().then(setHoSo).catch(() => setHoSo(null)).finally(() => setHoSoLoading(false));
+  }, []);
 
   const card: React.CSSProperties = {
     background: 'rgba(255,255,255,0.82)',
@@ -88,6 +90,11 @@ const TeacherProfile: FC = () => {
     boxShadow: '0 8px 32px rgba(37,99,235,0.08)',
     padding: '1.5rem',
   };
+  const h3: React.CSSProperties = { margin: '0 0 0.25rem', fontSize: '1rem', fontWeight: 700, color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: 8 };
+  const sub: React.CSSProperties = { margin: '0 0 1rem', fontSize: '0.78rem', color: '#94a3b8' };
+
+  const cb = hoSo?.can_bo ?? null;
+  const boMon = hoSo?.to_chuc.bo_mon ?? (cb?.bo_phan && cb.bo_phan !== cb.don_vi ? cb.bo_phan : null);
 
   return (
     <div style={{ minHeight: '100%', background: '#eef4ff', fontFamily: "'Be Vietnam Pro',system-ui,sans-serif", padding: '1.5rem' }}>
@@ -113,7 +120,10 @@ const TeacherProfile: FC = () => {
                     ? <><Sk w="160px" h="22px" /><div style={{ marginTop: 8 }}><Sk w="200px" h="14px" /></div></>
                     : <>
                         <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 800, lineHeight: 1.2 }}>{user?.name}</h1>
-                        <p style={{ margin: '4px 0 0', fontSize: '0.875rem', color: 'rgba(255,255,255,0.72)' }}>{user?.email}</p>
+                        <p style={{ margin: '4px 0 0', fontSize: '0.875rem', color: 'rgba(255,255,255,0.8)' }}>
+                          {/* chức vụ đi với đơn vị của chức vụ đó (danh bạ), không ghép với khoa giảng dạy */}
+                          {[cb?.chuc_vu, cb?.don_vi ?? hoSo?.to_chuc.khoa].filter(Boolean).join(' · ') || user?.email}
+                        </p>
                       </>
                   }
                 </div>
@@ -178,98 +188,90 @@ const TeacherProfile: FC = () => {
           </div>
         )}
 
-        {/* ── TWO-COLUMN CARDS ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-
-          {/* Personal info */}
-          <div style={card}>
-            <h3 style={{ margin: '0 0 0.25rem', fontSize: '1rem', fontWeight: 700, color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <User size={17} color="#2563eb" /> Thông tin cá nhân
-            </h3>
-            <p style={{ margin: '0 0 1rem', fontSize: '0.78rem', color: '#94a3b8' }}>Thông tin tài khoản hệ thống</p>
-
-            {loading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[1,2,3,4,5].map(i => (
-                  <div key={i} style={{ display: 'flex', gap: 12 }}>
-                    <Sk w="36px" h="36px" />
-                    <div style={{ flex: 1 }}><Sk w="60%" h="12px" /><div style={{ marginTop: 6 }}><Sk w="80%" h="16px" /></div></div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div>
-                <InfoRow icon={<Hash size={15} color="#2563eb" />}     label="Mã ID"          value={user?.id ?? '—'} />
-                <InfoRow icon={<User size={15} color="#2563eb" />}     label="Tên đăng nhập"  value={user?.username ?? '—'} />
-                <InfoRow icon={<Mail size={15} color="#2563eb" />}     label="Email"          value={user?.email ?? '—'} />
-                <InfoRow icon={<Shield size={15} color="#2563eb" />}   label="Vai trò"        value="Giảng viên" />
-                <InfoRow icon={<Calendar size={15} color="#2563eb" />} label="Ngày tạo TK"    value={fmtDate(user?.created_at)} />
-              </div>
-            )}
-          </div>
-
-          {/* Teacher profile */}
-          <div style={card}>
-            <h3 style={{ margin: '0 0 0.25rem', fontSize: '1rem', fontWeight: 700, color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <GraduationCap size={17} color="#2563eb" /> Hồ sơ giảng viên
-            </h3>
-            <p style={{ margin: '0 0 1rem', fontSize: '0.78rem', color: '#94a3b8' }}>Thông tin từ cổng thông tin TNUT</p>
-
-            {loading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[1,2,3,4].map(i => (
-                  <div key={i} style={{ display: 'flex', gap: 12 }}>
-                    <Sk w="36px" h="36px" />
-                    <div style={{ flex: 1 }}><Sk w="60%" h="12px" /><div style={{ marginTop: 6 }}><Sk w="80%" h="16px" /></div></div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div>
-                <InfoRow icon={<Briefcase size={15} color="#2563eb" />} label="Mã giảng viên" value={teacherProfile?.teacher_code ?? '—'} />
-                <InfoRow icon={<Hash size={15} color="#2563eb" />}       label="Portal ID"     value={teacherProfile?.portal_id ?? '—'} />
-                <InfoRow icon={<Calendar size={15} color="#2563eb" />}   label="Ngày tạo hồ sơ" value={fmtDate(teacherProfile?.created_at)} />
-                <InfoRow icon={<Clock size={15} color="#2563eb" />}      label="Cập nhật cuối"  value={fmtDate(teacherProfile?.updated_at)} />
-              </div>
-            )}
-          </div>
+        {/* ── THÔNG TIN CÔNG TÁC (danh bạ cán bộ + cơ cấu tổ chức) ── */}
+        <div style={card}>
+          <h3 style={h3}><Building2 size={17} color="#2563eb" /> Thông tin công tác</h3>
+          <p style={sub}>Theo danh bạ cán bộ TNUT và cơ cấu tổ chức trong hệ thống — mục chưa có dữ liệu ghi “{CHUA}”.</p>
+          {hoSoLoading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 12 }}>{[1, 2, 3, 4, 5, 6].map(i => <Sk key={i} h="44px" />)}</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', columnGap: '1.5rem' }}>
+              <InfoRow icon={<User size={15} color="#2563eb" />}       label="Họ và tên"       value={hoSo?.ho_ten ?? user?.name ?? '—'} />
+              <InfoRow icon={<Hash size={15} color="#2563eb" />}       label="Mã giảng viên"   value={hoSo?.ma_gv ?? user?.username ?? '—'} />
+              <InfoRow icon={<BadgeCheck size={15} color="#2563eb" />} label="Mã cán bộ"       value={cb?.ma_can_bo ?? CHUA} />
+              <InfoRow icon={<Landmark size={15} color="#2563eb" />}   label="Đơn vị công tác" value={cb?.don_vi ?? CHUA} />
+              <InfoRow icon={<Building2 size={15} color="#2563eb" />}  label="Khoa"            value={hoSo?.to_chuc.khoa ?? CHUA} />
+              <InfoRow icon={<Layers size={15} color="#2563eb" />}     label="Bộ môn"          value={boMon ?? CHUA} />
+              <InfoRow icon={<Award size={15} color="#2563eb" />}      label="Chức vụ"         value={cb?.chuc_vu ?? CHUA} />
+              <InfoRow icon={<Activity size={15} color="#2563eb" />}   label="Tình trạng"      value={cb?.tinh_trang ?? CHUA} />
+            </div>
+          )}
+          {!hoSoLoading && hoSo && !cb && (
+            <div style={{ marginTop: 10, fontSize: '0.76rem', color: '#b45309' }}>Chưa khớp được hồ sơ trong danh bạ cán bộ (theo email/họ tên) — liên hệ quản trị để gán Khoa/Bộ môn.</div>
+          )}
         </div>
 
-        {/* ── PORTAL ACCESS CARD ── */}
-        <div style={{ ...card, background: 'linear-gradient(135deg,rgba(30,58,138,0.06),rgba(37,99,235,0.04))', border: '1px solid rgba(37,99,235,0.14)' }}>
-          <h3 style={{ margin: '0 0 1rem', fontSize: '1rem', fontWeight: 700, color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Key size={17} color="#2563eb" /> Thông tin cổng thông tin TNUT
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            {[
-              {
-                label: 'Portal Code',
-                content: loading
-                  ? <Sk w="70%" h="18px" />
-                  : <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1e3a8a', fontFamily: 'monospace', wordBreak: 'break-all' }}>{user?.portal_code ?? '—'}</div>,
-              },
-              {
-                label: 'Hết hạn portal',
-                content: loading
-                  ? <Sk w="70%" h="18px" />
-                  : (() => {
-                      const expires = user?.portal_expires_at;
-                      const expired = expires ? new Date(expires) < new Date() : false;
-                      return (
-                        <div style={{ fontSize: '0.9rem', fontWeight: 700, color: expired ? '#dc2626' : '#059669' }}>
-                          {fmtDate(expires)}
-                          {expired && <span style={{ marginLeft: 6, fontSize: '0.72rem', background: 'rgba(220,38,38,0.1)', padding: '2px 8px', borderRadius: 20 }}>Hết hạn</span>}
-                        </div>
-                      );
-                    })(),
-              },
-            ].map(({ label, content }) => (
-              <div key={label} style={{ background: 'white', borderRadius: 14, padding: '1rem', border: '1px solid rgba(37,99,235,0.1)' }}>
-                <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>{label}</div>
-                {content}
+        {/* ── GIẢNG DẠY (lớp học phần đồng bộ từ Portal) ── */}
+        <div style={card}>
+          <h3 style={h3}><BookOpen size={17} color="#2563eb" /> Giảng dạy &amp; cố vấn học tập</h3>
+          <p style={sub}>Tổng hợp từ các lớp học phần đã đồng bộ từ cổng thông tin TNUT.</p>
+          {hoSoLoading ? <Sk h="120px" /> : hoSo && (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 12, marginBottom: 14 }}>
+                {[
+                  { label: 'Học kỳ gần nhất',   value: tenHocKy(hoSo.giang_day.hoc_ky_moi_nhat) },
+                  { label: 'Môn học phụ trách', value: String(hoSo.giang_day.mon.length) },
+                  { label: 'Lớp học phần',      value: String(hoSo.giang_day.so_lop_hp) },
+                  { label: 'Số học kỳ đã dạy',  value: String(hoSo.giang_day.so_hoc_ky) },
+                ].map(k => (
+                  <div key={k.label} style={{ background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.1)', borderRadius: 14, padding: '0.75rem 0.9rem' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k.label}</div>
+                    <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1e3a8a', marginTop: 4 }}>{k.value}</div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+
+              {hoSo.giang_day.mon.length === 0 ? (
+                <div style={{ fontSize: '0.82rem', color: '#94a3b8' }}>Chưa có lớp học phần nào được đồng bộ.</div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                    <thead>
+                      <tr style={{ color: '#64748b', textAlign: 'left' }}>
+                        {['Mã môn', 'Tên môn học', 'TC', 'Số lớp', 'Học kỳ đã dạy'].map(t => (
+                          <th key={t} style={{ padding: '6px 8px', fontWeight: 600, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>{t}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {hoSo.giang_day.mon.map(m => (
+                        <tr key={m.ma_mon}>
+                          <td style={{ ...cellTd, fontFamily: 'monospace', color: '#2563eb', fontWeight: 700 }}>{m.ma_mon}</td>
+                          <td style={{ ...cellTd, color: '#1e293b', fontWeight: 600 }}>{m.ten_mon}</td>
+                          <td style={cellTd}>{m.so_tc ?? '—'}</td>
+                          <td style={cellTd}>{m.so_lop}</td>
+                          <td style={{ ...cellTd, color: '#64748b' }}>
+                            {m.hoc_ky.slice(0, 3).map(tenHocKy).join(' · ')}{m.hoc_ky.length > 3 ? ` +${m.hoc_ky.length - 3}` : ''}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <Users size={14} color="#2563eb" /> Lớp cố vấn học tập:
+                </span>
+                {hoSo.giang_day.lop_co_van.length === 0
+                  ? <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Chưa có</span>
+                  : hoSo.giang_day.lop_co_van.map(l => (
+                      <span key={l} style={{ background: 'rgba(124,58,237,0.08)', color: '#7c3aed', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 20, padding: '3px 10px', fontSize: '0.76rem', fontWeight: 700 }}>{l}</span>
+                    ))}
+              </div>
+            </>
+          )}
         </div>
 
       </div>
