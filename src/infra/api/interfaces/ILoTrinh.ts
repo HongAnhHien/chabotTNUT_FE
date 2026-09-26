@@ -17,6 +17,9 @@ export interface ILoTrinhChang {
   is_active: boolean;
   // SV view:
   ty_le?: number | null;
+  bai_mo_tu?: string | null;   // giờ mở bài gắn với chặng (Y-m-d H:i:s)
+  bai_han?: string | null;
+  duoc_giao?: boolean;         // SV có trong danh sách được giao bài
   da_dat?: boolean;
   trang_thai?: LoTrinhTrangThai;
 }

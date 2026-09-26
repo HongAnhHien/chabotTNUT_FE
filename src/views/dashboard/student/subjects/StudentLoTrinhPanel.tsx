@@ -14,6 +14,11 @@ const StatusIcon: FC<{ s: LoTrinhTrangThai }> = ({ s }) => {
   return <Lock size={18} color="#94a3b8" />;
 };
 
+/** "2026-10-03 16:35:00" → "16:35 03/10" */
+const gioNgay = (s?: string | null) => (s && s.length >= 16 ? `${s.slice(11, 16)} ${s.slice(8, 10)}/${s.slice(5, 7)}` : '');
+const hienTai = () => { const d = new Date(); const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; };
+
 const StudentLoTrinhPanel: FC<{ maMon: string }> = ({ maMon }) => {
   const navigate = useNavigate();
   const [data, setData] = useState<ILoTrinhStudent | null>(null);
@@ -48,7 +53,11 @@ const StudentLoTrinhPanel: FC<{ maMon: string }> = ({ maMon }) => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {data.changs.map((c, i) => {
           const st = c.trang_thai ?? 'khoa';
-          const canDo = st === 'mo' && !!c.assignment_id;
+          // Chỉ cho "Làm bài" khi SV được giao và bài đã tới giờ mở; trước giờ mở hiện giờ mở, quá hạn thì báo
+          const now = hienTai();
+          const chuaToiGio = !!c.bai_mo_tu && now < c.bai_mo_tu;
+          const quaHan = !!c.bai_han && now > c.bai_han;
+          const canDo = st === 'mo' && !!c.assignment_id && c.duoc_giao !== false && !chuaToiGio && !quaHan;
           return (
             <div key={c.id} style={{
               display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12,
@@ -71,6 +80,12 @@ const StudentLoTrinhPanel: FC<{ maMon: string }> = ({ maMon }) => {
                   style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
                   Làm bài
                 </button>
+              )}
+              {st === 'mo' && c.assignment_id && c.duoc_giao !== false && chuaToiGio && (
+                <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#b45309', whiteSpace: 'nowrap' }}>Mở lúc {gioNgay(c.bai_mo_tu)}</span>
+              )}
+              {st === 'mo' && c.assignment_id && c.duoc_giao !== false && !chuaToiGio && quaHan && (
+                <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#94a3b8', whiteSpace: 'nowrap' }}>Đã hết hạn</span>
               )}
               {st === 'da_dat' && <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#059669' }}>Đã đạt ✓</span>}
             </div>

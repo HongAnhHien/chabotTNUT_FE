@@ -39,7 +39,9 @@ const extractAsgnLink = (content: string): { link: string; cleaned: string } | n
 // ── Ý định "tạo đề ôn tập" khi SV tự gõ (chỉ dùng cho môn có lịch luyện tập hằng tuần) ──
 const Y_DINH_LUYEN_TAP = /((tạo|ra|cho|làm|lấy|gửi|soạn)\s+(cho\s+)?(em|mình|tôi|tớ)?\s*(một|vài|ít|mấy|\d+)?\s*(bộ\s+)?(đề|bài|câu hỏi|câu)\s*(ôn|luyện|trắc nghiệm|kiểm tra|thi thử))|ôn luyện|luyện tập|kiểm tra thử|thi thử|làm bài ôn|đề ôn/i;
 const HOI_KIEN_THUC = /(là gì|giải thích|tại sao|vì sao|như thế nào|thế nào là|khác nhau|so sánh|nghĩa là|\?$)/i;
-const laYDinhLuyenTap = (t: string) => Y_DINH_LUYEN_TAP.test(t) && !HOI_KIEN_THUC.test(t.trim());
+// Nút công cụ "Kiểm tra nhanh 5 câu" (ôn nội dung VỪA HỌC trong hội thoại) vẫn để chatbot trả lời tại chỗ
+const CONG_CU_CHAT = /nội dung vừa học/i;
+const laYDinhLuyenTap = (t: string) => Y_DINH_LUYEN_TAP.test(t) && !HOI_KIEN_THUC.test(t.trim()) && !CONG_CU_CHAT.test(t);
 
 // ── CSS ───────────────────────────────────────────────
 const CSS = `

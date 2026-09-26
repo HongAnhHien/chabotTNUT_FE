@@ -939,8 +939,21 @@ const StudentAssignmentExam: FC = () => {
                           lineHeight: 1.5,
                         }}
                       >
-                        <strong>Giải thích:</strong>{" "}
-                        <LatexText text={q.explanation ?? ""} />
+                        <strong>Giải thích:</strong>
+                        {/* Mỗi dòng một ý (VD "A đúng: …", "B sai: …", "Đọc lại: mục …") — không dồn thành một đoạn */}
+                        {(q.explanation ?? "").split("\n").filter((l) => l.trim()).map((line, li) => {
+                          const m = line.match(/^([A-D] (?:đúng|sai)|Đọc lại):\s*(.*)$/);
+                          return (
+                            <div key={li} style={{ marginTop: 3 }}>
+                              {m ? (
+                                <>
+                                  <b style={{ color: m[1].includes("đúng") ? "#15803d" : m[1] === "Đọc lại" ? "#0369a1" : "#b91c1c" }}>{m[1]}:</b>{" "}
+                                  <LatexText text={m[2]} />
+                                </>
+                              ) : <LatexText text={line} />}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
