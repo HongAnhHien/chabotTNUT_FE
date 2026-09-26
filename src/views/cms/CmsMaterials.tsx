@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FC } from "react";
 import { Link } from "react-router";
 import { ArrowLeft, FileText, CheckCircle2, FolderTree, Loader2, ChevronRight, Search, Sparkles } from "lucide-react";
 import BulkAssignBoMon from "./BulkAssignBoMon";
+import DanhMucMonHocCard from "./DanhMucMonHocCard";
 import CmsOverview from "./CmsOverview";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 import { useAuthStore, selectUser } from "@/views/pages/stores/auth_store";
@@ -136,6 +137,14 @@ const CmsMaterials: FC = () => {
         </p>
 
         <CmsOverview key={reloadKey} />
+
+        <DanhMucMonHocCard
+          canImport={canAssign}
+          onImported={() => {
+            load();
+            setReloadKey((k) => k + 1);
+          }}
+        />
 
         <div className="mt-8 flex flex-wrap items-end justify-between gap-3">
           <h2 className="text-lg font-bold tracking-tight">Cây học liệu</h2>

@@ -7,7 +7,7 @@ import {
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 
 interface Overview {
-  to_chuc: { khoa: number; bo_mon: number; nganh: number; chuyen_nganh: number; hp_trong_ctdt: number };
+  to_chuc: { khoa: number; bo_mon: number; nganh: number; chuyen_nganh: number; hp_trong_ctdt: number; mon_danh_muc?: number };
   hoc_phan: { tong: number; da_gan: number; co_hoc_lieu: number; co_rag: number; suy_ra_khoa: number };
   tai_lieu: {
     tong: number; da_nap_rag: number; dung_luong: number;
@@ -96,13 +96,14 @@ const CmsOverview: FC = () => {
         <div className="relative">
           <div className="text-xs font-medium uppercase tracking-widest text-teal-100">Kho học liệu số · Trường ĐH Kỹ thuật Công nghiệp</div>
           <h2 className="mt-1 text-xl font-bold sm:text-2xl">Toàn bộ cơ cấu đào tạo trong một cây học liệu</h2>
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {[
               { icon: <Building2 className="h-4 w-4" />, v: tc.khoa, l: "Khoa" },
               { icon: <Layers className="h-4 w-4" />, v: tc.bo_mon, l: "Bộ môn" },
               { icon: <GraduationCap className="h-4 w-4" />, v: tc.nganh, l: "Ngành đào tạo" },
               { icon: <Network className="h-4 w-4" />, v: tc.chuyen_nganh, l: "Chuyên ngành" },
               { icon: <BookOpen className="h-4 w-4" />, v: tc.hp_trong_ctdt, l: "Học phần trong CTĐT" },
+              ...(tc.mon_danh_muc ? [{ icon: <ListChecks className="h-4 w-4" />, v: tc.mon_danh_muc, l: "Môn trong danh mục" }] : []),
             ].map((x) => (
               <div key={x.l} className="rounded-xl bg-white/10 px-3 py-2.5 ring-1 ring-white/15 backdrop-blur-sm">
                 <div className="flex items-center gap-1.5 text-teal-100">{x.icon}<span className="text-xs">{x.l}</span></div>
