@@ -161,9 +161,12 @@ const TeacherBaiGiang: FC = () => {
                     <span>{b.so_slide} slide · {b.so_cau_hoi} câu hỏi{b.song_ngu ? ' · Việt–Anh' : ''}</span>
                     {b.muc.length > 0 && <span>Mục {b.muc.join(', ')}</span>}
                     {b.so_canh_bao > 0 && <span style={{ color: '#b45309' }}>{b.so_canh_bao} cảnh báo cần xem</span>}
+                    {b.cua_toi === false && b.nguoi_tao && <span style={{ ...tag, background: '#fff7ed', color: '#c2410c' }}>Soạn bởi {b.nguoi_tao}</span>}
                   </div>
                 </div>
-                <button onClick={e => { e.stopPropagation(); del(b); }} style={btnDanger} aria-label="Xoá bài giảng"><Trash2 size={14} /></button>
+                {b.cua_toi !== false && (
+                  <button onClick={e => { e.stopPropagation(); del(b); }} style={btnDanger} aria-label="Xoá bài giảng"><Trash2 size={14} /></button>
+                )}
               </div>
             ))}
         </div>

@@ -91,6 +91,8 @@ export const API_ENDPOINTS = {
     BANG_DIEM_CHOT:     '/teacher/bang-diem/chot',
     BANG_DIEM_CAU_HINH: '/teacher/bang-diem/cau-hinh',
     BANG_DIEM_XUAT:     '/teacher/bang-diem/xuat',
+    // Môn dạy chung (mã PĐT): nhóm GV + vai GVC / GVTH / trợ giảng
+    PHAN_CONG:          '/teacher/phan-cong',
 
     // Legacy aliases (kept for backward compat with existing drawers)
     SUBJECT_AI_FILES:     (s: string) => `/teacher/subjects/${s}/files/sent`,

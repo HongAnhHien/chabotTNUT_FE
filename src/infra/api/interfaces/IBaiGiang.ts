@@ -60,6 +60,8 @@ export interface IBaiGiangSummary {
   so_canh_bao: number;
   duyet_luc: string | null;
   updated_at: string | null;
+  nguoi_tao?: string | null;   // môn dạy chung: người soạn
+  cua_toi?: boolean;
 }
 
 export interface IBaiGiang extends IBaiGiangSummary {

@@ -52,6 +52,9 @@ const UploadModal: FC<Props> = ({ maMon, defaultType, onClose, onSuccess }) => {
         const resp = (e as { response?: { status?: number; data?: { message?: string; uploaded_by?: string } } })?.response;
         if (resp?.status === 409 && resp.data?.uploaded_by) {
           toast.error(`"${it.file.name}": File loại này đã được ${resp.data.uploaded_by} upload.`, { duration:6000 });
+        } else if (resp?.status === 409 && resp.data?.message) {
+          // Môn dạy chung (mã PĐT): tài liệu đã có trên hệ thống — GV sau không tải lại
+          toast.error(`"${it.file.name}": ${resp.data.message}`, { duration:8000 });
         } else { failed.push(it.file.name); }
       }
     }

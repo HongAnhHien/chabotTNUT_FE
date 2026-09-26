@@ -2,6 +2,7 @@ import { type FC, useState } from 'react';
 import { BookOpen, Users, MapPin, Calendar, ChevronDown, FileText, ClipboardList, Info, Sparkles, AlertTriangle, MessageCircle, Route, Presentation, Sheet } from 'lucide-react';
 import type { ITeacherSubjectWithClasses, ISubjectAnalyticsEmbed } from '@/infra/api/interfaces/ITeacher';
 import type { IAnalyticsSummary } from '@/infra/api/interfaces/IChat';
+import PhanCongMonChung from '@/components/teacher/PhanCongMonChung';
 
 type Cls = ITeacherSubjectWithClasses['classes'][number];
 
@@ -67,6 +68,8 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, 
             )}
             <span style={{ fontSize:'0.7rem', color:'#94a3b8' }}>{classes.length} lớp</span>
           </div>
+          {/* Môn dạy chung (mã PĐT): nhóm GV + vai */}
+          <PhanCongMonChung maMon={subject.ma_mon} />
 
           {/* Mini metrics */}
           {analyticsLoading ? (

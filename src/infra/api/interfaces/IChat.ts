@@ -130,6 +130,8 @@ export interface ISavedExam {
   status?: string | null;
   confirmed_at?: string | null;
   created_at?: string | null;
+  nguoi_tao?: string | null;   // môn dạy chung: người tạo đề
+  cua_toi?: boolean;
 }
 
 export interface ISavedExamsResponse {

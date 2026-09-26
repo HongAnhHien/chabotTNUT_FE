@@ -220,6 +220,9 @@ const ExamListView: FC<Props> = ({
                               <Clock size={13} />{exam.time_limit} phút
                             </span>
                           )}
+                          {exam.cua_toi === false && exam.nguoi_tao && (
+                            <span className="ex-badge" style={{ background: '#fff7ed', color: '#c2410c' }}>Tạo bởi {exam.nguoi_tao}</span>
+                          )}
                           {(exam.chapters ?? []).length > 0 && (
                             <span className="ex-badge" style={{ background: '#f1f5f9', color: '#475569' }}>
                               <BookOpen size={13} />{(exam.chapters ?? []).length} chương
