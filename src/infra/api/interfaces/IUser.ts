@@ -30,6 +30,23 @@ export interface ITeacherProfileData {
   updated_at: string;
 }
 
+// Hồ sơ HỌC VỤ đã giải mã (chỉ sinh viên) — BE ghép từ mã SV + tên lớp EduSoft.
+// Trường không tra được sẽ là null (không bịa).
+export interface IAcademicInfo {
+  ma_sinh_vien: string;
+  nam_tuyen_sinh: number | null;
+  khoa_hoc: string | null;      // ví dụ "K58" hoặc "Khoá 2024"
+  he_dao_tao: string | null;    // hình thức đào tạo
+  danh_hieu: string | null;     // Kỹ sư / Cử nhân / KTS
+  co_so: string | null;
+  khoa: string | null;          // tên Khoa
+  nganh: string | null;
+  chuyen_nganh: string | null;
+  lop: string | null;           // tên lớp
+  ma_lop: string | null;
+  nguon: string;                // nguồn giải mã (mức tin cậy)
+}
+
 // Full user object từ GET /auth/me
 export interface IUserMe extends IUser {
   portal_expires_at: string;
@@ -38,6 +55,7 @@ export interface IUserMe extends IUser {
   last_login_at: string;
   created_at: string;
   profile: IStudentProfileData | ITeacherProfileData;
+  academic?: IAcademicInfo | null;
 }
 
 export interface IUserMeResponse {

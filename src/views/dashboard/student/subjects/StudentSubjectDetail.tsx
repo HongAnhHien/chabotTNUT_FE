@@ -8,10 +8,11 @@ import type { IStudentAssignmentListItem } from "@/infra/api/interfaces/IAssignm
 import FilePreviewModal, { type PreviewState } from "@/components/common/FilePreviewModal";
 import FilesTab from "./FilesTab";
 import ExamsTab from "./ExamsTab";
+import CSS from "./subjectDetail.styles";
+import MonHocBadge from "@/components/edusoft/MonHocBadge";
 import StudentLoTrinhPanel from "./StudentLoTrinhPanel";
 import StudentBaiGiangPanel from "./StudentBaiGiangPanel";
 import StudentLuyenTapPanel from "./StudentLuyenTapPanel";
-import CSS from "./subjectDetail.styles";
 
 const pad2 = (n: number | string) => String(n).padStart(2, '0');
 const addMinutes = (hhmm: string, minutesStr: string) => {
@@ -102,6 +103,7 @@ const StudentSubjectDetail: FC = () => {
               </h1>
               <div className="ssd-meta">
                 <span style={{ color: "#94a3b8", fontFamily: "monospace", fontWeight: 600 }}>{subject.ma_mon}</span>
+                <MonHocBadge maMon={subject.ma_mon} />
                 <span style={{ color: "#2563eb", fontWeight: 700 }}>{subject.so_tc} tín chỉ</span>
                 {subject.gv    && <span style={{ color: "#64748b" }}>GV: {subject.gv}</span>}
                 {subject.phong && <span style={{ color: "#64748b" }}>Phòng: {subject.phong}</span>}

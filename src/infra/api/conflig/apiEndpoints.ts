@@ -230,4 +230,8 @@ export const API_ENDPOINTS = {
   DANH_GIA: {
     HIEU_QUA: '/danh-gia/hieu-qua', // báo cáo hiệu quả nền tảng (cán bộ)
   },
+  EDUSOFT: {
+    MAPS:   '/edusoft/maps',   // bản đồ giải mã (gắn nhãn mã môn/mã lớp)
+    DECODE: '/edusoft/decode', // giải mã 1 mã bất kỳ
+  },
 } as const;
