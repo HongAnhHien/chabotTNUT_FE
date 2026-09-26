@@ -1,5 +1,5 @@
 import { type FC, useState } from 'react';
-import { BookOpen, Users, MapPin, Calendar, ChevronDown, FileText, ClipboardList, Info, Sparkles, AlertTriangle, MessageCircle, Route, Presentation, Sheet } from 'lucide-react';
+import { BookOpen, Users, MapPin, Calendar, ChevronDown, FileText, ClipboardList, Info, Sparkles, AlertTriangle, MessageCircle, Route, Presentation, Sheet, Database } from 'lucide-react';
 import type { ITeacherSubjectWithClasses, ISubjectAnalyticsEmbed } from '@/infra/api/interfaces/ITeacher';
 import type { IAnalyticsSummary } from '@/infra/api/interfaces/IChat';
 import PhanCongMonChung from '@/components/teacher/PhanCongMonChung';
@@ -29,12 +29,13 @@ interface Props {
   onLoTrinh:  () => void;
   onBaiGiang: () => void;
   onBangDiem?: () => void;
+  onNganHang?: () => void;
   onClsDetail: (cls: Cls) => void;
   onStudents:  (cls: Cls) => void;
   onClsExams:  (cls: Cls) => void;
 }
 
-const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, chatSummary, onDetail, onFiles, onExams, onLoTrinh, onBaiGiang, onBangDiem, onClsDetail, onStudents, onClsExams }) => {
+const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, chatSummary, onDetail, onFiles, onExams, onLoTrinh, onBaiGiang, onBangDiem, onNganHang, onClsDetail, onStudents, onClsExams }) => {
   const [expanded, setExpanded] = useState(true);
   const { subject, classes } = course;
   const color = COLORS[colorIdx % COLORS.length];
@@ -123,6 +124,11 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, 
           {onBangDiem && (
             <button onClick={onBangDiem} className="sl-btn" style={{ background:'rgba(5,150,105,0.08)', border:'1px solid rgba(5,150,105,0.25)', color:'#059669' }}>
               <Sheet size={13} /> Bảng điểm
+            </button>
+          )}
+          {onNganHang && (
+            <button onClick={onNganHang} className="sl-btn" style={{ background:'rgba(124,58,237,0.07)', border:'1px solid rgba(124,58,237,0.22)', color:'#7c3aed' }}>
+              <Database size={13} /> Ngân hàng câu hỏi
             </button>
           )}
         </div>

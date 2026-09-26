@@ -238,6 +238,7 @@ const TeacherSubjectList: FC = () => {
                 onLoTrinh={()    => navigate(`/teacher/subjects/${course.subject.ma_mon}/lo-trinh`)}
                 onBaiGiang={()   => navigate(`/teacher/subjects/${course.subject.ma_mon}/bai-giang`)}
                 onBangDiem={()   => navigate(`/teacher/subjects/${course.subject.ma_mon}/bang-diem`)}
+                onNganHang={()   => navigate(`/teacher/subjects/${course.subject.ma_mon}/ngan-hang`)}
                 onClsDetail={cls => navigate(`/teacher/courses/${encodeURIComponent(cls.id_to_hoc)}/analytics`)}
                 onStudents={cls  => navigate(`/teacher/courses/${encodeURIComponent(cls.id_to_hoc)}/analytics?tab=1`)}
                 onClsExams={cls  => navigate(`/teacher/courses/${encodeURIComponent(cls.id_to_hoc)}/analytics?tab=2`)}

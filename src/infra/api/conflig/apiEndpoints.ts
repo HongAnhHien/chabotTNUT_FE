@@ -93,6 +93,10 @@ export const API_ENDPOINTS = {
     BANG_DIEM_XUAT:     '/teacher/bang-diem/xuat',
     // Môn dạy chung (mã PĐT): nhóm GV + vai GVC / GVTH / trợ giảng
     PHAN_CONG:          '/teacher/phan-cong',
+    // Ngân hàng câu hỏi trắc nghiệm của môn
+    NGAN_HANG:          '/teacher/ngan-hang',
+    NGAN_HANG_ITEM:     (id: string) => `/teacher/ngan-hang/${id}`,
+    NGAN_HANG_XUAT:     '/teacher/ngan-hang/xuat',
 
     // Legacy aliases (kept for backward compat with existing drawers)
     SUBJECT_AI_FILES:     (s: string) => `/teacher/subjects/${s}/files/sent`,
