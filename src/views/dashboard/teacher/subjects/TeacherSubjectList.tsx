@@ -235,6 +235,7 @@ const TeacherSubjectList: FC = () => {
                 onDetail={()     => navigate(`/teacher/subjects/${course.subject.ma_mon}/analytics${selectedHocKy ? `?hoc_ky=${selectedHocKy}` : ''}`)}
                 onFiles={()      => navigate(`/teacher/subjects/${course.subject.ma_mon}/files`, { state: { tenMon: course.subject.ten_mon } })}
                 onExams={()      => navigate(`/teacher/subjects/${course.subject.ma_mon}/exams`)}
+                onLoTrinh={()    => navigate(`/teacher/subjects/${course.subject.ma_mon}/lo-trinh`)}
                 onBaiGiang={()   => navigate(`/teacher/subjects/${course.subject.ma_mon}/bai-giang`)}
                 onBangDiem={()   => navigate(`/teacher/subjects/${course.subject.ma_mon}/bang-diem`)}
                 onClsDetail={cls => navigate(`/teacher/courses/${encodeURIComponent(cls.id_to_hoc)}/analytics`)}

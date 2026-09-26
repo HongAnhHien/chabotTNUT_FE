@@ -8,6 +8,7 @@ import type { IStudentAssignmentListItem } from "@/infra/api/interfaces/IAssignm
 import FilePreviewModal, { type PreviewState } from "@/components/common/FilePreviewModal";
 import FilesTab from "./FilesTab";
 import ExamsTab from "./ExamsTab";
+import StudentLoTrinhPanel from "./StudentLoTrinhPanel";
 import StudentBaiGiangPanel from "./StudentBaiGiangPanel";
 import StudentLuyenTapPanel from "./StudentLuyenTapPanel";
 import CSS from "./subjectDetail.styles";
@@ -126,11 +127,14 @@ const StudentSubjectDetail: FC = () => {
             </div>
           )}
 
-          {/* Bài giảng AI giảng viên đã duyệt (chỉ hiện nếu có) */}
-          <StudentBaiGiangPanel maMon={subject.ma_mon} />
-
           {/* Luyện tập hằng tuần theo buổi (chỉ hiện nếu môn có lịch luyện tập) */}
           <StudentLuyenTapPanel maMon={subject.ma_mon} />
+
+          {/* Lộ trình đề kiểm tra theo môn (chỉ hiện nếu GV đã dựng) */}
+          <StudentLoTrinhPanel maMon={subject.ma_mon} />
+
+          {/* Bài giảng AI giảng viên đã duyệt (chỉ hiện nếu có) */}
+          <StudentBaiGiangPanel maMon={subject.ma_mon} />
 
           {/* Tabs */}
           <div className="ssd-tab-bar">

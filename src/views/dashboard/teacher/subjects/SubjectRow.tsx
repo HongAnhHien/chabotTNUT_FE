@@ -1,5 +1,5 @@
 import { type FC, useState } from 'react';
-import { BookOpen, Users, MapPin, Calendar, ChevronDown, FileText, ClipboardList, Info, Sparkles, AlertTriangle, MessageCircle, Presentation, Sheet } from 'lucide-react';
+import { BookOpen, Users, MapPin, Calendar, ChevronDown, FileText, ClipboardList, Info, Sparkles, AlertTriangle, MessageCircle, Route, Presentation, Sheet } from 'lucide-react';
 import type { ITeacherSubjectWithClasses, ISubjectAnalyticsEmbed } from '@/infra/api/interfaces/ITeacher';
 import type { IAnalyticsSummary } from '@/infra/api/interfaces/IChat';
 
@@ -25,6 +25,7 @@ interface Props {
   onDetail:   () => void;
   onFiles:    () => void;
   onExams:    () => void;
+  onLoTrinh:  () => void;
   onBaiGiang: () => void;
   onBangDiem?: () => void;
   onClsDetail: (cls: Cls) => void;
@@ -32,7 +33,7 @@ interface Props {
   onClsExams:  (cls: Cls) => void;
 }
 
-const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, chatSummary, onDetail, onFiles, onExams, onBaiGiang, onBangDiem, onClsDetail, onStudents, onClsExams }) => {
+const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, chatSummary, onDetail, onFiles, onExams, onLoTrinh, onBaiGiang, onBangDiem, onClsDetail, onStudents, onClsExams }) => {
   const [expanded, setExpanded] = useState(true);
   const { subject, classes } = course;
   const color = COLORS[colorIdx % COLORS.length];
@@ -109,6 +110,9 @@ const SubjectRow: FC<Props> = ({ course, colorIdx, analytics, analyticsLoading, 
           </button>
           <button onClick={onExams} className="sl-btn" style={{ background:'rgba(37,99,235,0.07)', border:'1px solid rgba(37,99,235,0.18)', color:'#2563eb' }}>
             <ClipboardList size={13} /> Bài kiểm tra
+          </button>
+          <button onClick={onLoTrinh} className="sl-btn" style={{ background:'rgba(37,99,235,0.07)', border:'1px solid rgba(37,99,235,0.18)', color:'#2563eb' }}>
+            <Route size={13} /> Lộ trình
           </button>
           <button onClick={onBaiGiang} className="sl-btn" style={{ background:'rgba(249,115,22,0.08)', border:'1px solid rgba(249,115,22,0.25)', color:'#ea580c' }}>
             <Presentation size={13} /> Bài giảng AI

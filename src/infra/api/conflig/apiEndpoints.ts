@@ -51,6 +51,11 @@ export const API_ENDPOINTS = {
     COURSE_ANALYTICS:  (idToHoc: string) => `/teacher/courses/${encodeURIComponent(idToHoc)}/analytics`,
     SUBJECT_ANALYTICS: (maMon: string)   => `/teacher/subjects/${maMon}/analytics`,
 
+    // Lộ trình đề kiểm tra theo môn
+    LO_TRINH:         '/teacher/lo-trinh',
+    LO_TRINH_REORDER: '/teacher/lo-trinh/reorder',
+    LO_TRINH_ITEM:    (id: string) => `/teacher/lo-trinh/${id}`,
+
     // File management
     SUBJECT_FILES:        (s: string) => `/teacher/subjects/${s}/files`,
     SUBJECT_FILES_TREE:   (s: string) => `/teacher/subjects/${s}/files/tree`,
@@ -187,6 +192,9 @@ export const API_ENDPOINTS = {
     BAI_GIANG:      '/student/bai-giang',
     BAI_GIANG_ITEM: (id: string) => `/student/bai-giang/${id}`,
     BAI_GIANG_TAI:  (id: string) => `/student/bai-giang/${id}/tai`,
+
+    // Lộ trình đề kiểm tra theo môn (SV xem)
+    LO_TRINH: '/student/lo-trinh',
 
     // Luyện tập hằng tuần theo buổi
     LUYEN_TAP:         '/student/luyen-tap',
