@@ -204,6 +204,14 @@ const CmsMaterials: FC = () => {
                     </button>
                   )}
                 </div>
+                {/* Mặc định chỉ thống kê; danh sách chỉ hiện khi đang tìm kiếm */}
+                {!q.trim() ? (
+                  <p className="text-xs text-amber-700/80 dark:text-amber-300/70">
+                    {view.unassigned.filter((s) => s.files > 0).length} học phần đã có học liệu ·{" "}
+                    {view.unassigned.reduce((n, s) => n + s.files, 0)} tài liệu. Gõ vào ô tìm kiếm để xem từng học phần
+                    {canAssign ? ", hoặc dùng “Gán hàng loạt theo gợi ý”." : "."}
+                  </p>
+                ) : (
                 <div className="flex flex-col gap-2">
                   {view.unassigned.map((s) => (
                     <div key={s.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm dark:border-amber-500/20 dark:bg-slate-900">
@@ -226,6 +234,7 @@ const CmsMaterials: FC = () => {
                     </div>
                   ))}
                 </div>
+                )}
               </div>
             )}
           </div>
