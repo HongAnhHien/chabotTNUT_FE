@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FC } from "react";
 import { Link } from "react-router";
-import { ArrowLeft, FileText, CheckCircle2, FolderTree, Loader2, ChevronRight, Search } from "lucide-react";
+import { ArrowLeft, FileText, CheckCircle2, FolderTree, Loader2, ChevronRight, Search, Sparkles } from "lucide-react";
+import BulkAssignBoMon from "./BulkAssignBoMon";
 import CmsOverview from "./CmsOverview";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 import { useAuthStore, selectUser } from "@/views/pages/stores/auth_store";
@@ -62,6 +63,8 @@ const CmsMaterials: FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [assigning, setAssigning] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const load = () => {
     setLoading(true);
@@ -132,7 +135,7 @@ const CmsMaterials: FC = () => {
           Duyệt học liệu theo <b>Khoa → Bộ môn → Học phần</b>. Mỗi học phần hiển thị số tài liệu và số đã nạp vào trợ giảng (RAG).
         </p>
 
-        <CmsOverview />
+        <CmsOverview key={reloadKey} />
 
         <div className="mt-8 flex flex-wrap items-end justify-between gap-3">
           <h2 className="text-lg font-bold tracking-tight">Cây học liệu</h2>
@@ -190,8 +193,16 @@ const CmsMaterials: FC = () => {
             {/* Chưa gán bộ môn */}
             {view.unassigned.length > 0 && (
               <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50/50 p-4 dark:border-amber-500/30 dark:bg-amber-500/5">
-                <div className="mb-3 flex items-center gap-2 font-semibold text-amber-800 dark:text-amber-300">
+                <div className="mb-3 flex flex-wrap items-center gap-2 font-semibold text-amber-800 dark:text-amber-300">
                   Chưa gán bộ môn <span className="text-xs font-normal">({view.unassigned.length} học phần)</span>
+                  {canAssign && (
+                    <button
+                      onClick={() => setBulkOpen(true)}
+                      className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-teal-700"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" /> Gán hàng loạt theo gợi ý
+                    </button>
+                  )}
                 </div>
                 <div className="flex flex-col gap-2">
                   {view.unassigned.map((s) => (
@@ -220,6 +231,18 @@ const CmsMaterials: FC = () => {
           </div>
         )}
       </main>
+
+      {bulkOpen && (
+        <BulkAssignBoMon
+          boMonOptions={boMonOptions}
+          onClose={() => setBulkOpen(false)}
+          onDone={() => {
+            setBulkOpen(false);
+            load();
+            setReloadKey((k) => k + 1);
+          }}
+        />
+      )}
     </div>
   );
 };
