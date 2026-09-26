@@ -39,6 +39,7 @@ const StudentSubjectsPage   = lazy(() => import("@views/dashboard/student/subjec
 const StudentAssignmentExam  = lazy(() => import("@views/dashboard/student/assignments/StudentAssignmentExam"));
 const StudentChatbotPage        = lazy(() => import("@views/dashboard/student/chatbot/StudentChatbot"));
 const StudentAdvisorPage        = lazy(() => import("@views/dashboard/student/chatbot/StudentAdvisor"));
+const StudentCvhtDashboard      = lazy(() => import("@views/dashboard/student/cvht/StudentCvhtDashboard"));
 const ChatModeLayout            = lazy(() => import("@views/dashboard/teacher/chatbot/ChatModeLayout"));
 const StudentSubjectDetailPage  = lazy(() => import("@views/dashboard/student/subjects/StudentSubjectDetail"));
 const StudentBaiGiangViewer     = lazy(() => import("@views/dashboard/student/baigiang/StudentBaiGiangViewer"));
@@ -229,6 +230,7 @@ export const appRoutes: RouteObject[] = [
       { path: "subjects/:maMon",   element: <StudentSubjectDetailPage /> },
       { path: "bai-giang/:id",     element: <StudentBaiGiangViewer /> },
       { path: "schedule",         element: <StudentSchedulePage /> },
+      { path: "cvht",             element: <StudentCvhtDashboard /> },
       { path: "notifications",    element: <NotificationsPage /> },
       { path: "profile",          element: <StudentProfile /> },
       {

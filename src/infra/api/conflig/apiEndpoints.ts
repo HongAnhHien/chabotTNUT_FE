@@ -201,6 +201,8 @@ export const API_ENDPOINTS = {
 
     // Lộ trình đề kiểm tra theo môn (SV xem)
     LO_TRINH: '/student/lo-trinh',
+    CVHT_TONG_QUAN:  '/student/cvht/tong-quan',
+    CVHT_CHUYEN_CAN: '/student/diem-danh/chuyen-can',
 
     // Luyện tập hằng tuần theo buổi
     LUYEN_TAP:         '/student/luyen-tap',

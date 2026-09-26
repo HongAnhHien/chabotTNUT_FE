@@ -1,6 +1,6 @@
-import { type FC, useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
-import { ArrowLeft, GraduationCap, Loader2, Menu, RefreshCw } from 'lucide-react';
+import { type FC, useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { ArrowLeft, GraduationCap, LayoutDashboard, Loader2, Menu, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import ChatHistory from '@/views/dashboard/teacher/chatbot/ChatHistory';
@@ -43,10 +43,20 @@ interface Props {
 }
 
 const SUGGESTIONS: Record<Props['role'], string[]> = {
+  // Đủ mọi việc chatbot CVHT làm được cho SV (khớp bộ công cụ dịch vụ CVHT)
   student: [
-    '📊 Điểm HK này của tôi ra sao?',
+    '📊 Điểm & GPA tích luỹ của tôi?',
+    '⚠️ Tôi có bị cảnh báo học vụ không?',
+    '🎯 Tiến độ CTĐT: còn thiếu học phần nào?',
+    '📚 Kỳ tới nên đăng ký môn gì?',
+    '🔗 Môn tiên quyết của học phần…',
     '🗓️ TKB tuần này của tôi?',
-    '📝 Lịch thi cuối kỳ của tôi?',
+    '📅 TKB cả học kỳ của tôi?',
+    '📝 Lịch thi của tôi?',
+    '🧾 Kỳ này tôi đã đăng ký môn nào?',
+    '📖 Quy chế học lại, cải thiện điểm?',
+    '🎓 Điều kiện tốt nghiệp của tôi?',
+    '🧭 Tôi hợp với hướng nghề nào?',
   ],
   teacher: [
     '🗓️ Tuần này tôi dạy gì?',
@@ -58,6 +68,11 @@ const SUGGESTIONS: Record<Props['role'], string[]> = {
 const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
   const navigate = useNavigate();
   const { sessionId: urlSessionId } = useParams<{ sessionId?: string }>();
+  // Câu hỏi gửi sẵn từ Dashboard CVHT (?q=...) — tự mở cuộc trò chuyện và hỏi luôn
+  const [searchParams] = useSearchParams();
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const triedCreate = useRef(false);
+  const [pendingQ, setPendingQ] = useState<string | null>(() => searchParams.get('q'));
 
   const [sessions,        setSessions]        = useState<IChatSession[]>([]);
   const [currentSession,  setCurrentSession]  = useState<IChatSession | null>(null);
@@ -158,12 +173,15 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
     setSidebarOpen(false);
     setStreaming(false);
     setMessages([]);
+    setHistoryLoading(true);
     try {
       const r = await AdvisorApi.getSessionHistory(sess.id);
       setMessages(mapHistory(r.messages ?? []));
       applySessionDetail(r.session);
     } catch {
       setMessages([]);
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -258,6 +276,19 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
     }
   };
 
+  useEffect(() => {
+    if (!pendingQ || loadingSessions || creatingSession || historyLoading || streaming) return;
+    if (!currentSession) {
+      if (triedCreate.current) { setPendingQ(null); return; }
+      triedCreate.current = true;
+      void handleNewChat();
+      return;
+    }
+    const q = pendingQ;
+    setPendingQ(null);
+    void handleSend(q);
+  }, [pendingQ, loadingSessions, creatingSession, historyLoading, streaming, currentSession]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Feedback (like/dislike) ──────────────────────────
   const handleFeedback = async (msgId: string, messageId: string | undefined, value: 'like' | 'dislike') => {
     if (!messageId) return;
@@ -342,6 +373,11 @@ const AdvisorChatPage: FC<Props> = ({ role, homePath, chatBasePath }) => {
               </>
             ) : (
               <span style={{ flex: 1, fontSize: '0.82rem', fontWeight: 600, color: '#94a3b8' }}>Chọn hoặc tạo cuộc trò chuyện</span>
+            )}
+            {role === 'student' && (
+              <Button variant="outline" onClick={() => navigate('/student/cvht')} title="Dashboard cố vấn học tập: GPA, rủi ro, sổ tư vấn" style={{ flexShrink: 0 }}>
+                <LayoutDashboard size={14} /> <span className="hidden sm:inline">Dashboard CVHT</span>
+              </Button>
             )}
             <Button variant="outline" onClick={() => navigate(homePath)} title="Về trang chủ" style={{ flexShrink: 0 }}>
               <ArrowLeft size={14} />

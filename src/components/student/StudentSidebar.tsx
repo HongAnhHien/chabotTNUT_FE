@@ -1,7 +1,7 @@
 import { type FC, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import {
-  LayoutDashboard, BookOpen, MessageCircle,
+  LayoutDashboard, BookOpen, MessageCircle, GraduationCap,
   ChevronLeft, ChevronRight,
   ChevronRight as ArrowRight, X, CalendarDays,
 } from 'lucide-react';
@@ -26,6 +26,7 @@ const NAV_SECTIONS = [
     label: 'Tổng quan',
     items: [
       { icon: LayoutDashboard, label: 'Dashboard', path: '/student/dashboard' },
+      { icon: GraduationCap,   label: 'Cố vấn học tập', path: '/student/cvht' },
     ],
   },
   {
