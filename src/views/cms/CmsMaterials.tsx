@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FC } from "react";
 import { Link } from "react-router";
-import { ArrowLeft, FileText, CheckCircle2, FolderTree, Loader2, ChevronRight } from "lucide-react";
+import { ArrowLeft, FileText, CheckCircle2, FolderTree, Loader2, ChevronRight, Search } from "lucide-react";
+import CmsOverview from "./CmsOverview";
 import axiosInstance from "@/infra/api/conflig/axiosInstance";
 import { useAuthStore, selectUser } from "@/views/pages/stores/auth_store";
 import { ROLES, ORG_ADMIN_ROLES, type Role } from "@/constants/roles";
@@ -60,6 +61,7 @@ const CmsMaterials: FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [assigning, setAssigning] = useState<string | null>(null);
+  const [q, setQ] = useState("");
 
   const load = () => {
     setLoading(true);
@@ -77,6 +79,21 @@ const CmsMaterials: FC = () => {
     tree?.khoa.forEach((k) => k.bo_mon.forEach((b) => out.push({ id: b.id, label: `${k.ten_khoa} · ${b.ten_bo_mon}` })));
     return out;
   }, [tree]);
+
+  // Lọc cây theo mã/tên học phần (bỏ dấu, không phân biệt hoa thường)
+  const norm = (x?: string | null) => (x ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/gi, "d").toLowerCase();
+  const view = useMemo(() => {
+    if (!tree || !q.trim()) return tree;
+    const k = norm(q.trim());
+    const hit = (s: CmsSubject) => norm(s.ma_mon).includes(k) || norm(s.ten_mon).includes(k);
+    return {
+      ...tree,
+      khoa: tree.khoa
+        .map((kh) => ({ ...kh, bo_mon: kh.bo_mon.map((b) => ({ ...b, subjects: b.subjects.filter(hit) })).filter((b) => b.subjects.length > 0) }))
+        .filter((kh) => kh.bo_mon.length > 0),
+      unassigned: tree.unassigned.filter(hit),
+    };
+  }, [tree, q]);
 
   const assign = async (subjectId: string, boMonId: string) => {
     if (!boMonId) return;
@@ -115,6 +132,21 @@ const CmsMaterials: FC = () => {
           Duyệt học liệu theo <b>Khoa → Bộ môn → Học phần</b>. Mỗi học phần hiển thị số tài liệu và số đã nạp vào trợ giảng (RAG).
         </p>
 
+        <CmsOverview />
+
+        <div className="mt-8 flex flex-wrap items-end justify-between gap-3">
+          <h2 className="text-lg font-bold tracking-tight">Cây học liệu</h2>
+          <label className="relative w-full sm:w-72">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Tìm mã hoặc tên học phần…"
+              className="w-full rounded-lg border border-slate-300 bg-white py-1.5 pl-8 pr-3 text-sm outline-none focus:border-teal-500 dark:border-slate-700 dark:bg-slate-900"
+            />
+          </label>
+        </div>
+
         {loading && (
           <div className="mt-10 flex items-center gap-2 text-slate-500"><Loader2 className="h-5 w-5 animate-spin" /> Đang tải…</div>
         )}
@@ -122,12 +154,15 @@ const CmsMaterials: FC = () => {
           <div className="mt-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">{error}</div>
         )}
 
-        {!loading && tree && (
+        {!loading && view && (
           <div className="mt-6 flex flex-col gap-4">
-            {tree.khoa.length === 0 && (
+            {view.khoa.length === 0 && !q && (
               <p className="text-sm text-slate-500">Chưa có dữ liệu tổ chức. Hãy nạp cơ cấu Khoa/Bộ môn (seeder org-structure) trước.</p>
             )}
-            {tree.khoa.map((k) => (
+            {q && view.khoa.length === 0 && view.unassigned.length === 0 && (
+              <p className="text-sm text-slate-500">Không tìm thấy học phần khớp “{q}”.</p>
+            )}
+            {view.khoa.map((k) => (
               <details key={k.id} open className="rounded-2xl border border-slate-200 bg-white p-1 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <summary className="cursor-pointer list-none rounded-xl px-4 py-3 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/60">
                   <span className="text-teal-700 dark:text-teal-300">{k.ten_khoa}</span>
@@ -153,13 +188,13 @@ const CmsMaterials: FC = () => {
             ))}
 
             {/* Chưa gán bộ môn */}
-            {tree.unassigned.length > 0 && (
+            {view.unassigned.length > 0 && (
               <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50/50 p-4 dark:border-amber-500/30 dark:bg-amber-500/5">
                 <div className="mb-3 flex items-center gap-2 font-semibold text-amber-800 dark:text-amber-300">
-                  Chưa gán bộ môn <span className="text-xs font-normal">({tree.unassigned.length} học phần)</span>
+                  Chưa gán bộ môn <span className="text-xs font-normal">({view.unassigned.length} học phần)</span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  {tree.unassigned.map((s) => (
+                  {view.unassigned.map((s) => (
                     <div key={s.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm dark:border-amber-500/20 dark:bg-slate-900">
                       <span className="font-mono text-xs text-slate-500">{s.ma_mon}</span>
                       <span className="flex-1 truncate font-medium">{s.ten_mon ?? "—"}</span>
