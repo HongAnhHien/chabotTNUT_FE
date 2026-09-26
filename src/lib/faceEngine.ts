@@ -7,7 +7,7 @@
 // vỡ — thả file model vào là tự chuyển sang nhận diện thật. Phần còn lại (thu,
 // chất lượng, gộp, gửi) giữ nguyên.
 
-import * as ort from "onnxruntime-web";
+import * as ort from "onnxruntime-web/wasm"; // chỉ backend WASM (~11MB thay vì bản WebGPU ~28MB)
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 
 export const FACE_DIM = 512;
